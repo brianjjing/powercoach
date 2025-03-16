@@ -47,10 +47,8 @@ def create_app(test_config=None):
     from powercoachapp import homepage
     app.register_blueprint(homepage.homepagebp)
     from powercoachapp import auth
-    from powercoachapp import blog
     from powercoachapp import powercoach
     app.register_blueprint(auth.authbp)
-    app.register_blueprint(blog.blogbp)
     app.register_blueprint(powercoach.powercoachbp)
     
     #Initializing database:
