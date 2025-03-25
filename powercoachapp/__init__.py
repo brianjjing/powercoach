@@ -7,7 +7,6 @@ from flask import Flask, render_template
 from flask_scss import Scss
 from flask_sqlalchemy import SQLAlchemy
 from powercoachapp.extensions import socketio
-import eventlet
 
 #Factory function
 def create_app(test_config=None):
@@ -21,7 +20,7 @@ def create_app(test_config=None):
     app.config["DEBUG"] = True
     
     #Defining the websocket object and initializing it:
-    socketio.init_app(app, logger = True, async_mode = "eventlet", cors_allowed_origins='*')
+    socketio.init_app(app, async_mode='eventlet', logger = True, engineio_logger=True, cors_allowed_origins='*')
     #
     
     from powercoachapp import websocket

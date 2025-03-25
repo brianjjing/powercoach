@@ -1,4 +1,5 @@
 import sys
+from urllib import response
 sys.path.append("/Users/brian/Documents/Python/PowerCoach")
 from flask_socketio import emit, SocketIOTestClient
 from flask import request
@@ -11,21 +12,12 @@ app = create_app()
 
 client = SocketIOTestClient(app, socketio)
 
-print("🔹 Sending 'start_powercoach_stream' event...")
+client.connect()
+
+client.emit('test_message', 'TEST DATA')
+
 client.emit('start_powercoach_stream')
+#Problem: stuck on one emit line with no way to stop powercoach stream
+print("Other events are being listened to")
 
-# Step 3: Receive streamed responses (for a few frames)
-for _ in range(10000):  # Receive 10 frames as a test
-    response = client.get_received()
-    if response:
-        print(f"📡 Received stream update: {response}")
-    else:
-        print("No response")
-    # Wait before receiving the next frame
-
-# Step 4: Stop the PowerCoach stream
-print("🔹 Sending 'stop_powercoach_stream' event...")
 client.emit('stop_powercoach_stream')
-
-# Close the test client
-client.disconnect()
