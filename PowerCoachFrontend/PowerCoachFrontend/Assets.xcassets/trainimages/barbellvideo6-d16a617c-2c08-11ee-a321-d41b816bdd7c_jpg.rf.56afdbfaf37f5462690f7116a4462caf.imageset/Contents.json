@@ -1,0 +1,21 @@
+{
+  "images" : [
+    {
+      "filename" : "barbellvideo6-d16a617c-2c08-11ee-a321-d41b816bdd7c_jpg.rf.56afdbfaf37f5462690f7116a4462caf.jpg",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
