@@ -28,8 +28,6 @@ def handle_test_message(data):
     print(f"Received debug message: {data}")
     emit('debug_message', {'status': 'received'})
 
-#MAKING A SLIGHT CHANGE TO SEE WHAT BRANCH ON GITHUB THIS IS ON
-
 powercoach_live = False
 @socketio.on('start_powercoach_stream')
 def handle_start_stream():
