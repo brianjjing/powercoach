@@ -21,8 +21,10 @@ class WebSocketManager: NSObject, ObservableObject {
     let webSocketURL = "ws://127.0.0.1:5000/socket.io/?EIO=4&transport=websocket"
     
     //@Published changes the variable within a CLASS (can be across multiple views)
-    @Published var isConnected = false
-    @Published var detectionString = "String loading..."
+    var isConnected = false
+    @Published var displayString = "Connecting..."
+    @Published var powerCoachMessage = "Loading ..."
+    @Published var userid = "Unknown user ID"
     
     //Private so it cannot be initialized outside the class. Here it is only initialized once in the class in the first line, making it a singleton.
     //Override since it overrides the NSObject initializer
@@ -66,10 +68,7 @@ class WebSocketManager: NSObject, ObservableObject {
         })
     }
     
-    //How to continuously call?
-    private func listen() {
-        //CONTINUOUSLY LISTEN!!!
-        
+    func listen() {
         //[weak self] prevents a strong reference cycle between the WebSocketManager instance (delegate) and the closure.
         webSocketTask?.receive { [weak self] result in
             switch result {
@@ -78,24 +77,44 @@ class WebSocketManager: NSObject, ObservableObject {
                 case .string(let text):
                     print("Received JSON string: \(text)")
                     
-                    // Decode the JSON string into the ImageFeed model
-                    if let data = text.data(using: .utf8) {
-                        do {
-                            let decoded = try JSONDecoder().decode(ImageFeed.self, from: data)
-                            print("Decoded Detection: \(decoded)")
-
-                            DispatchQueue.main.async {
-                                self?.detectionString = decoded.jsonData
-                            }
-                        } catch {
-                            print("Failed to decode JSON: \(error)")
+                    let packetType = text.prefix(1)
+                    let payloadString = String(text.dropFirst())
+                    
+                    switch packetType {
+                    case "2":
+                        print("Received a ping")
+                        if payloadString == "" {
+                            self?.send(message: "3")
+                            print("Sent a pong")
                         }
+                        else {
+                            print("CODE WILL BE WRITTEN TO TAKE IN 2 DATA")
+                        }
+                        
+                    case "0":
+                        if let data = payloadString.data(using: .utf8) {
+                            do {
+                                let decodedConnection = try JSONDecoder().decode(Connection.self, from: data)
+                                print("Decoded Connection: \(decodedConnection)")
+
+                                //Dispatches this background task asynchronously to the main thread
+                                DispatchQueue.main.async {
+                                    self?.displayString = "POWERCOACH"
+                                    self?.userid = decodedConnection.sid
+                                }
+                            } catch {
+                                print("Failed to decode JSON: \(error)")
+                            }
+                        }
+                    default:
+                        print("Unknown packet type: \(packetType)")
                     }
                 default:
                     print("Unknown data type, data not sent as a JSON string")
                 }
             case .failure(let error):
                 print("WebSocket receiving error: \(error)")
+                return //should return only if the receiving error is an infinite loop (Socket is not connected) or goes on too long
             }
             // Recursively, continuously listen
             self?.listen()
@@ -118,70 +137,3 @@ extension WebSocketManager: URLSessionWebSocketDelegate {
         isConnected = false
     }
 }
-
-//            .onChange(of: detectionString, initial: true) {
-//                //Task allows for the asynchronous 'try await getDetection' line to be passed synchronously, which is needed for this closure parameter.
-//                Task {
-//                    detectionString = "NEW detection"
-//                    print("NEW detection")
-//                    do {
-//                        detectionString = "Getting detection ..."
-//                        detection = try await getDetection()
-//                        detectionString = "Response decoded"
-//                        detectionString = "Detection gotten"
-//                        detectionString = "Detection converted to string"
-//                        detectionString = String(describing: detection)
-//                        print(iteration)
-//                        iteration = iteration + 1
-//                    } catch GHError.invalidURL {
-//                        detectionString = "Invalid URL"
-//                        print("Invalid URL")
-//                    } catch GHError.invalidResponse {
-//                        detectionString = "Invalid response"
-//                        print("Invalid response")
-//                    } catch GHError.invalidData {
-//                        detectionString = "Invalid data, line 42"
-//                        print("Invalid data, line 42")
-//                    } catch {
-//                        detectionString = "Unspecified error"
-//                        print("Unspecified error")
-//                    }
-//                }
-//            }
-
-//    func getDetection() async throws -> ImageFeed {
-//
-//        //Converts to URL object:
-//        guard let url = URL(string: endpoint) else { throw GHError.invalidURL }
-//        detectionString = "Changed to a URL object"
-//
-//        detectionString = "Getting data and response"
-////        let session = URLSession(
-////            configuration: .default,
-////            delegate: self,
-////            delegateQueue: .main)
-////
-////        let webSocket = session.webSocketTask(with: url)
-//        let (data, response) = try await URLSession.shared.data(from: url)
-//        detectionString = "Got data and response"
-//        print("Data:", data)
-//        print("Response:", response)
-//
-//        detectionString = "Changing response to HTTPURLRESPONSE"
-//        guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
-//            detectionString = "Invalid response"
-//            throw GHError.invalidResponse
-//        }
-//        detectionString = "Response changed to HTTPURLRESPONSE"
-//
-//        detectionString = "Decoding response ..."
-//        do {
-//            let decoder = JSONDecoder()
-//            decoder.keyDecodingStrategy = .convertFromSnakeCase
-//            return try decoder.decode(ImageFeed.self, from: data)
-//        } catch {
-//            detectionString = "Invalid data, line 94"
-//            print("Invalid data, line 94")
-//            throw GHError.invalidData
-//        }
-//    }

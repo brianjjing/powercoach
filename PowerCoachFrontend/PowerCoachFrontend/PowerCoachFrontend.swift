@@ -16,9 +16,16 @@ import SwiftUI
 
 @main
 struct PowerCoachFrontend: App {
+    @StateObject private var webSocketManager = WebSocketManager.shared
+        
+    init() {
+        webSocketManager.connect()
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(webSocketManager)
         }
     }
 }
