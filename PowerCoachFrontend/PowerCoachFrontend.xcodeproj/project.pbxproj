@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D3BF96902D97D81F00157E16 /* SocketIO in Frameworks */ = {isa = PBXBuildFile; productRef = D3BF968F2D97D81F00157E16 /* SocketIO */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		D31170CB2D87A3C500EEA679 /* PowerCoachFrontend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PowerCoachFrontend.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D3BF96902D97D81F00157E16 /* SocketIO in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = PowerCoachFrontend;
 			packageProductDependencies = (
+				D3BF968F2D97D81F00157E16 /* SocketIO */,
 			);
 			productName = PowerCoachFrontend;
 			productReference = D31170CB2D87A3C500EEA679 /* PowerCoachFrontend.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = D31170C22D87A3C500EEA679;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D3BF968E2D97D81F00157E16 /* XCRemoteSwiftPackageReference "socket" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D31170CC2D87A3C500EEA679 /* Products */;
 			projectDirPath = "";
@@ -324,6 +333,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D3BF968E2D97D81F00157E16 /* XCRemoteSwiftPackageReference "socket" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/socketio/socket.io-client-swift";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D3BF968F2D97D81F00157E16 /* SocketIO */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D3BF968E2D97D81F00157E16 /* XCRemoteSwiftPackageReference "socket" */;
+			productName = SocketIO;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D31170C32D87A3C500EEA679 /* Project object */;
 }

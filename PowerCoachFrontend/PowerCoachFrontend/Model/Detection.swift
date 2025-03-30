@@ -18,3 +18,7 @@ struct Connection: Codable {
     var pingInterval: Int
     var maxPayload: Int
 }
+
+struct PowerCoachMessage: Decodable {
+    var json_data: String
+}

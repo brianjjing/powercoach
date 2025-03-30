@@ -14,6 +14,7 @@ mp_drawing = mp.solutions.drawing_utils
 active_clients = set()
 
 def powercoachalg(sid):
+    print("powercoach algorithm is starting")
     cap = cv2.VideoCapture(0)  # 0 for default webcam
     if not cap.isOpened():
         print("Error: Could not open webcam.")
@@ -52,17 +53,11 @@ def powercoachalg(sid):
                     )"""
                 if results.pose_landmarks:
                     if printresultbbox:
-                        yield json.dumps({
-                            'json_data': start(results.pose_landmarks, printresultbbox)
-                            })
+                        yield start(results.pose_landmarks, printresultbbox)
                     else:
-                        yield json.dumps({
-                            'json_data': 'Barbell not in frame'
-                            })
+                        yield 'Barbell not in frame'
                 else:
-                    yield json.dumps({
-                        'json_data': 'Please include your whole body in the frame'
-                        })
+                    yield 'Please include your whole body in the frame'
                 
                 # COMPUTER BACKEND TESTING: Display the frame
                 #yield (b'--frame\r\n'

@@ -13,19 +13,19 @@ The top-level definition of the Landmarks app.
 */
 
 import SwiftUI
+import SocketIO
 
 @main
 struct PowerCoachFrontend: App {
     @StateObject private var webSocketManager = WebSocketManager.shared
-        
-    init() {
-        webSocketManager.connect()
-    }
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(webSocketManager)
+                .onAppear {
+                    webSocketManager.socket.connect()
+                }
         }
     }
 }
