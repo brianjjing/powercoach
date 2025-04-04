@@ -63,12 +63,16 @@ dm-tree==0.1.9
     # via
     #   tensorflow-datasets
     #   tensorflow-model-optimization
+dnspython==2.7.0
+    # via eventlet
 docstring-parser==0.16
     # via simple-parsing
 einops==0.8.1
     # via etils
 etils[array-types,edc,enp,epath,epy,etqdm,etree]==1.12.2
     # via tensorflow-datasets
+eventlet==0.39.1
+    # via -r requirements.in
 flask==3.1.0
     # via
     #   -r requirements.in
@@ -112,6 +116,8 @@ googleapis-common-protos==1.69.2
     # via
     #   google-api-core
     #   tensorflow-metadata
+greenlet==3.1.1
+    # via eventlet
 grpcio==1.71.0
     # via
     #   tensorboard
