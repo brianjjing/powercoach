@@ -20,8 +20,7 @@ def create_app(test_config=None):
     app.config["DEBUG"] = True
     
     #Defining the websocket object and initializing it:
-    socketio.init_app(app, async_mode='eventlet', logger = True, engineio_logger=True, cors_allowed_origins='*')
-    #
+    socketio.init_app(app, async_mode='eventlet', logger = True, engineio_logger=True, ping_timeout=30, ping_interval=25, cors_allowed_origins='*')
     
     from powercoachapp import websocket
 
