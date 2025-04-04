@@ -1,7 +1,6 @@
 import mediapipe as mp
 from mediapipe_model_maker import object_detector
 import os
-import json
 import tensorflow as tf
 import cv2 as cv
 import numpy as np
