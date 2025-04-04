@@ -1,5 +1,6 @@
 import sys
-sys.path.append("/Users/brian/Documents/Python/PowerCoach")
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), 'powercoachapp'))
 from powercoachapp import create_app, socketio
 from flask import request
 

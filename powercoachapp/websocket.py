@@ -1,6 +1,6 @@
 import sys
-from powercoachapp import powercoach
-sys.path.append("/Users/brian/Documents/Python/PowerCoach")
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), 'powercoachapp'))
 from flask_socketio import emit
 from flask import request
 from powercoachapp.extensions import socketio

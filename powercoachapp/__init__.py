@@ -1,7 +1,7 @@
 #FIXING THE NO MODULE NAMED POWERCOACHAPP ERROR:
 import sys
-sys.path.append("/Users/brian/Documents/Python/PowerCoach")
 import os
+sys.path.append(os.path.join(os.path.dirname(__file__), 'powercoachapp'))
 
 from flask import Flask, render_template
 from flask_scss import Scss
