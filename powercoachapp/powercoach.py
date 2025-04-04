@@ -1,7 +1,4 @@
 #FIXING THE NO MODULE NAMED POWERCOACHAPP ERROR:
-import sys
-sys.path.append("/Users/brian/Documents/Python/PowerCoach")
-
 #Powerjudge blueprint (AI is in powercoachalg):
 from flask import (
     Blueprint, g, render_template, request, Response, url_for

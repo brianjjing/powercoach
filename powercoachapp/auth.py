@@ -1,7 +1,3 @@
-#FIXING THE NO MODULE NAMED POWERCOACHAPP ERROR:
-import sys
-sys.path.append("/Users/brian/Documents/Python/PowerCoach")
-
 import functools
 
 from flask import (

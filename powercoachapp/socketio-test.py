@@ -1,6 +1,4 @@
-import sys
 from urllib import response
-sys.path.append("/Users/brian/Documents/Python/PowerCoach")
 from flask_socketio import emit, SocketIOTestClient
 import requests
 from flask import request

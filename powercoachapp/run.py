@@ -1,5 +1,3 @@
-import sys
-sys.path.append("/Users/brian/Documents/Python/PowerCoach")
 from powercoachapp import create_app, socketio
 from flask import request
 

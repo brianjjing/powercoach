@@ -1,6 +1,4 @@
-import sys
 from powercoachapp import powercoach
-sys.path.append("/Users/brian/Documents/Python/PowerCoach")
 from flask_socketio import emit
 from flask import request
 from powercoachapp.extensions import socketio
