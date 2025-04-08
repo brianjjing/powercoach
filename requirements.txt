@@ -33,6 +33,7 @@ ai-edge-litert==1.2.0 \
     --hash=sha256:df266411a45e0af7cc52ff932e0676190b30a3589b18c985f36390d8bd339160 \
     --hash=sha256:f8f7c89b78431328337abe94e05ec16016a3707d871be2f32e533c01df91a252
     # via tf-models-official
+array_record==0.7.1
 astunparse==1.6.3 \
     --hash=sha256:5ad93a8456f0d084c3456d059fd9a92cce667963232cbf763eac3bc5b7940872 \
     --hash=sha256:c2652417f2c8b5bb325c885ae329bdf3f86424075c4fd1a128674bc6fba4b8e8
