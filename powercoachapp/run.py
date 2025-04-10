@@ -18,4 +18,4 @@ def log_request():
 
 port = int(os.getenv('PORT', 10000))
 if __name__ == "__main__":
-    socketio.run(app, host='0.0.0.0', port=port)
+    socketio.run(app, host='0.0.0.0', port=port, debug=False, use_reloader=False)
