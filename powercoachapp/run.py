@@ -1,6 +1,5 @@
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), 'powercoachapp'))
 from powercoachapp import create_app, socketio
 from flask import request
 
@@ -18,7 +17,7 @@ def log_request():
     for header, value in request.headers.items():
         print(f"{header}: {value}")
 
-port = int(os.environ.get("PORT", 5000))
+port = int(os.environ.get("PORT", 10000))
 
 if __name__ == "__main__":
-    socketio.run(app, host='0.0.0.0', port=port, debug=True)
+    socketio.run(app, host='0.0.0.0', port=port, debug=False, use_reloader=False)

@@ -1,6 +1,5 @@
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), 'powercoachapp'))
 from urllib import response
 from flask_socketio import emit, SocketIOTestClient
 import requests
@@ -13,8 +12,6 @@ from socketio.packet import Packet
 app = create_app()
 
 client = SocketIOTestClient(app, socketio)
-
-engine_url = 'ws://127.0.0.1:5000/socket.io/?EIO=4&transport=websocket'
 
 client.connect()
 

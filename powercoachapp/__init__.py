@@ -1,8 +1,6 @@
 #FIXING THE NO MODULE NAMED POWERCOACHAPP ERROR:
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), 'powercoachapp'))
-
 from flask import Flask, render_template
 from flask_scss import Scss
 from flask_sqlalchemy import SQLAlchemy
@@ -17,7 +15,6 @@ def create_app(test_config=None):
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
     )
-    app.config["DEBUG"] = True
     
     #Defining the websocket object and initializing it:
     socketio.init_app(app, async_mode='eventlet', logger = True, engineio_logger=True, cors_allowed_origins='*')

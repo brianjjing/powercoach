@@ -23,7 +23,7 @@ class WebSocketManager: ObservableObject {
     @Published var userid = "Unknown user ID"
     
     init() {
-        self.manager = SocketManager(socketURL: URL(string: "https://powercoach-1.onrender.com")!, config: [.log(true), .compress, .forceWebsockets(true)])
+        self.manager = SocketManager(socketURL: URL(string: "https://powercoach-1.onrender.com")!, config: [.log(true), .compress, .forceWebsockets(true), .path("/socket.io")])
         self.socket = self.manager.defaultSocket
         
         socket.on(clientEvent: .connect) { (data, ack) in
