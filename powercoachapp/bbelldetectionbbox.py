@@ -4,9 +4,10 @@ from mediapipe.tasks.python.vision import ObjectDetector, ObjectDetectorOptions
 import time
 
 import os
-assert os.path.exists('/Users/brian/Documents/Python/PowerCoach/models/bbelldetectionmodel.tflite'), "Model export failed!"
+model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel.tflite')
+assert os.path.exists(model_path), "Model export failed!"
 
-bbelldetection = ObjectDetector.create_from_model_path('/Users/brian/Documents/Python/PowerCoach/models/bbelldetectionmodel.tflite')
+bbelldetection = ObjectDetector.create_from_model_path(model_path)
 
 def bbellbbox(imagepath):
     image = mp.Image.create_from_file(imagepath)
@@ -41,7 +42,7 @@ def print_result(result, output_image: mp.Image, timestamp_ms: int):
     return
 
 livebbelldetectionoptions = ObjectDetectorOptions(
-    base_options = mp.tasks.BaseOptions(model_asset_path = '/Users/brian/Documents/Python/PowerCoach/models/bbelldetectionmodel.tflite'),
+    base_options = mp.tasks.BaseOptions(model_asset_path = model_path),
     running_mode = mp.tasks.vision.RunningMode.LIVE_STREAM,
     result_callback = print_result
 )

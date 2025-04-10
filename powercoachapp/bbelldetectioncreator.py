@@ -1,7 +1,6 @@
 import mediapipe as mp
 from mediapipe_model_maker import object_detector
 import os
-import json
 import tensorflow as tf
 import cv2 as cv
 import numpy as np
@@ -11,18 +10,25 @@ print("LIBRARIES LOADED IN")
 #UNDERSTAND ALL THIS FOR NOW, OPTIMIZE LATER:
 #RETRAINING PROCESS:
 #FIND OUT HOW TO MAKE THE RETRAINING WORK, THEN MAKE A DATASET TO RETRAIN.
-dataset = '/Users/brian/Documents/Python/PowerCoach/bbelldetecset.coco'
+model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel.tflite')
+coco_path = os.path.join(os.path.dirname(__file__), 'bbelldetecset.coco')
+cache_train = os.path.join(os.path.dirname(__file__), 'cachetrain')
+cache_valid = os.path.join(os.path.dirname(__file__), 'cachevalid')
+cache_test = os.path.join(os.path.dirname(__file__), 'cachetest')
+
+dataset = coco_path
 traindataset = os.path.join(dataset, 'train')
 valdataset = os.path.join(dataset, 'val')
-train_data = object_detector.Dataset.from_coco_folder(traindataset, cache_dir='/Users/brian/Documents/Python/PowerCoach/cachetrain')
-validation_data = object_detector.Dataset.from_coco_folder(valdataset, cache_dir='/Users/brian/Documents/Python/PowerCoach/cachevalid')
+train_data = object_detector.Dataset.from_coco_folder(traindataset, cache_dir=cache_train)
+validation_data = object_detector.Dataset.from_coco_folder(valdataset, cache_dir=cache_valid)
 
 print("Creation starting:")
 #TURN IMAGES INTO REQUIRED INPUT SIZE! (256X256)
 spec = object_detector.SupportedModels.MOBILENET_V2
 #Optimize parameters later:
+exported_model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel')
 hparams = object_detector.HParams(
-    export_dir='/Users/brian/Documents/Python/PowerCoach/models/bbelldetectionmodel'
+    export_dir=exported_model_path
 )
 #REDUCE LR ON PLATEAU!!!
 #Tweak regularization term?
@@ -39,14 +45,14 @@ print("CREATION DONE")
 
 print("Exporting model:")
 model.export_model(
-    model_name = '/Users/brian/Documents/Python/PowerCoach/models/bbelldetectionmodel.tflite'
+    model_name = model_path
 )
 print("EXPORTING DONE")
 
 #Do post-training quantization as well
 
 testdataset = os.path.join(dataset, 'test')
-test_data = object_detector.Dataset.from_coco_folder(testdataset, cache_dir='/Users/brian/Documents/Python/PowerCoach/cachetest')
+test_data = object_detector.Dataset.from_coco_folder(testdataset, cache_dir=cache_test)
 
 print("Evaluation:")
 loss, coco_metrics = model.evaluate(test_data, batch_size=4)
@@ -264,5 +270,3 @@ cocodataset['annotations'] = cocoannotations
 with open(os.path.join(testdir, 'labels.json'), 'w') as cocodatasetjson:
     json.dump(cocodataset, cocodatasetjson, indent=4)
 print("SUCCESS CREATING DATASET")"""
-
-
