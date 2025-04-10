@@ -16,7 +16,6 @@ def log_request():
     for header, value in request.headers.items():
         print(f"{header}: {value}")
 
-port = os.getenv('PORT', 10000)
-print(f"Using port: {port}")
+port = int(os.getenv('PORT', 10000))
 if __name__ == "__main__":
-    socketio.run(app, host='0.0.0.0', port=port, debug=True)
+    socketio.run(app, host='0.0.0.0', port=port)
