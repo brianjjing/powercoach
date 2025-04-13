@@ -13,7 +13,7 @@ struct ProfileView: View {
     
     var body: some View {
         VStack {
-            Text("\(webSocketManager.userid)")
+            Text("\(webSocketManager.useridString)")
                 .font(.largeTitle)
                 .fontWeight(.black)
                 .foregroundColor(Color.red)
