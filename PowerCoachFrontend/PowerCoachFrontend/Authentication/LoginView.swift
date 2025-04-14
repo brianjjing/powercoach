@@ -100,10 +100,23 @@ struct LoginView: View {
                 return
             }
             
-            if let data = data,
-               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let token = json["access_token"] as? String {
-                    print("Logged in! Token: \(token)")
+            guard let data = data else {
+                DispatchQueue.main.async {
+                    self.errorMessage = "No data received from server"
+                }
+                return
+            }
+            
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                let loginMessage = json["login_message"] as? String {
+                DispatchQueue.main.async {
+                    if loginMessage == "Login successful" {
+                        isAuthenticated = true
+                        //GET THE TOKEN TOO!!!!!
+                    } else {
+                        errorMessage = loginMessage
+                    }
+                }
             }
         }.resume()
     }
