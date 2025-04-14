@@ -1,4 +1,3 @@
-from powercoachapp import powercoach
 from flask_socketio import emit
 from flask import request
 from powercoachapp.extensions import socketio
