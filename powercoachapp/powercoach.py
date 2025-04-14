@@ -9,7 +9,6 @@ from flask import (
 from werkzeug.exceptions import abort
 
 from powercoachapp.auth import login_required
-from powercoachapp.database import get_db
 from powercoachapp.powercoachalgs import powercoachalg
 import cv2
 
