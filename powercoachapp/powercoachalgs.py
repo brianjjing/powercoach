@@ -57,7 +57,7 @@ def powercoachalg(sid):
                     else:
                         yield 'Barbell not in frame'
                 else:
-                    yield 'Please include your whole body in the frame'
+                    yield 'Make your whole body clearly visible in the frame'
                 
                 # COMPUTER BACKEND TESTING: Display the frame
                 #yield (b'--frame\r\n'

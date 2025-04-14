@@ -270,5 +270,3 @@ cocodataset['annotations'] = cocoannotations
 with open(os.path.join(testdir, 'labels.json'), 'w') as cocodatasetjson:
     json.dump(cocodataset, cocodatasetjson, indent=4)
 print("SUCCESS CREATING DATASET")"""
-
-

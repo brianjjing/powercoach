@@ -8,9 +8,6 @@ from powercoachapp.powercoachalgs import powercoachalg, active_clients
 app = create_app()
 
 client = SocketIOTestClient(app, socketio)
-
-#engine_url = 'ws://127.0.0.1:5000/socket.io/?EIO=4&transport=websocket'
-
 client.connect()
 
 # Now when you call emit, it will log the message
