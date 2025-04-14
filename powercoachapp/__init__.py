@@ -1,8 +1,7 @@
 import os
-from flask import Flask, render_template
-from flask_scss import Scss
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask
 from powercoachapp.extensions import socketio, db
+from powercoachapp.sqlmodels import User
 
 #Factory function
 def create_app(test_config=None):
