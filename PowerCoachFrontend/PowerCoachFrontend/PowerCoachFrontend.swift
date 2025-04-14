@@ -17,15 +17,22 @@ import SocketIO
 
 @main
 struct PowerCoachFrontend: App {
-    @StateObject private var webSocketManager = WebSocketManager.shared
+    @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
+    @StateObject var webSocketManager = WebSocketManager.shared
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(webSocketManager)
-                .onAppear {
-                    webSocketManager.socket.connect()
-                }
+            if isAuthenticated == true {
+                ContentView()
+                    //Make it either LoginView, or ContentView, where websocketmanager connects there. Not here.
+                    .environmentObject(webSocketManager)
+                    .onAppear {
+                        webSocketManager.socket.connect()
+                    }
+            }
+            else {
+                LoginView()
+            }
         }
     }
 }
