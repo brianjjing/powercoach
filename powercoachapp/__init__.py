@@ -7,12 +7,11 @@ from powercoachapp.sqlmodels import User
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
-        SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(os.path.dirname(__file__), 'databases/logins.db'),
-        SECRET_KEY='dev'
+        SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL"),
+        SECRET_KEY = os.environ.get("SECRET_KEY", 'dev')
     )
     
     #Defining the websocket object and initializing it:
-    socketio.init_app(app, async_mode='eventlet', logger = True, engineio_logger=True, ping_timeout=30, ping_interval=25, cors_allowed_origins='*')
     db.init_app(app)
     socketio.init_app(app, async_mode='eventlet', logger = True, engineio_logger=True, cors_allowed_origins='*')
     
@@ -34,7 +33,7 @@ def create_app(test_config=None):
     app.register_blueprint(authbp)
     app.register_blueprint(powercoachbp)
     
-    #Creating the models from sqlmodels.py in database.db:
+    #Creating the database w/ SQLAlchemy (Python implementation of SQL:):
     with app.app_context():
         db.create_all()
         if not User.query.filter_by(username="brian").first():
