@@ -1,0 +1,15 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+*
+!.gitignore
+!powercoachapp/models/
+!powercoachapp/models/**
+!powercoachapp/sqlmodels.py
+__pycache__/
+*.pyc
+.DS_Store
+PowerCoachFrontend/PowerCoachFrontend.xcodeproj/project.xcworkspace/xcuserdata/
+PowerCoachFrontend/PowerCoachFrontend.xcodeproj/project.xcworkspace/xcuserdata/**
+PowerCoachFrontend.xcodeproj/project.xcworkspace/xcuserdata/brian.xcuserdatad/
+PowerCoachFrontend.xcodeproj/project.xcworkspace/xcuserdata/brian.xcuserdatad/**
+PowerCoachFrontend/PowerCoachFrontend.xcodeproj/xcuserdata/brian.xcuserdatad/
+PowerCoachFrontend/PowerCoachFrontend.xcodeproj/xcuserdata/brian.xcuserdatad/**
