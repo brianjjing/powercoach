@@ -76,6 +76,9 @@ struct LoginView: View {
             return
         }
         
+        print(username)
+        print(password)
+        
         let loginData: [String: String] = [
             "username": username,
             "password": password
@@ -91,8 +94,11 @@ struct LoginView: View {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonLoginData
         
+        print("Request sent.")
+        
         //Sends over the POST request above, then deals with the returned variables.
         URLSession.shared.dataTask(with: request) { data, response, error in
+            print(String(describing: response))
             if let error = error {
                 DispatchQueue.main.async {
                     self.errorMessage = "Request failed: \(error.localizedDescription)"
@@ -112,6 +118,7 @@ struct LoginView: View {
                 DispatchQueue.main.async {
                     if loginMessage == "Login successful" {
                         isAuthenticated = true
+                        print("isAuthenticated set to true")
                         //GET THE TOKEN TOO!!!!!
                     } else {
                         errorMessage = loginMessage
