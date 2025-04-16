@@ -31,7 +31,7 @@ def login():
     
     user = User.query.filter_by(username=username).first()
 
-    if user is None or not user.check_password(password):
+    if user is None or user.password != password:
         return jsonify({"login_message": "Please enter a valid username and password"}), 401
     
     return jsonify({
