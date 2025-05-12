@@ -35,11 +35,11 @@ def create_app(test_config=None):
     with app.app_context():
         db.create_all()
         if not User.query.filter_by(username="brian").first():
-            test_user = User(
+            base_user = User(
                 username="brian",
-                password_hash="test123"  # or whatever password you want
+                password="test123"  # or whatever password you want
             )
-            db.session.add(test_user)
+            db.session.add(base_user)
             db.session.commit()
     
     return app
