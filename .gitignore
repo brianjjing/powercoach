@@ -4,6 +4,7 @@
 !powercoachapp/models/
 !powercoachapp/models/**
 !powercoachapp/sqlmodels.py
+!powercoach/requirements.txt
 __pycache__/
 *.pyc
 .DS_Store

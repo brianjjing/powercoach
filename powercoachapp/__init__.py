@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from powercoachapp import auth, powercoach
 from powercoachapp.extensions import socketio, db
 from powercoachapp.sqlmodels import User
 
@@ -7,11 +8,10 @@ from powercoachapp.sqlmodels import User
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
-        SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL"),
-        SECRET_KEY = os.environ.get("SECRET_KEY", 'dev')
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(os.path.dirname(__file__), 'databases/logins.db'),
+        SECRET_KEY='dev'
     )
     
-    #Defining the websocket object and initializing it:
     db.init_app(app)
     socketio.init_app(app, async_mode='eventlet', logger = True, engineio_logger=True, cors_allowed_origins='*')
     
@@ -28,20 +28,18 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    from powercoachapp.auth import authbp
-    from powercoachapp.powercoach import powercoachbp
-    app.register_blueprint(authbp)
-    app.register_blueprint(powercoachbp)
+    app.register_blueprint(auth.authbp)
+    app.register_blueprint(powercoach.powercoachbp)
     
-    #Creating the database w/ SQLAlchemy (Python implementation of SQL:):
+    #Creating the models from sqlmodels.py in database.db:
     with app.app_context():
         db.create_all()
         if not User.query.filter_by(username="brian").first():
-            test_user = User(
+            base_user = User(
                 username="brian",
                 password="test123"  # or whatever password you want
             )
-            db.session.add(test_user)
+            db.session.add(base_user)
             db.session.commit()
     
     return app
