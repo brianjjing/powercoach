@@ -8,8 +8,8 @@ from powercoachapp.sqlmodels import User
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
-        SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(os.path.dirname(__file__), 'databases/logins.db'),
-        SECRET_KEY='dev'
+        SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL"),
+        SECRET_KEY = os.environ.get("SECRET_KEY", 'dev')
     )
     
     db.init_app(app)
