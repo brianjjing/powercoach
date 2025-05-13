@@ -12,6 +12,9 @@ def create_app(test_config=None):
         SECRET_KEY = os.environ.get("SECRET_KEY", 'dev')
     )
     
+    print(os.environ.get("DATABASE_URL"))
+    print(app.config["SQLALCHEMY_DATABASE_URI"])
+    
     db.init_app(app)
     socketio.init_app(app, async_mode='eventlet', logger = True, engineio_logger=True, cors_allowed_origins='*')
     

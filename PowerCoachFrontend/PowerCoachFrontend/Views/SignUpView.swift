@@ -17,14 +17,29 @@ struct SignUpView: View {
                     .font(.largeTitle)
                     .bold()
                 
+                //$ is used for two-way binding - reading in the typed input and displaying it back.
                 TextField("Username", text: $viewModel.signUpUsername)
                 SecureField("Password", text: $viewModel.signUpPassword)
                 
-                if let error = viewModel.errorMessage {
-                    Text(error)
-                        .foregroundColor(.red)
-                        .font(.caption)
+                Button(action: viewModel.signUp) {
+                    Text("Create account")
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue)
+                        .cornerRadius(10)
                 }
+                .disabled(viewModel.isLoading || viewModel.signUpUsername.isEmpty || viewModel.signUpPassword.isEmpty)
+                
+                //Block is recomputed once errorMessage is updated due to the property wrappers @Published, @StateObject
+                if let error = viewModel.errorMessage {
+                    Text("ERROR: " + String(describing: error))
+                        .font(.largeTitle)
+                        .bold()
+                        .foregroundColor(.red)
+                }
+                
+                Spacer()
                 
                 NavigationLink(destination: LoginView()) {
                     Text("Log In")

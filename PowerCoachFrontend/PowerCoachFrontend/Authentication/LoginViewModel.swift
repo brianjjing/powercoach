@@ -55,6 +55,7 @@ class LoginViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     if loginMessage == "Login successful" {
                         self.isAuthenticated = true
+                        self.errorMessage = nil
                     } else {
                         self.errorMessage = loginMessage
                     }

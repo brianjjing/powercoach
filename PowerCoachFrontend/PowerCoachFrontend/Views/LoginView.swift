@@ -19,12 +19,7 @@ struct LoginView: View {
                 
                 TextField("Username", text: $viewModel.username)
                 SecureField("Password", text: $viewModel.password)
-                
-                if let error = viewModel.errorMessage {
-                    Text(error)
-                        .foregroundColor(.red)
-                        .font(.caption)
-                }
+
                 
                 Button(action: viewModel.login) {
                     Text("Login")
@@ -35,6 +30,14 @@ struct LoginView: View {
                         .cornerRadius(10)
                 }
                 .disabled(viewModel.isLoading || viewModel.username.isEmpty || viewModel.password.isEmpty)
+                
+                //Block is recomputed once errorMessage is updated due to the property wrappers @Published, @StateObject, and the DispatchQueue.main.async{} block
+                if let error = viewModel.errorMessage {
+                    Text("ERROR: " + String(describing: error))
+                        .font(.largeTitle)
+                        .bold()
+                        .foregroundColor(.red)
+                }
                 
                 Spacer()
                 
