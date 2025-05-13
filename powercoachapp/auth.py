@@ -80,6 +80,13 @@ def signup():
             "signup_message": "Please enter a valid username (50 chars max) and password (75 chars max)"
         }), 200
         
+@authbp.route('/debug/users', methods=['GET'])
+def print_all_users():
+    users = User.query.all()
+    usernames = [user.username for user in users]
+
+    print("🧾 All usernames in DB:", usernames)  # this goes to Render's service logs
+    return jsonify({"usernames": usernames})
 
 @authbp.before_app_request
 def load_logged_in_user():
