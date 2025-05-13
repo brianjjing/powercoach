@@ -34,7 +34,6 @@ def create_app(test_config=None):
     app.register_blueprint(auth.authbp)
     app.register_blueprint(powercoach.powercoachbp)
     
-    #Creating the models from sqlmodels.py in database.db:
     with app.app_context():
         db.create_all()
         if not User.query.filter_by(username="brian").first():
