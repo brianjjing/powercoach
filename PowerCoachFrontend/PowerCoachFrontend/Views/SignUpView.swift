@@ -34,7 +34,14 @@ struct SignUpView: View {
                 //Block is recomputed once errorMessage is updated due to the property wrappers @Published, @StateObject
                 if let error = viewModel.errorMessage {
                     Text("ERROR: " + String(describing: error))
-                        .font(.largeTitle)
+                        .font(.title)
+                        .bold()
+                        .foregroundColor(.red)
+                }
+                
+                if let success = viewModel.successMessage {
+                    Text(String(describing: success))
+                        .font(.title)
                         .bold()
                         .foregroundColor(.red)
                 }
@@ -50,9 +57,10 @@ struct SignUpView: View {
                 }
             }
             .padding()
-            .fullScreenCover(isPresented: $viewModel.isAuthenticated) {
-                ContentView()
-            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .fullScreenCover(isPresented: $viewModel.isAuthenticated) {
+            ContentView()
         }
     }
 }

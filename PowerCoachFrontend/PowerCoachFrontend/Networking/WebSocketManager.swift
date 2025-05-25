@@ -19,7 +19,8 @@ class WebSocketManager: ObservableObject {
     var socket: SocketIOClient!
     
     @Published var displayString = "Connecting..."
-    @Published var powerCoachMessage = "Make your whole body clearly visible in the frame"
+    @Published var powerCoachMessage = "PowerCoach connecting..."
+    @Published var powerCoachActive = false
     @Published var useridString = "User ID not found"
     
     init() {
@@ -50,6 +51,16 @@ class WebSocketManager: ObservableObject {
             print("Received event: \(String(describing: event.event)), with items: \(String(describing: event.items))")
         }
         
+        socket.on("powercoach_connection") { (data, ack) in
+            if let powerCoachString = data[0] as? String,
+               let powerCoachData = powerCoachString.data(using: .utf8) {
+                DispatchQueue.main.async {
+                    self.powerCoachActive = true
+                    self.powerCoachMessage = String(decoding: powerCoachData, as: UTF8.self)
+                }
+            }
+        }
+        
         socket.on("powercoach_message") { (data, ack) in
             print("POWERCOACH MESSAGE IS RECEIVED")
 //            print(data)
@@ -58,6 +69,16 @@ class WebSocketManager: ObservableObject {
                let powerCoachData = powerCoachString.data(using: .utf8) {
                 DispatchQueue.main.async {
                     self.powerCoachMessage = String(decoding: powerCoachData, as: UTF8.self)
+                }
+            }
+        }
+        
+        socket.on("powercoach_disconnection") { (data, ack) in
+            if let powerCoachString = data[0] as? String,
+               let powerCoachData = powerCoachString.data(using: .utf8) {
+                DispatchQueue.main.async {
+                    self.powerCoachMessage = String(decoding: powerCoachData, as: UTF8.self)
+                    self.powerCoachActive = false
                 }
             }
         }

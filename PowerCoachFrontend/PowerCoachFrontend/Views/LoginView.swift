@@ -50,9 +50,10 @@ struct LoginView: View {
                 }
             }
             .padding()
-            .fullScreenCover(isPresented: $viewModel.isAuthenticated) {
-                ContentView()
-            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .fullScreenCover(isPresented: $viewModel.isAuthenticated) {
+            ContentView()
         }
     }
 }

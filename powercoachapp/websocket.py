@@ -27,30 +27,20 @@ def handle_test_message(message):
     print(f"Received test message from user {sid}: {message}")
     emit('test_response', {'status': 'received'})
 
-powercoach_live = False
 @socketio.on('start_powercoach_stream')
 def handle_start_stream():
-    print("handle_start_stream() is done")
-    sid = request.sid
-    powercoach_messages = powercoachalg(sid)
-    print("Started the powercoach algorithm")
-    global powercoach_live
-    powercoach_live = True
-    print("Made powercoach_live true")
-    for json_string in powercoach_messages:
-        print("Started looping through the json data")
-        if sid not in active_clients:
-            print(f"Client {sid} not an active client anymore. Stopping stream.")
-            break
-        if powercoach_live == False:
-            print(f"Powercoach stream ended.")
-            break
-        emit('powercoach_message', json_string)
-        print(json_string)
-        socketio.sleep(0.1)
-        
+    emit('powercoach_connection', 'PowerCoach connected')
+    print("PowerCoach connected")
+    
+@socketio.on('handle_powercoach_frame')
+def handle_powercoach_frame(base64_string):
+    powercoach_message = powercoachalg(base64_string)
+    emit('powercoach_message', powercoach_message)
+    #socketio.sleep(0.1)
+
+
+
 @socketio.on('stop_powercoach_stream')
 def handle_stop_stream():
-    global powercoach_live
-    powercoach_live = False
-    print("powercoach_live set to False")
+    emit('powercoach_disconnection', 'PowerCoach disconnected. Connecting...')
+    print("PowerCoach disconnected")
