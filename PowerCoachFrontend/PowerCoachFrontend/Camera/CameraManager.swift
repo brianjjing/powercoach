@@ -62,6 +62,7 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
                        didOutput sampleBuffer: CMSampleBuffer, //A sample buffer is just a raw video frame
                        from connection: AVCaptureConnection) {
         
+        // UNDERSTAND THE IMAGE TYPE CONVERSION:
         // CMSampleBuffer → CVPixelBuffer → CIImage → CGImage → UIImage (understand the data types later)
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         

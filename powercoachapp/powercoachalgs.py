@@ -18,9 +18,7 @@ active_clients = set()
 def powercoachalg(base64_string):
     print("powercoach algorithm is starting")
     with mp_pose.Pose(enable_segmentation=True, min_detection_confidence=0.8, min_tracking_confidence=0.8) as pose:
-        jpg_bytes = base64.b64decode(base64_string)
-        
-        
+        #UNDERSTAND THE IMAGE TYPE CONVERSION:
         # Step 1: Decode the Base64 string to raw JPEG bytes
         jpg_bytes = base64.b64decode(base64_string)
 
