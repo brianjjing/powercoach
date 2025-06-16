@@ -99,13 +99,13 @@ class WebSocketManager: ObservableObject {
         
     }
     
-    func emit(event: String, with items: NSArray = []) {
+    func emit(event: String, with items: [String]) {
         print("Emitting event: \(event)")
         
         switch self.socket.status {
         case .connected:
             self.socket.emit(event, items)
-            print("Emitted event: \(event), with items: \(items)")
+            print("Emitted event: \(event), with json String: \(items)")
             break
         case .connecting:
             print(" \n\n ------- Connecting ----- \n\n", event)
