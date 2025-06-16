@@ -29,7 +29,7 @@ def handle_test_message(message):
 
 @socketio.on('start_powercoach_stream')
 def handle_start_stream():
-    emit('powercoach_connection', 'PowerCoach connected')
+    emit('powercoach_connection', ['PowerCoach connected'])
     print("PowerCoach connected")
     
 @socketio.on('handle_powercoach_frame')
@@ -37,10 +37,10 @@ def handle_powercoach_frame(base64_string):
     print("POWERCOACH FRAME RECEIVED")
     powercoach_message = powercoachalg(base64_string[0])
     print("Powercoach alg done on the frame")
-    emit('powercoach_message', powercoach_message)
+    emit('powercoach_message', [powercoach_message])
     print("Powercoach message emitted")
 
 @socketio.on('stop_powercoach_stream')
 def handle_stop_stream():
-    emit('powercoach_disconnection', 'PowerCoach disconnected. Connecting...')
+    emit('powercoach_disconnection', ['PowerCoach disconnected. Connecting...'])
     print("PowerCoach disconnected")
