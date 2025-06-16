@@ -34,11 +34,11 @@ def handle_start_stream():
     
 @socketio.on('handle_powercoach_frame')
 def handle_powercoach_frame(base64_string):
+    print("POWERCOACH FRAME RECEIVED")
     powercoach_message = powercoachalg(base64_string)
+    print("Powercoach alg done on the frame")
     emit('powercoach_message', powercoach_message)
-    #socketio.sleep(0.1)
-
-
+    print("Powercoach message emitted")
 
 @socketio.on('stop_powercoach_stream')
 def handle_stop_stream():

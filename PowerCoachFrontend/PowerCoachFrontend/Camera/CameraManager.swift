@@ -12,9 +12,10 @@ import SwiftUI
 class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     @Published var session = AVCaptureSession()
     private var currentCameraPosition: AVCaptureDevice.Position = .front
-    @EnvironmentObject var webSocketManager: WebSocketManager
+    private let webSocketManager: WebSocketManager
 
-    override init() {
+    init(webSocketManager: WebSocketManager) {
+        self.webSocketManager = webSocketManager
         super.init()
         configureSession(for: currentCameraPosition)
     }
@@ -57,10 +58,17 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
         self.currentCameraPosition = position
     }
     
+    private var lastSentTime = Date(timeIntervalSince1970: 0) // store last send time
+    private let frameSendInterval: TimeInterval = 120 // seconds between frames (0.5s = 2 FPS)
+    
     //Implementing this optional method to deal with frames. Every time a video frame is captured by the output variable, this method will be called, using the frameHandlingQueue, since .
     func captureOutput(_ output: AVCaptureOutput,
                        didOutput sampleBuffer: CMSampleBuffer, //A sample buffer is just a raw video frame
                        from connection: AVCaptureConnection) {
+        
+        let now = Date()
+        guard now.timeIntervalSince(lastSentTime) >= frameSendInterval else { return }
+        lastSentTime = now //Only updated once the code gets past the guard statement (so only once every 0.5 seconds)
         
         // UNDERSTAND THE IMAGE TYPE CONVERSION:
         // CMSampleBuffer → CVPixelBuffer → CIImage → CGImage → UIImage (understand the data types later)
@@ -73,10 +81,12 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
         let uiImage = UIImage(cgImage: cgImage)
 
         // Convert to JPEG data
-        guard let jpegData = uiImage.jpegData(compressionQuality: 0.7) else { return }
+        guard let jpegData = uiImage.jpegData(compressionQuality: 0.4) else { return }
+        // NEED TO MAKE THE JPEG GOOD QUALITY TOO!!!!! 0.4 IS JUST FOR SMALLER BASE64 MESSAGE!!!
 
         // Convert to base64 string
         let base64String = jpegData.base64EncodedString()
+        print("EMITTING HANDLE_POWERCOACH_FRAME:")
         webSocketManager.emit(event: "handle_powercoach_frame", with: [base64String])
     }
 

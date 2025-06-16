@@ -47,7 +47,7 @@ struct ContentView: View {
                 Spacer()
                 
                 NavigationLink {
-                    PowerCoachView()
+                    PowerCoachView(webSocketManager: WebSocketManager.shared)
                 } label: {
                     VStack {
                         Spacer()
