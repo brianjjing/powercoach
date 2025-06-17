@@ -86,6 +86,7 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
 
         // Convert to base64 string
         let base64String = jpegData.base64EncodedString()
+        print("Base 64 String count:", base64String.count)
         print("EMITTING HANDLE_POWERCOACH_FRAME:")
         webSocketManager.emit(event: "handle_powercoach_frame", with: [base64String])
     }
