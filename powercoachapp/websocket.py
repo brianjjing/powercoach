@@ -1,9 +1,21 @@
 import sys
 import os
+import logging
 from flask_socketio import emit
 from flask import request
 from powercoachapp.extensions import socketio
 from powercoachapp.powercoachalgs import powercoachalg, active_clients
+
+logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+logger = logging.getLogger(__name__)
+
+if not logger.hasHandlers():
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.INFO)
+    formatter = logging.Formatter('Logger did not have handlers. %(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.propagate = False
 
 @socketio.on('connect')
 def handle_connect():
@@ -31,17 +43,17 @@ def handle_test_message(message):
 def handle_start_stream():
     emit('powercoach_connection', ['PowerCoach connected'])
     print("PowerCoach connected")
-    
+
 #PRINT AS LOGS (IMPORT LOGGING --> LOGGING.INFO("MESSAGE"))
 @socketio.on('handle_powercoach_frame')
 def handle_powercoach_frame(base64_string):
-    print("POWERCOACH FRAME RECEIVED", flush=True)
-    print(f"Length of base64_string[0]: {len(base64_string[0])}", flush=True)
-    print(f"Byte size: {sys.getsizeof(base64_string[0])}", flush=True)
+    logger.info("POWERCOACH FRAME RECEIVED")
+    logger.info(f"Length of base64_string[0]: {len(base64_string[0])}")
+    logger.info(f"Byte size: {sys.getsizeof(base64_string[0])}")
     powercoach_message = powercoachalg(base64_string[0])
-    print("Powercoach alg done on the frame", flush=True)
+    logger.info("Powercoach alg done on the frame")
     emit('powercoach_message', [powercoach_message])
-    print("Powercoach message emitted", flush=True)
+    logger.info("Powercoach message emitted")
 
 @socketio.on('stop_powercoach_stream')
 def handle_stop_stream():
