@@ -36,6 +36,8 @@ def handle_start_stream():
 @socketio.on('handle_powercoach_frame')
 def handle_powercoach_frame(base64_string):
     print("POWERCOACH FRAME RECEIVED", flush=True)
+    print(f"Length of base64_string[0]: {len(base64_string[0])}", flush=True)
+    print(f"Byte size: {sys.getsizeof(base64_string[0])}", flush=True)
     powercoach_message = powercoachalg(base64_string[0])
     print("Powercoach alg done on the frame", flush=True)
     emit('powercoach_message', [powercoach_message])
