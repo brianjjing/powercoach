@@ -32,13 +32,14 @@ def handle_start_stream():
     emit('powercoach_connection', ['PowerCoach connected'])
     print("PowerCoach connected")
     
+#PRINT AS LOGS (IMPORT LOGGING --> LOGGING.INFO("MESSAGE"))
 @socketio.on('handle_powercoach_frame')
 def handle_powercoach_frame(base64_string):
-    print("POWERCOACH FRAME RECEIVED")
+    print("POWERCOACH FRAME RECEIVED", flush=True)
     powercoach_message = powercoachalg(base64_string[0])
-    print("Powercoach alg done on the frame")
+    print("Powercoach alg done on the frame", flush=True)
     emit('powercoach_message', [powercoach_message])
-    print("Powercoach message emitted")
+    print("Powercoach message emitted", flush=True)
 
 @socketio.on('stop_powercoach_stream')
 def handle_stop_stream():

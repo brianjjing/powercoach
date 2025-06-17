@@ -16,32 +16,32 @@ active_clients = set()
 
 #POWERCOACH WITH FRAME FROM AVCAPTURESESSION.OUTPUT:
 def powercoachalg(base64_string):
-    print("powercoach algorithm is starting")
+    print("powercoach algorithm is starting", flush=True)
     with mp_pose.Pose(enable_segmentation=True, min_detection_confidence=0.8, min_tracking_confidence=0.8) as pose:
         #UNDERSTAND THE IMAGE TYPE CONVERSION:
         # Step 1: Decode the Base64 string to raw JPEG bytes
         jpg_bytes = base64.b64decode(base64_string)
-        print("decoded to jpg bytes")
+        print("decoded to jpg bytes", flush=True)
 
         # Step 2: Convert bytes to a 1D NumPy array
         jpg_array = np.frombuffer(jpg_bytes, dtype=np.uint8)
-        print("made into jpg array")
+        print("made into jpg array", flush=True)
 
         # Step 3: Decode JPEG to BGR image (OpenCV default)
         bgr_image = cv2.imdecode(jpg_array, cv2.IMREAD_COLOR)
-        print("decoded into a cv2 bgr image")
+        print("decoded into a cv2 bgr image", flush=True)
 
         if bgr_image is None:
-            print("Error: Could not decode image")
+            print("Error: Could not decode image", flush=True)
             return "Error: Could not decode image"
 
         # Step 4: Convert BGR to RGB (required for MediaPipe)
         rgb_frame = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
-        print("made into rbg image")
+        print("made into rbg image", flush=True)
 
         # Process the frame to detect pose
         results = pose.process(rgb_frame)
-        print("pose detection applied")
+        print("pose detection applied", flush=True)
 
         # Draw the pose landmarks on the frame:
         """if results.pose_landmarks:
@@ -52,15 +52,15 @@ def powercoachalg(base64_string):
                 mp_pose.POSE_CONNECTIONS  # Connections between landmarks
             )"""
         if results.pose_landmarks:
-            print("the pose landmarks exist")
+            print("the pose landmarks exist", flush=True)
             if printresultbbox:
-                print("barbell in frame too")
+                print("barbell in frame too", flush=True)
                 return start(results.pose_landmarks, printresultbbox)
             else:
-                print("Barbell not in frame")
+                print("Barbell not in frame", flush=True)
                 return 'Barbell not in frame'
         else:
-            print("pose landmarks dont exist")
+            print("pose landmarks dont exist", flush=True)
             return 'Make your whole body clearly visible in the frame'
         
         # COMPUTER BACKEND TESTING: Display the frame
