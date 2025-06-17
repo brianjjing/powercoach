@@ -3,11 +3,8 @@ import os
 import logging
 from flask_socketio import emit
 from flask import request
-from powercoachapp.extensions import socketio
+from powercoachapp.extensions import socketio, logger
 from powercoachapp.powercoachalgs import powercoachalg, active_clients
-
-logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-logger = logging.getLogger(__name__)
 
 if not logger.hasHandlers():
     handler = logging.StreamHandler(sys.stdout)

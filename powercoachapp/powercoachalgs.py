@@ -8,7 +8,7 @@ from flask import jsonify, Response
 import time
 from powercoachapp.bbelldetectionbbox import printresultbbox
 from powercoachapp.exercises.deadlift import start
-from powercoachapp.websocket import logger
+from powercoachapp.extensions import logger
 
 mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils
