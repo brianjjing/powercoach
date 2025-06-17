@@ -6,8 +6,6 @@ import requests
 from flask import request
 from powercoachapp.extensions import socketio
 from powercoachapp import create_app
-from powercoachapp.powercoachalgs import powercoachalg, active_clients
-from socketio.packet import Packet
 
 app = create_app()
 
