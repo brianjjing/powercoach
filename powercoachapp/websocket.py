@@ -16,30 +16,31 @@ if not logger.hasHandlers():
 
 @socketio.on('connect')
 def handle_connect():
-    print("Client connecting.")
+    logger.info("Client connecting.")
     active_clients.add(request.sid)
-    print("Client added to active clients.")
-    print("Server is emitting connection event to client:")
+    logger.info("Client added to active clients.")
+    logger.info("Server is emitting connection event to client:")
     emit('connect_message', {'json_data': f'Client {request.sid} connected'})
     
 @socketio.on('disconnect')
 def handle_disconnect():
-    print("Client disconnecting.")
+    logger.info("Client disconnecting.")
     if request.sid in active_clients:
         active_clients.remove(request.sid)
-    print("Client removed from active clients.")
+    logger.info("Client removed from active clients.")
     emit('disconnect_message', {'json_data': f'Client {request.sid} disconnected'})
     
 @socketio.on('test_message')
 def handle_test_message(message):
     sid = request.sid
-    print(f"Received test message from user {sid}: {message}")
+    logger.info(f"Received test message from user {sid}: {message}")
     emit('test_response', {'status': 'received'})
 
 @socketio.on('start_powercoach_stream')
 def handle_start_stream():
+    logger.info("Powercoach stream started")
     emit('powercoach_connection', ['PowerCoach connected'])
-    print("PowerCoach connected")
+    logger.info("PowerCoach connected")
 
 #PRINT AS LOGS (IMPORT LOGGING --> LOGGING.INFO("MESSAGE"))
 @socketio.on('handle_powercoach_frame')
@@ -54,5 +55,6 @@ def handle_powercoach_frame(base64_string):
 
 @socketio.on('stop_powercoach_stream')
 def handle_stop_stream():
+    logger.info("Disconencting PowerCoach")
     emit('powercoach_disconnection', ['PowerCoach disconnected. Connecting...'])
-    print("PowerCoach disconnected")
+    logger.info("PowerCoach disconnected")
