@@ -3,9 +3,13 @@ from flask import Flask
 from powercoachapp import auth, powercoach
 from powercoachapp.extensions import socketio, db
 from powercoachapp.sqlmodels import User
+import logging
+import sys
 
 #Factory function
 def create_app(test_config=None):
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL"),
@@ -34,6 +38,7 @@ def create_app(test_config=None):
     app.register_blueprint(auth.authbp)
     app.register_blueprint(powercoach.powercoachbp)
     
+    #Creating the models from sqlmodels.py in database.db:
     with app.app_context():
         db.create_all()
         if not User.query.filter_by(username="brian").first():
