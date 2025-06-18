@@ -3,9 +3,13 @@ from flask import Flask
 from powercoachapp import auth, powercoach
 from powercoachapp.extensions import socketio, db
 from powercoachapp.sqlmodels import User
+import logging
+import sys
 
 #Factory function
 def create_app(test_config=None):
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL"),

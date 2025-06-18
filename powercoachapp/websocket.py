@@ -6,14 +6,6 @@ from flask import request
 from powercoachapp.extensions import socketio, logger
 from powercoachapp.powercoachalgs import powercoachalg, active_clients
 
-if not logger.hasHandlers():
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setLevel(logging.INFO)
-    formatter = logging.Formatter('Logger did not have handlers. %(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.propagate = False
-
 @socketio.on('connect')
 def handle_connect():
     logger.info("Client connecting.")
