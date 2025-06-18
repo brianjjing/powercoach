@@ -22,10 +22,19 @@ def handle_disconnect():
     logger.info("Client removed from active clients.")
     emit('disconnect_message', {'json_data': f'Client {request.sid} disconnected'})
     
+@socketio.on('test')
+def bruh():
+    print("TEST RESPONSE PRINT")
+    logger.info(f"TEST RESPONSE LOGGER OBJECT")
+    logging.info("TEST RESPONSE LOGGING")
+    emit('test_response', {'status': 'received'})
+
+
 @socketio.on('test_message')
 def handle_test_message(message):
     sid = request.sid
-    logger.info(f"Received test message from user {sid}: {message}")
+    logger.info(f"RECEIVED TEST MESSAGE FRM USER {sid}: {message}")
+    logging.info("RECEIVED DA TEST MESSAGE, LOGGING")
     emit('test_response', {'status': 'received'})
 
 @socketio.on('start_powercoach_stream')
@@ -38,11 +47,11 @@ def handle_start_stream():
 @socketio.on('handle_powercoach_frame')
 def handle_powercoach_frame(base64_string):
     logger.info("POWERCOACH FRAME RECEIVED")
-    logger.info(f"Length of base64_string[0]: {len(base64_string[0])}")
-    logger.info(f"Byte size: {sys.getsizeof(base64_string[0])}")
-    powercoach_message = powercoachalg(base64_string[0])
+    logger.info(f"Length of base64_string[0]: {len(base64_string)}")
+    logger.info(f"Byte size: {sys.getsizeof(base64_string)}")
+    powercoach_message = powercoachalg(base64_string)
     logger.info("Powercoach alg done on the frame")
-    emit('powercoach_message', [powercoach_message])
+    emit('powercoach_message', powercoach_message)
     logger.info("Powercoach message emitted")
 
 @socketio.on('stop_powercoach_stream')
