@@ -1,6 +1,7 @@
-from powercoachapp import create_app, socketio
-from flask import request
+import sys
 import os
+from powercoachapp import create_app, socketio, auth, extensions, websocket, powercoachalgs, bbelldetectionbbox, bbelldetectioncreator
+from flask import request
 
 #import logging
 #logging.basicConfig(level=logging.DEBUG)
@@ -16,6 +17,7 @@ def log_request():
     for header, value in request.headers.items():
         print(f"{header}: {value}")
 
-port = int(os.getenv('PORT', 10000))
+port = int(os.getenv("PORT", 10000))
+
 if __name__ == "__main__":
     socketio.run(app, host='0.0.0.0', port=port, debug=False, use_reloader=False)
