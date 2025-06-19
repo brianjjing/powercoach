@@ -46,12 +46,6 @@ struct HomeView: View {
             Spacer()
             Spacer()
         }
-        .onAppear {
-            //Start the powercoach stream
-            webSocketManager.emit(event: "test_message", with: ["Test homeview"])
-            print("Test message sent")
-            webSocketManager.emit(event: "handle_powercoach_frame", with: ["sdafjasd;lfkjasd;lkf"])
-        }
     }
 }
 

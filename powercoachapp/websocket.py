@@ -37,12 +37,6 @@ def handle_test_message(message):
     logging.info("RECEIVED DA TEST MESSAGE, LOGGING")
     emit('test_response', {'status': 'received'})
 
-@socketio.on('start_powercoach_stream')
-def handle_start_stream():
-    logger.info("Powercoach stream started")
-    emit('powercoach_connection', ['PowerCoach connected'])
-    logger.info("PowerCoach connected")
-
 #PRINT AS LOGS (IMPORT LOGGING --> LOGGING.INFO("MESSAGE"))
 @socketio.on('handle_powercoach_frame')
 def handle_powercoach_frame(base64_string):
@@ -51,11 +45,5 @@ def handle_powercoach_frame(base64_string):
     logger.info(f"Byte size: {sys.getsizeof(base64_string)}")
     powercoach_message = powercoachalg(base64_string)
     logger.info("Powercoach alg done on the frame")
-    emit('powercoach_message', powercoach_message)
+    emit('powercoach_message', [powercoach_message])
     logger.info("Powercoach message emitted")
-
-@socketio.on('stop_powercoach_stream')
-def handle_stop_stream():
-    logger.info("Disconencting PowerCoach")
-    emit('powercoach_disconnection', ['PowerCoach disconnected. Connecting...'])
-    logger.info("PowerCoach disconnected")

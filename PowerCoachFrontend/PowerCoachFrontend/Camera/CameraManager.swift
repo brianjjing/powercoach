@@ -23,14 +23,13 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
     func configureSession(for position: AVCaptureDevice.Position) {
         session.beginConfiguration()
         session.inputs.forEach { session.removeInput($0) }
-        //session.outputs.forEach { session.removeOutput($0) }
         
         //Just have this display on the actual screen instead
         //Guard sees if the variable acc has a value or not
         guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position),
               let input = try? AVCaptureDeviceInput(device: device),
               session.canAddInput(input) else {
-                print("Failed to create input: couldn't access camera at position \(position)")
+                print("ERROR: COULDN'T CREATE INPUT DEVICE. COULDN'T ACCESS CAMERA @ POSITION \(position)")
                 session.commitConfiguration()
                 return
             }
@@ -81,16 +80,14 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
         let uiImage = UIImage(cgImage: cgImage)
 
         // Convert to JPEG data
-        guard let jpegData = uiImage.jpegData(compressionQuality: 0.4) else { return }
+        guard let jpegData = uiImage.jpegData(compressionQuality: 0.1) else { return }
         // NEED TO MAKE THE JPEG GOOD QUALITY TOO!!!!! 0.4 IS JUST FOR SMALLER BASE64 MESSAGE!!!
 
         // Convert to base64 string
         let base64String = jpegData.base64EncodedString()
-        print("Base 64 String count:", base64String.count)
-        print("EMITTING HANDLE_POWERCOACH_FRAME:")
-        webSocketManager.emit(event: "handle_powercoach_frame", with: [base64String])
+        print("SENDING BASE64 STRING - # OF CHARACTERS:", base64String.count)
+        webSocketManager.emit(event: "handle_powercoach_frame", with: base64String)
     }
-
     
     func flipCamera() {
         let newPosition: AVCaptureDevice.Position = currentCameraPosition == .back ? .front : .back

@@ -24,7 +24,6 @@ struct PowerCoachFrontend: App {
         WindowGroup {
             if isAuthenticated == true {
                 ContentView()
-                    //Make it either LoginView, or ContentView, where websocketmanager connects there. Not here.
                     .environmentObject(webSocketManager)
                     .onAppear {
                         webSocketManager.socket.connect()
