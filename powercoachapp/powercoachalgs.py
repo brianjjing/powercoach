@@ -41,8 +41,15 @@ def powercoachalg(base64_string):
         logger.info("made into rbg image")
 
         # Process the frame to detect pose
-        results = pose.process(rgb_frame)
-        logger.info("pose detection applied")
+        try:
+            logger.info("Processing pose ...")
+            results = pose.process(rgb_frame)
+            logger.info(results)
+            logger.info(results.pose_landmarks)
+            logger.info("pose detection applied")
+        except Exception as e:
+            logger.exception("MediaPipe pose.process crashed!")
+            return f"Error during pose processing: {str(e)}"
 
         # Draw the pose landmarks on the frame:
         """if results.pose_landmarks:
