@@ -1,6 +1,6 @@
 import sys
 import os
-from powercoachapp import create_app, socketio, auth, extensions, websocket, powercoachalgs, bbelldetectionbbox, bbelldetectioncreator
+from powercoachapp import create_app, socketio, auth, extensions, websocket, powercoachalgs
 from flask import request
 
 #import logging
