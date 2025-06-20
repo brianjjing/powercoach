@@ -38,7 +38,23 @@ def powercoachalg(base64_string):
 
         # Step 4: Convert BGR to RGB (required for MediaPipe)
         rgb_frame = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
+        print(type(rgb_frame))
+        logger.info(f"OG SIZE: {rgb_frame.size}")
+        logger.info(f"OG SHAPE: {rgb_frame.shape}")
         logger.info("made into rbg image")
+        
+        #understand dis:
+        height, width = rgb_frame.shape[:2]
+        aspect_ratio = width / height
+        if width > height:
+            new_w = 256 #max width
+            new_h = int(new_w / aspect_ratio)
+        else:
+            new_h = 256
+            new_w = int(256 * aspect_ratio)
+        rgb_frame = cv2.resize(rgb_frame, (new_h, new_w))
+        logger.info(f"NEW SIZE: {rgb_frame.size}")
+        logger.info(f"NEW SHAPE: {rgb_frame.shape}")
 
         # Process the frame to detect pose
         try:
