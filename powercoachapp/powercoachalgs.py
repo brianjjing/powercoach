@@ -79,7 +79,7 @@ def powercoachalg(base64_string):
             logger.info("the pose landmarks exist")
             if printresultbbox:
                 logger.info("barbell in frame too")
-                return start(results.pose_landmarks, printresultbbox)
+                return start(results.pose_landmarks, printresultbbox) #should rescale the bounding box to be original dimensions
             else:
                 logger.info("Barbell not in frame")
                 return 'Barbell not in frame'
