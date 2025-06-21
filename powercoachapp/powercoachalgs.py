@@ -3,12 +3,10 @@ import cv2
 import mediapipe as mp
 import numpy as np
 import base64
-import json
-from flask import jsonify, Response
-import time
 from powercoachapp.bbelldetectionbbox import printresultbbox
 from powercoachapp.exercises.deadlift import start
 from powercoachapp.extensions import logger
+import psutil
 
 mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils
@@ -17,20 +15,29 @@ active_clients = set()
 
 #POWERCOACH WITH FRAME FROM AVCAPTURESESSION.OUTPUT:
 def powercoachalg(base64_string):
+    mem = psutil
     logger.info("powercoach algorithm is starting")
-    with mp_pose.Pose(enable_segmentation=True, min_detection_confidence=0.8, min_tracking_confidence=0.8) as pose:
+    with mp_pose.Pose(enable_segmentation=False, min_detection_confidence=0.8, min_tracking_confidence=0.8) as pose:
+        mem = psutil.virtual_memory()
+        logger.info(mem)
         #UNDERSTAND THE IMAGE TYPE CONVERSION:
         # Step 1: Decode the Base64 string to raw JPEG bytes
         jpg_bytes = base64.b64decode(base64_string)
         logger.info("decoded to jpg bytes")
+        mem = psutil.virtual_memory()
+        logger.info(mem)
 
         # Step 2: Convert bytes to a 1D NumPy array
         jpg_array = np.frombuffer(jpg_bytes, dtype=np.uint8)
         logger.info("made into jpg array")
+        mem = psutil.virtual_memory()
+        logger.info(mem)
 
         # Step 3: Decode JPEG to BGR image (OpenCV default)
         bgr_image = cv2.imdecode(jpg_array, cv2.IMREAD_COLOR)
         logger.info("decoded into a cv2 bgr image")
+        mem = psutil.virtual_memory()
+        logger.info(mem)
 
         if bgr_image is None:
             logger.info("Error: Could not decode image")
@@ -42,31 +49,44 @@ def powercoachalg(base64_string):
         logger.info(f"OG SIZE: {rgb_frame.size}")
         logger.info(f"OG SHAPE: {rgb_frame.shape}")
         logger.info("made into rbg image")
+        mem = psutil.virtual_memory()
+        logger.info(mem)
         
         #understand dis:
         height, width = rgb_frame.shape[:2]
         aspect_ratio = width / height
         if width > height:
-            new_w = 256 #max width
+            new_w = 128 #max width
             new_h = int(new_w / aspect_ratio)
         else:
-            new_h = 256
-            new_w = int(256 * aspect_ratio)
-        rgb_frame = cv2.resize(rgb_frame, (new_h, new_w))
+            new_h = 128
+            new_w = int(128 * aspect_ratio)
+        rgb_frame = cv2.resize(rgb_frame, (new_w, new_h))
+        logger.info(rgb_frame.dtype)
         logger.info(f"NEW SIZE: {rgb_frame.size}")
         logger.info(f"NEW SHAPE: {rgb_frame.shape}")
+        mem = psutil.virtual_memory()
+        logger.info(mem)
 
         # Process the frame to detect pose
         try:
+            #Put some code to see the memory right now. See how much RAM is used exactly here - if close to 512 mb, then problem is with the code before. Else, it's a problem with the .process(). EIther way, change it to the modern version.
             logger.info("Processing pose ...")
-            results = pose.process(rgb_frame)
+            mem = psutil.virtual_memory()
+            logger.info(mem)
+            results = pose.process(rgb_frame) #Problem is the memory!!! Change to non-legacy version.
+            mem_after = psutil.virtual_memory()
+            logger.info(mem_after)
             logger.info(results)
             logger.info(results.pose_landmarks)
             logger.info("pose detection applied")
         except Exception as e:
-            logger.exception("MediaPipe pose.process crashed!")
+            logger.exception(f"MediaPipe pose.process crashed! Error: {e}")
             return f"Error during pose processing: {str(e)}"
-
+        
+        mem = psutil.virtual_memory()
+        logger.info(mem)
+        
         # Draw the pose landmarks on the frame:
         """if results.pose_landmarks:
             #print(results.pose_landmarks)
