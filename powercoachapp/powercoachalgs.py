@@ -15,7 +15,8 @@ active_clients = set()
 
 #POWERCOACH WITH FRAME FROM AVCAPTURESESSION.OUTPUT:
 def powercoachalg(base64_string):
-    mem = psutil
+    mem = psutil.virtual_memory()
+    logger.info(mem)
     logger.info("powercoach algorithm is starting")
     with mp_pose.Pose(enable_segmentation=False, min_detection_confidence=0.8, min_tracking_confidence=0.8) as pose:
         mem = psutil.virtual_memory()
