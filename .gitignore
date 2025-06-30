@@ -2,6 +2,7 @@
 *
 !.gitignore
 !powercoachapp/
+!powercoachapp/powercoachalgsmodern
 !powercoachapp/sqlmodels.py
 
 !powercoachapp/models/
