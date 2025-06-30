@@ -8,8 +8,9 @@ import sys
 
 #Factory function FOR LOCAL TESTING:
 def create_app(test_config=None):
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    
+    #COMMENTED CAUSE IT'S ALREADY DONE IN EXTENSIONS.PY:
+    #logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+
     app = Flask(__name__, instance_relative_config=True)
     # app.config.from_mapping(
     #     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL"),

@@ -13,6 +13,7 @@ class LoginViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
+    @AppStorage("profileMessage") var profileMessage: String = "User not found"
     
     func login() {
         guard let appUrl = URL(string: "https://powercoach-1.onrender.com/auth/login") else {
@@ -55,6 +56,7 @@ class LoginViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     if loginMessage == "Login successful" {
                         self.isAuthenticated = true
+                        self.profileMessage = self.username
                         self.errorMessage = nil
                     } else {
                         self.errorMessage = loginMessage

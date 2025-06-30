@@ -11,40 +11,39 @@ struct HomeView: View {
     @EnvironmentObject var webSocketManager: WebSocketManager
     
     var body: some View {
-        VStack {
-            Text("PWRCCH")
-                .font(.largeTitle)
+//        Text("Change this to the coach speaking:")
+//            .font(.largeTitle)
+//            .fontWeight(.black)
+//            .foregroundColor(Color.red)
+//            .font(.subheadline)
+//            .foregroundStyle(.secondary)
+//            .foregroundColor(.black)
+        CircleCoach()
+        VStack(alignment: .center) {
+            Text("\(webSocketManager.homeDisplay)")
+                .font(.title)
                 .fontWeight(.black)
                 .foregroundColor(Color.red)
-            
-            //Add a line or so of space here
-            
-            //Just make this two buttons:
-            HStack {
-                Text("My Coach")
-                    .font(.headline)
-                Text("Workout Tracker")
-                    .font(.headline)
-                    .fontWeight(.bold)
-            }
-            
-            
-            Spacer()
-            CircleCoach()
-            VStack(alignment: .center) {
-                Text("\(webSocketManager.displayString)")
-                    .font(.largeTitle)
+                .foregroundStyle(.secondary)
+                .foregroundColor(.black)
+                .multilineTextAlignment(.center)
+        }
+        .padding()
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("POWERCOACH")
+                    .font(.title)
                     .fontWeight(.black)
                     .foregroundColor(Color.red)
-                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .foregroundColor(.black)
             }
-            .padding()
-            
-            Spacer()
-            Spacer()
-            Spacer()
+            ToolbarItem(placement: .topBarTrailing) {
+                //Make this a button later
+                Image(systemName: "bell")
+                    .font(.system(size: UIScreen.main.bounds.width/20))
+                    .foregroundColor(.white)
+            }
         }
     }
 }

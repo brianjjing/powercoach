@@ -38,7 +38,7 @@ def handle_test_message(message):
     emit('test_response', {'status': 'received'})
 
 #PRINT AS LOGS (IMPORT LOGGING --> LOGGING.INFO("MESSAGE"))
-@socketio.on('handle_powercoach_frame')
+@socketio.on('handle_powercoach_frame') #will become handle_deadlift_frame
 def handle_powercoach_frame(base64_string):
     logger.info("POWERCOACH FRAME RECEIVED")
     logger.info(f"Length of base64_string[0]: {len(base64_string)}")

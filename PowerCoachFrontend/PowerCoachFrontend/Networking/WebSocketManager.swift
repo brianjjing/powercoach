@@ -18,7 +18,9 @@ class WebSocketManager: ObservableObject {
     var manager: SocketManager!
     var socket: SocketIOClient!
     
-    @Published var displayString = "Connecting..."
+    @Published var homeDisplay = "Connecting..."
+    @Published var workoutPlanDisplay = "Connecting..."
+    @Published var forumDisplay = "Connecting..."
     @Published var powerCoachMessage = "Connecting..."
     @Published var useridString = "User ID not found"
     
@@ -36,7 +38,9 @@ class WebSocketManager: ObservableObject {
                         }
             }
             DispatchQueue.main.async {
-                self.displayString = "POWERCOACH"
+                self.homeDisplay = "Home screen in progress..."
+                self.workoutPlanDisplay = "Workout plan screen in progress..."
+                self.forumDisplay = "Forum screen in progress..."
                 self.powerCoachMessage = "Message loading..."
             }
         }

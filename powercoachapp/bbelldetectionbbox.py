@@ -2,6 +2,7 @@ import cv2
 import mediapipe as mp
 from mediapipe.tasks.python.vision import ObjectDetector, ObjectDetectorOptions
 import time
+from powercoachapp.extensions import logger
 
 import os
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel.tflite')
@@ -9,51 +10,40 @@ assert os.path.exists(model_path), "Model export failed!"
 
 bbelldetection = ObjectDetector.create_from_model_path(model_path)
 
-def bbellbbox(imagepath):
-    image = mp.Image.create_from_file(imagepath)
-    barbelldetections = bbelldetection.detect(image)
-
-    barbell = ...
-    for i in barbelldetections.detections:
-        if (i.categories[0].category_name)=='Barbell':
-            barbell = i
-            break
-            #This is because the highest confidence barbell will be at the top
-                
-    bbox = barbell.bounding_box
-    
-    return bbox
-
+#Output function for the live barbell detection
 printresultbbox = None
 #LIVE BARBELL DETECTION:
-def print_result(result, output_image: mp.Image, timestamp_ms: int):
+def bbelldetection_result(result, output_image: mp.Image, timestamp_ms: int):
     global printresultbbox
     # Iterate through detections to find if any category is "barbell"
     for detection in result.detections:
         for category in detection.categories:
             if category.category_name == "Barbell" and category.score > 0.1:  #Gets first because its the highest confidence in the frame anyway
-                print(f"Barbell detected with confidence: {category.score:.2f}")
+                logger.debug(f"Barbell detected with confidence: {category.score:.2f}")
                 printresultbbox = detection.bounding_box
-                print(f"Bounding box: {detection.bounding_box}")
-                return
-    
-    printresultbbox = None
-    print('No barbell found')
-    return
+                logger.debug(f"Bounding box: {detection.bounding_box}")
+            else:
+                printresultbbox = None
 
 livebbelldetectionoptions = ObjectDetectorOptions(
     base_options = mp.tasks.BaseOptions(model_asset_path = model_path),
     running_mode = mp.tasks.vision.RunningMode.LIVE_STREAM,
-    result_callback = print_result
+    result_callback = bbelldetection_result
 )
+
+#GETTING bounding box live:
+livebbelldetection = ObjectDetector.create_from_options(livebbelldetectionoptions)
+
+
+
+
 
 #if detections:
 #    bbox = detections.detections[0].bounding_box #To be accessed in the powercoachalg
 #    print(bbox)
 #    cv2.rectangle(frame, (bbox.origin_x, bbox.origin_y), (bbox.origin_x+bbox.width, bbox.origin_y+bbox.height), (255,0,0), 2)
 
-livebbelldetection = ObjectDetector.create_from_options(livebbelldetectionoptions)
-
+#DRAWING bounding box live:
 def livebbellbbox():
     global printresultbbox
     
@@ -70,7 +60,7 @@ def livebbellbbox():
         mpframe = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
         timestamp_ms = int(1000*(time.time() - starttime))
         #CODE IT TO SHOW THE BOUNDING BOX!!!
-        detections = livebbelldetection.detect_async(mpframe, timestamp_ms)
+        livebbelldetection.detect_async(mpframe, timestamp_ms)
 
         print('START OF FRAME')
         if printresultbbox:
@@ -86,11 +76,25 @@ def livebbellbbox():
     cv2.destroyAllWindows()
     return
 
-#xlivebbellbbox()
+#livebbellbbox()
 
-mp_pose = mp.solutions.pose
-mp_drawing = mp.solutions.drawing_utils
+#GETTING bounding box based on still image
+def bbellbbox(imagepath):
+    image = mp.Image.create_from_file(imagepath)
+    barbelldetections = bbelldetection.detect(image)
 
+    barbell = None
+    for i in barbelldetections.detections:
+        if (i.categories[0].category_name)=='Barbell':
+            barbell = i
+            break
+            #This is because the highest confidence barbell will be at the top
+                
+    bbox = barbell.bounding_box
+
+    return bbox
+
+#DRAWING bounding box on still image
 def drawbbox(path, bbox):
     image = cv2.imread(path)
     cv2.rectangle(image, (bbox.origin_x, bbox.origin_y), (bbox.origin_x+bbox.width, bbox.origin_y+bbox.height), (255,0,0), 2)

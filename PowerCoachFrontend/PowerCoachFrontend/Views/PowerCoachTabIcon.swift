@@ -9,12 +9,14 @@ import SwiftUI
 
 struct PowerCoachTabIcon: View {
     var body: some View {
-        Image("dumbbell")
+        Image("powercoachlogo")
+            .resizable()
+            .frame(width: UIScreen.main.bounds.width/3.5, height: UIScreen.main.bounds.width/3.5) //Make this cropped better by copying the aspect ratio and downsizing dumbbell image
             .clipShape(Circle())
             .overlay {
-                Circle().stroke(Color.red, lineWidth: 6)
+                Circle().stroke(Color.red, lineWidth: 4)
             }
-            .shadow(color: Color.red, radius: 12)
+            .shadow(color: Color.red, radius: 8)
     }
 }
 
