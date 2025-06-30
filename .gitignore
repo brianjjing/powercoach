@@ -3,7 +3,18 @@
 !.gitignore
 !powercoachapp/
 !powercoachapp/powercoachalgsmodern
+!powercoachapp/exercises/
+!powercoachapp/exercises/**
+!powercoachapp/__init__.py
+!powercoachapp/auth.py
+!powercoachapp/bbelldetectionbbox.py
+!powercoachapp/bbelldetectioncreator.py
+!powercoachapp/extensions.py
+!powercoachapp/powercoachalgmodern.py
+!powercoachapp/run.py
+!powercoachapp/socketio-test.py
 !powercoachapp/sqlmodels.py
+!powercoachapp/websocket.py
 
 !powercoachapp/models/
 !powercoachapp/models/**
