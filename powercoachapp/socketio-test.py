@@ -6,7 +6,7 @@ import requests
 from flask import request
 from powercoachapp.extensions import socketio, logger
 import logging
-from powercoachapp import create_app, websocket, powercoachalgs
+from powercoachapp import OLDpowercoachalgs, create_app, websocket
 
 app = create_app()
 
