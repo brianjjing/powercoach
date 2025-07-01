@@ -66,9 +66,7 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
     func captureOutput(_ output: AVCaptureOutput, //output is the OBJECT PRODUCING video frames and sending to delegate
                        didOutput sampleBuffer: CMSampleBuffer, //A sample buffer is just a raw video frame
                        from connection: AVCaptureConnection) {
-        
-        //At regular intervals using a timer, send a image to the livestream. Also, MAKE THIS WHOLE FUNCTION FASTER!!! LESS LINES PLS! (try to make output AVCapturePhotoOutput. and find information on sampleBuffer and connection.
-        
+                
         let now = Date()
         guard now.timeIntervalSince(lastSentTime) >= frameSendInterval else { return }
         lastSentTime = now //Only updated once the code gets past the guard statement (so only once every 0.5 seconds)

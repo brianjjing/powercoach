@@ -22,44 +22,46 @@ valdataset = os.path.join(dataset, 'val')
 train_data = object_detector.Dataset.from_coco_folder(traindataset, cache_dir=cache_train)
 validation_data = object_detector.Dataset.from_coco_folder(valdataset, cache_dir=cache_valid)
 
-print("Creation starting:")
-#TURN IMAGES INTO REQUIRED INPUT SIZE! (256X256)
-spec = object_detector.SupportedModels.MOBILENET_V2
-#Optimize parameters later:
-exported_model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel')
-hparams = object_detector.HParams(
-    export_dir=exported_model_path
-)
-#REDUCE LR ON PLATEAU!!!
-#Tweak regularization term?
-options = object_detector.ObjectDetectorOptions(
-    supported_model=spec,
-    hparams=hparams
-)
+def create_bbelldetection_model():
+    print("Creation starting:")
+    #TURN IMAGES INTO REQUIRED INPUT SIZE! (256X256)
+    spec = object_detector.SupportedModels.MOBILENET_V2
+    #Optimize parameters later:
+    exported_model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel')
+    hparams = object_detector.HParams(
+        export_dir=exported_model_path
+    )
+    #REDUCE LR ON PLATEAU!!!
+    #Tweak regularization term?
+    options = object_detector.ObjectDetectorOptions(
+        supported_model=spec,
+        hparams=hparams
+    )
 
-model = object_detector.ObjectDetector.create(
-    train_data=train_data,
-    validation_data=validation_data,
-    options=options)
-print("CREATION DONE")
+    model = object_detector.ObjectDetector.create(
+        train_data=train_data,
+        validation_data=validation_data,
+        options=options)
+    print("CREATION DONE")
 
-print("Exporting model:")
-model.export_model(
-    model_name = model_path
-)
-print("EXPORTING DONE")
+    print("Exporting model:")
+    model.export_model(
+        model_name = model_path
+    )
+    print("EXPORTING DONE")
 
-#Do post-training quantization as well
+    #Do post-training quantization as well
 
-testdataset = os.path.join(dataset, 'test')
-test_data = object_detector.Dataset.from_coco_folder(testdataset, cache_dir=cache_test)
+    testdataset = os.path.join(dataset, 'test')
+    test_data = object_detector.Dataset.from_coco_folder(testdataset, cache_dir=cache_test)
 
-print("Evaluation:")
-loss, coco_metrics = model.evaluate(test_data, batch_size=4)
-print(f"Validation loss: {loss}")
-print(f"Validation coco metrics: {coco_metrics}")
-print("VALIDATION DONE")
+    print("Evaluation:")
+    loss, coco_metrics = model.evaluate(test_data, batch_size=4)
+    print(f"Validation loss: {loss}")
+    print(f"Validation coco metrics: {coco_metrics}")
+    print("VALIDATION DONE")
 
+#create_bbelldetection_model()
 #Problem: Low asf recall and precision, but mainly low asf recall. It can't detect a good QUANTITY of barbells, but of the barbells it detects, the QUALITY of detections was decent (decent amnt of things it detected were actually barbells)
 
 """BaseOptions = mp.tasks.BaseOptions

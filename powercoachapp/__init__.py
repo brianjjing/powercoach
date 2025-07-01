@@ -1,6 +1,6 @@
 from flask import Flask
 from powercoachapp import auth
-from powercoachapp.extensions import socketio, db
+from powercoachapp.extensions import socketio, db, logger
 from powercoachapp.sqlmodels import User
 import os
 
@@ -12,11 +12,11 @@ def create_app(test_config=None):
         SECRET_KEY = os.environ.get("SECRET_KEY", 'dev')
     )
 
-    print(os.environ.get("DATABASE_URL"))
-    print(app.config["SQLALCHEMY_DATABASE_URI"])
+    logger.debug(os.environ.get("DATABASE_URL"))
+    logger.debug(app.config["SQLALCHEMY_DATABASE_URI"])
 
     db.init_app(app)
-    socketio.init_app(app, async_mode='eventlet', logger = True, engineio_logger=True, cors_allowed_origins='*')
+    socketio.init_app(app, async_mode='eventlet', logger=logger, engineio_logger=logger, cors_allowed_origins='*')
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
