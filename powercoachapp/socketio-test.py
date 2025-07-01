@@ -1,4 +1,4 @@
-from flask_socketio import emit, SocketIOTestClient
+from flask_socketio import SocketIOTestClient
 from powercoachapp.extensions import socketio
 from powercoachapp import create_app
 

@@ -56,5 +56,6 @@ def handle_powercoach_frame(base64_string):
     
 @socketio.on('stop_powercoach')
 def stop_powercoach():
+    global start_time
     start_time = None
     logger.debug("Powercoach stopped")
