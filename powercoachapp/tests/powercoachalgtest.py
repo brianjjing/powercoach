@@ -1,1 +1,0 @@
-#test the live powercoach algorithm when you're done
