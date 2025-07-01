@@ -31,6 +31,7 @@ fsspec-2025.3.2-py3-none-any.whl
 importlib_resources-6.5.2-py3-none-any.whl
 pyproject.toml
 installed.txt
+requirements.in
 requirementsbackup.txt
 requirementslaterbackup.txt
 traincocodataset.json
