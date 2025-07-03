@@ -5,7 +5,7 @@ import mediapipe as mp
 from mediapipe.tasks.python import BaseOptions
 from mediapipe.tasks.python.vision import PoseLandmarker, PoseLandmarkerOptions, PoseLandmarkerResult, RunningMode
 from mediapipe.framework.formats import landmark_pb2
-from powercoachapp.bbelldetectionbbox import printresultbbox, livebbelldetection
+from powercoachapp.bbelldetectioncreator import bbell_detector_model, barbell_bounding_box
 from powercoachapp.exercises.deadlift import start
 from powercoachapp.extensions import logger
 
@@ -20,11 +20,11 @@ def result_format(result: PoseLandmarkerResult, output_image: mp.Image, timestam
     if result.pose_landmarks:
         logger.debug("The pose landmarks exist")
         timestamp_ms = int((time.time() - start_time) * 1000)
-        livebbelldetection.detect_async(mpframe, timestamp_ms)
+        bbell_detector_model.detect_async(mpframe, timestamp_ms)
         
-        if printresultbbox: #is this enough to show that there is a barbell???
+        if barbell_bounding_box: #is this enough to show that there is a barbell???
             logger.debug("Barbell in frame too")
-            message = start(result.pose_landmarks, printresultbbox) #should rescale the bounding box to be original dimensions
+            message = start(result.pose_landmarks, barbell_bounding_box) #should rescale the bounding box to be original dimensions
         else:
             logger.debug("But barbell not in frame")
             message = 'Barbell not in frame'
@@ -49,6 +49,7 @@ poselandmarker = PoseLandmarker.create_from_options(options)
 
 # Create a loop to read the latest frame from the camera using VideoCapture
 def powercoachalg(base64string):
+    
     global start_time, mpframe, message
     
     bytes_frame = base64.b64decode(base64string)
@@ -74,12 +75,3 @@ def powercoachalg(base64string):
     return message
 
 #powercoachalg()
-
-#This just instantiates the structure of the output of the pose landmarker model before it puts it out. No need for that here, unless you want it for future reference:    
-"""
-    result = PoseLandmarkerResult(
-        pose_landmarks: List[List[landmark_module.NormalizedLandmark]],
-        pose_world_landmarks: List[List[landmark_module.Landmark]],
-        segmentation_masks: Optional[List[image_module.Image]] = None
-    )
-"""

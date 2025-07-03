@@ -1,53 +1,20 @@
-import cv2
+import time
+import cv2 as cv
 import mediapipe as mp
 from mediapipe.tasks.python.vision import ObjectDetector, ObjectDetectorOptions
-import time
 from powercoachapp.extensions import logger
+from powercoachapp.bbelldetectioncreator import bbell_detector_model, barbell_bounding_box
 
 import os
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel.tflite')
-assert os.path.exists(model_path), "Model export failed!"
+assert os.path.exists(model_path), "Model not exported! Please run bbelldetectioncreator.py to export the model."
 
-bbelldetection = ObjectDetector.create_from_model_path(model_path)
-
-#Output function for the live barbell detection
-printresultbbox = None
-#LIVE BARBELL DETECTION:
-def bbelldetection_result(result, output_image: mp.Image, timestamp_ms: int):
-    global printresultbbox
-    # Iterate through detections to find if any category is "barbell"
-    for detection in result.detections:
-        for category in detection.categories:
-            if category.category_name == "Barbell" and category.score > 0.1:  #Gets first because its the highest confidence in the frame anyway
-                logger.debug(f"Barbell detected with confidence: {category.score:.2f}")
-                printresultbbox = detection.bounding_box
-                logger.debug(f"Bounding box: {detection.bounding_box}")
-            else:
-                printresultbbox = None
-
-livebbelldetectionoptions = ObjectDetectorOptions(
-    base_options = mp.tasks.BaseOptions(model_asset_path = model_path),
-    running_mode = mp.tasks.vision.RunningMode.LIVE_STREAM,
-    result_callback = bbelldetection_result
-)
-
-#GETTING bounding box live:
-livebbelldetection = ObjectDetector.create_from_options(livebbelldetectionoptions)
-
-
-
-
-
-#if detections:
-#    bbox = detections.detections[0].bounding_box #To be accessed in the powercoachalg
-#    print(bbox)
-#    cv2.rectangle(frame, (bbox.origin_x, bbox.origin_y), (bbox.origin_x+bbox.width, bbox.origin_y+bbox.height), (255,0,0), 2)
 
 #DRAWING bounding box live:
 def livebbellbbox():
     global printresultbbox
     
-    cap = cv2.VideoCapture(0)  # 0 for default webcam
+    cap = cv.VideoCapture(0)  # 0 for default webcam
     if not cap.isOpened():
         print("Error: Could not open webcam.")
         exit()
@@ -60,20 +27,20 @@ def livebbellbbox():
         mpframe = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame)
         timestamp_ms = int(1000*(time.time() - starttime))
         #CODE IT TO SHOW THE BOUNDING BOX!!!
-        livebbelldetection.detect_async(mpframe, timestamp_ms)
+        bbell_detector_model.detect_async(mpframe, timestamp_ms)
 
         print('START OF FRAME')
         if printresultbbox:
             print("Bounding box:", printresultbbox)
-            cv2.rectangle(frame, (printresultbbox.origin_x, printresultbbox.origin_y), (printresultbbox.origin_x+printresultbbox.width, printresultbbox.origin_y+printresultbbox.height), (255,0,0), 2)
+            cv.rectangle(frame, (printresultbbox.origin_x, printresultbbox.origin_y), (printresultbbox.origin_x+printresultbbox.width, printresultbbox.origin_y+printresultbbox.height), (255,0,0), 2)
             
-        cv2.imshow('Barbell detection', frame)  
+        cv.imshow('Barbell detection', frame)  
         #MAKE SURE THIS IS A BARBELL:
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv.waitKey(1) & 0xFF == ord('q'):
             break
 
     cap.release()
-    cv2.destroyAllWindows()
+    cv.destroyAllWindows()
     return
 
 #livebbellbbox()
@@ -81,7 +48,7 @@ def livebbellbbox():
 #GETTING bounding box based on still image
 def bbellbbox(imagepath):
     image = mp.Image.create_from_file(imagepath)
-    barbelldetections = bbelldetection.detect(image)
+    barbelldetections = bbell_detector_model.detect_async(image, 1000)
 
     barbell = None
     for i in barbelldetections.detections:
@@ -96,11 +63,13 @@ def bbellbbox(imagepath):
 
 #DRAWING bounding box on still image
 def drawbbox(path, bbox):
-    image = cv2.imread(path)
-    cv2.rectangle(image, (bbox.origin_x, bbox.origin_y), (bbox.origin_x+bbox.width, bbox.origin_y+bbox.height), (255,0,0), 2)
+    image = cv.imread(path)
+    cv.rectangle(image, (bbox.origin_x, bbox.origin_y), (bbox.origin_x+bbox.width, bbox.origin_y+bbox.height), (255,0,0), 2)
     window_name = 'Image with bounding box'
-    cv2.imshow(window_name, image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    cv.imshow(window_name, image)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
     return
 #[(bbox.origin_x, bbox.origin_y), (bbox.origin_x+bbox.width, bbox.origin_y+bbox.height)]
+
+drawbbox('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/all/images/123.jpg', bbellbbox('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/all/images/250.jpg'))

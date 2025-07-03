@@ -1,15 +1,8 @@
 import mediapipe as mp
 from mediapipe_model_maker import object_detector
-import os
+import os, time
 import tensorflow as tf
-import cv2 as cv
-import numpy as np
-from bs4 import BeautifulSoup
-print("LIBRARIES LOADED IN")
 
-#UNDERSTAND ALL THIS FOR NOW, OPTIMIZE LATER:
-#RETRAINING PROCESS:
-#FIND OUT HOW TO MAKE THE RETRAINING WORK, THEN MAKE A DATASET TO RETRAIN.
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel.tflite')
 coco_path = os.path.join(os.path.dirname(__file__), 'bbelldetecset.coco')
 cache_train = os.path.join(os.path.dirname(__file__), 'cachetrain')
@@ -18,27 +11,54 @@ cache_test = os.path.join(os.path.dirname(__file__), 'cachetest')
 
 dataset = coco_path
 traindataset = os.path.join(dataset, 'train')
+print(traindataset)
 valdataset = os.path.join(dataset, 'val')
 train_data = object_detector.Dataset.from_coco_folder(traindataset, cache_dir=cache_train)
 validation_data = object_detector.Dataset.from_coco_folder(valdataset, cache_dir=cache_valid)
 
-def create_bbelldetection_model():
+def export_tflite_model():
     print("Creation starting:")
-    #TURN IMAGES INTO REQUIRED INPUT SIZE! (256X256)
-    spec = object_detector.SupportedModels.MOBILENET_V2
-    #Optimize parameters later:
+    #OVERALL:
+    #1. MAKE HPARAMS BETTER BASED ON LOGICAL THINKING (DONE)
+    #2. FEED BETTER IMAGES (1000) INTO DATASET --> think abt what types of images you need first!
+    #3. RETRAIN, OPTIMIZING PARAMETERS ALONG THE WAY WITH SKLEARN --> ALSO SEE HOW YOU CAN DO REDUCELRONPLATEAU, SO COSINE DECAY IS NOT NEEDED ANYMORE
+    
     exported_model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel')
+    num_gpus = len(tf.config.list_physical_devices('GPU'))
+    
+    spec = object_detector.SupportedModels.MOBILENET_V2 #Best FAST inference: speed is king rn
+    model_options = object_detector.ModelOptions(l2_weight_decay = 3e-05)
     hparams = object_detector.HParams(
-        export_dir=exported_model_path
+        learning_rate = 0.005, #Eventually do ReduceLROnPlateau
+        batch_size = 16, #How many images at a time are being fed into the model per iteration? However many iterations it takes to get to the full amnt of images in the dataset is the num of steps in an epoch. (Model params changed every batch)
+        epochs = 30,
+        steps_per_epoch = None,
+        class_weights = None,
+        shuffle = True,
+        #repeat = False,
+        export_dir = exported_model_path, #Where intermediate checkpoints and logs are saved
+        distribution_strategy = 'off' if num_gpus <= 1 else 'mirrored',
+        num_gpus = num_gpus, #Set in stone
+        tpu ='', #Not available on AWS, only Google Cloud/Colab and Kaggle
+        cosine_decay_epochs = 30,
+        cosine_decay_alpha = 0.1
     )
-    #REDUCE LR ON PLATEAU!!!
-    #Tweak regularization term?
+    
     options = object_detector.ObjectDetectorOptions(
         supported_model=spec,
-        hparams=hparams
+        model_options = model_options, #Optimize the l2_weight_decay regularization parameter
+        hparams=hparams #Optimize hparams, using logic first then sklearn
     )
+    
+    #FOR FUTURE PARAMETER IMPROVEMENT:
+    #1. QUANTIZATION AWARE TRAINING?
+    #2. REDUCE LR ON PLATEAU? (would just set the learning rate to 0.001 and NO cosine_decay_epochs and cosine_decay_alpha=1
 
-    model = object_detector.ObjectDetector.create(
+    #WHEN FEEDING DATASET TRAINING IMAGES:
+    #1. TURN IMAGES INTO REQUIRED INPUT SIZE? (256X256)
+    #2. Worry abt diff types of variation, as well as no barbell pics?
+    
+    model = object_detector.ObjectDetector.create( #These are alr all 3 parameters
         train_data=train_data,
         validation_data=validation_data,
         options=options)
@@ -61,214 +81,49 @@ def create_bbelldetection_model():
     print(f"Validation coco metrics: {coco_metrics}")
     print("VALIDATION DONE")
 
-#create_bbelldetection_model()
-#Problem: Low asf recall and precision, but mainly low asf recall. It can't detect a good QUANTITY of barbells, but of the barbells it detects, the QUALITY of detections was decent (decent amnt of things it detected were actually barbells)
+#export_tflite_model()
 
-"""BaseOptions = mp.tasks.BaseOptions
-ObjectDetector = mp.tasks.vision.ObjectDetector
-print(dir(ObjectDetector))
-print('test')
-ObjectDetectorOptions = mp.tasks.vision.ObjectDetectorOptions
-VisionRunningMode = mp.tasks.vision.RunningMode
+bbell_detector_model = None
+barbell_bounding_box = None
+#IN DEPLOYMENT, JUST Have this function run, as the model is already exported:
+def create_bbell_detection_model():
+    BaseOptions = mp.tasks.BaseOptions
+    ObjectDetector = mp.tasks.vision.ObjectDetector
+    ObjectDetectorOptions = mp.tasks.vision.ObjectDetectorOptions
+    VisionRunningMode = mp.tasks.vision.RunningMode
 
-
-#Detect a barbell and get the coordinates of it!
-
-#1. Retrain object_detector to recognize barbells from the front view
-    #Webscrape a dataset for barbells from the web (know how to pick good data) - MANUALLY LABEL THEM W LABELIMG (start w 100 images)
-        #Make them into a COCO file
-    #Retrain the model and just get accuracy at first
-    #Then go into optimizing the parametersf
-#2. Use the barbell locations in your hueristic functions"""
-
-"""import cv2 as cv
-[0,290,332,36]
-image = cv.imread('/Users/brian/Downloads/Barbell detection 2.v1i.coco/train/barbellvideo2-9de8a21c-2c08-11ee-9f6f-d41b816bdd7c_jpg.rf.e34a44cdd1e3378b5f72d57b60eb412a.jpg')
-bboximage = cv.rectangle(image.copy(), (0,400), (332,400+36), (255,0,0))
-
-
-cv.imshow('Bounding Box', bboximage)
-cv.waitKey(0)
-cv.destroyAllWindows"""
-
-
-#LIVE STREAM TO USE THE BARBELL OBJECT DETECTOR MODEL IN LATER:
-"""
-def print_result(result, output_image: mp.Image, timestamp_ms: int):
-    # Iterate through detections to find if any category is "barbell"
-    for detection in result.detections:
-        for category in detection.categories:
-            if category.category_name == "person" and category.score > 0.5:  # Example threshold
-                print(f"Person detected with confidence: {category.score:.2f}")
-                print(f"Bounding box: {detection.bounding_box}")
-                return
-    print('No person found')
-    return
-
-options = ObjectDetectorOptions(
-    base_options=BaseOptions(model_asset_path='/Users/brian/Documents/Python/PowerCoach/models/objectdetection_efficientdet_lite0.tflite'),
-    running_mode=VisionRunningMode.LIVE_STREAM,
-    max_results=3,
-    result_callback=print_result)
-
-import cv2 as cv
-cap = cv.VideoCapture(0)
-if not cap.isOpened():
-    print("Error: Could not open webcam.")
-    exit()
-
-import time
-
-with ObjectDetector.create_from_options(options) as detector:
-    starttime = time.time()
-    while True:
-    # The detector is initialized. Use it here.
-        ret, frame = cap.read()
-        if not ret:
-            print("Failed to grab frame. Exiting...")
-            break
-        framergb = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-        mpimage = mp.Image(image_format = mp.ImageFormat.SRGB, data=framergb)
-        frame_timestamp_ms = int((time.time() - starttime) * 1000)
-        detection_result = detector.detect_async(mpimage, frame_timestamp_ms)
-        
-        #See if detected object is a barbell
-        
-        cv.imshow('Pose Estimation', frame)
-
-        if cv.waitKey(1) & 0xFF == ord('q'):
-            break
-
-# Release resources
-cap.release()
-cv.destroyAllWindows()
-"""
-
-#Web scraping images:
-"""import requests
-from bs4 import BeautifulSoup
-import csv
-print("SUCCESS LOADING IN SCRAPING LIBRARIES")
-
-url = #URL you want to scrape
-header = {
-  "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
-}
-r = requests.get(url, headers=header)
-soup = BeautifulSoup(r.text, 'html.parser')
-images = soup.find_all('a', attrs={'class':'sdms-image-result'})
-print(len(images))
-
-for i in np.arange(len(images)):
-    open(f'deadlift{i}.jpg', 'wb').write(requests.get(images[i].img['data-src']).content)
-print('SUCCESSFULLY WROTE IMAGES')"""
-
-#Seeing how bad the current dataset is:
-"""
-labels_json = json.load(open('/Users/brian/Documents/Python/PowerCoach/bbdetection2.v1i.coco/train/labels.json', "r"))
-trainimages = labels_json['images']
-trainannotations = labels_json['annotations']
-for i in np.arange(38):
-    image = cv.imread(os.path.join('/Users/brian/Documents/Python/PowerCoach/bbdetection2.v1i.coco/train/images', trainimages[i]['file_name']))
-    imagewbox = cv.rectangle(image, (int(trainannotations[i]['bbox'][0]),int(trainannotations[i]['bbox'][1])), (int(trainannotations[i]['bbox'][0]+trainannotations[i]['bbox'][2]),int(trainannotations[i]['bbox'][1]+trainannotations[i]['bbox'][3])), (255,0,0), 2)
-    cv.imwrite(f'ogboundingboximage{i}.jpg', imagewbox)
-"""
-
-#Moving files around and making files:
-"""
-os.makedirs(traindir, exist_ok=True)
-os.makedirs(valdir, exist_ok=True)
-os.makedirs(testdir, exist_ok=True)
-try:
-    images = [file for file in os.listdir(imagefolder) if os.path.isfile(os.path.join(imagefolder, file))]
-
-    train, valtest = train_test_split(images, test_size=0.3, random_state=420)
-    val, test = train_test_split(valtest, test_size=0.5, random_state=420)
-
-    for i in train:
-        os.rename(os.path.join(imagefolder, i), os.path.join(traindir, i))
-    for i in val:
-        os.rename(os.path.join(imagefolder, i), os.path.join(valdir, i))
-    for i in test:
-        os.rename(os.path.join(imagefolder, i), os.path.join(testdir, i))
-except:
-    print('Not enough images in imagefolder, images already split')
-"""
-
-#CREATING DATASET:
-#COCO DATASET:
-"""
-from sklearn.model_selection import train_test_split
-
-#Directories:
-imagefolder = '/Users/brian/Documents/Python/PowerCoach/bbelldetecset.coco'
-traindir = os.path.join(imagefolder, 'train')
-trainimages = os.path.join(traindir, 'images')
-trainlabels = os.path.join(traindir, 'labels')
-
-valdir = os.path.join(imagefolder, 'val')
-valimages = os.path.join(valdir, 'images')
-vallabels = os.path.join(valdir, 'labels')
-
-testdir = os.path.join(imagefolder, 'test')
-testimages = os.path.join(testdir, 'images')
-testlabels = os.path.join(testdir, 'labels')
-
-#Initializing coco dataset lists (Categories list already made):
-barbellid = 1
-cocodataset = {
-    'categories':[
-        {"id":barbellid, "name":"Barbell"}
-    ],
-    'images':[],
-    'annotations':[]
-}
-cocoimages = []
-cocoannotations = []
-id = 0
-
-#Removing .DS_Store
-directories = os.listdir(testlabels)
-if '.DS_Store' in directories:
-    directories.remove('.DS_Store')
+    def output_detection_details(result, output_image: mp.Image, timestamp_ms: int):
+        # Iterate through detections to find if any category is "barbell"
+        for detection in result.detections:
+            global barbell_bounding_box
+            barbell_bounding_box = None
+            if detection.categories:
+                #print(f"Barbell detected with confidence: {detection.categories[0].score:.2f}")
+                barbell_bounding_box = detection.bounding_box
     
-for i in directories:
-    #Making images list:
-    if i.endswith('.xml.txt'):
-        imagefile = i.replace('.xml.txt','.jpg')
-    else:
-        imagefile = i.replace('.txt','.jpg')
-    imagedic = {}
-    imagedic['id'] = id
-    imagedic['file_name'] = imagefile
-    image = cv.imread(os.path.join(testimages, imagefile))
-    imageheight, imagewidth, channels = image.shape
-    imagedic['height'] = imageheight
-    imagedic['width'] = imagewidth
-    cocoimages.append(imagedic)
+    options = ObjectDetectorOptions(
+        base_options = BaseOptions(model_asset_path=model_path),
+        running_mode = VisionRunningMode.LIVE_STREAM,
+        #display_names_locale = 'en', #Already made english by default
+        max_results = 5,
+        score_threshold = 0.001,
+        category_allowlist = ['Barbell'], #Only detects barbells
+        result_callback = output_detection_details
+    )
+
+    bbell_detector = ObjectDetector.create_from_options(options)
+    #Problem: Low asf recall and precision, but mainly low asf recall. It can't detect a good QUANTITY of barbells, but of the barbells it detects, the QUALITY of detections was decent (decent amnt of things it detected were actually barbells)
     
-    #Annotations list:
-    #Add segmentation to the annotations?
-    annotationsdic = {}
-    annotationsdic['id'] = id
-    annotationsdic['image_id'] = id
-    annotationsdic['category_id'] = barbellid
-    
-    yoloannotations = (open(os.path.join(testlabels, i), 'r').read()).split(' ')
-    bboxheight = int(imageheight * float(yoloannotations[-1].strip()))
-    bboxcenterx = int(imagewidth * float(yoloannotations[1]))
-    bboxcentery = int(imageheight * float(yoloannotations[2]))
-    bboxwidth = int(imagewidth * float(yoloannotations[3]))
-    bbox = [(bboxcenterx - (bboxwidth)/2), (bboxcentery - (bboxheight)/2), bboxwidth, bboxheight]
-    annotationsdic['bbox'] = bbox
-    annotationsdic['area'] = bboxheight*bboxwidth
-    cocoannotations.append(annotationsdic)
+    return bbell_detector
 
-    id += 1
+bbell_detector_model = create_bbell_detection_model()
 
-cocodataset['images'] = cocoimages
-cocodataset['annotations'] = cocoannotations
-
-with open(os.path.join(testdir, 'labels.json'), 'w') as cocodatasetjson:
-    json.dump(cocodataset, cocodatasetjson, indent=4)
-print("SUCCESS CREATING DATASET")"""
+start_time = time.time()
+for i in range(251):
+    try:
+        print('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/all/images/' + str(i+1) + '.jpg')
+        bbell_detector_model.detect_async(mp.Image.create_from_file('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/all/images/' + str(i+1) + '.jpg'), timestamp_ms=int((time.time() - start_time) * 1000))
+        print(barbell_bounding_box)
+    except Exception as e:
+        print(f"Error while detecting: {e}")
+    #time.sleep(0.05) #For allowing the output to come out before the background thread is killed

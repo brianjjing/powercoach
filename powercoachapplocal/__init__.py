@@ -7,15 +7,7 @@ import os
 
 #Factory function FOR LOCAL TESTING:
 def create_app(test_config=None):
-
     app = Flask(__name__, instance_relative_config=True)
-    # app.config.from_mapping(
-    #     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL"),
-    #     SECRET_KEY = os.environ.get("SECRET_KEY", 'dev')
-    # )
-    
-    # print(os.environ.get("DATABASE_URL"))
-    # print(app.config["SQLALCHEMY_DATABASE_URI"])
     
     db_path = os.path.join(os.path.dirname(__file__), 'database.db')
     db_url = f'sqlite:///{db_path}'
