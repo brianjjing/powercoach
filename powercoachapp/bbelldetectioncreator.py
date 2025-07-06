@@ -16,6 +16,11 @@ valdataset = os.path.join(dataset, 'val')
 train_data = object_detector.Dataset.from_coco_folder(traindataset, cache_dir=cache_train)
 validation_data = object_detector.Dataset.from_coco_folder(valdataset, cache_dir=cache_valid)
 
+#TRADEOFF BETWEEN MEDIAPIPE BARBELL DETECTION MODEL VS YOLO OBJECT DETECTION MODEL:
+    #YOLO ACCOUNTS FOR ROTATED BOUNDING BOXES, BUT MEDIAPIPE HAS A BUILT IN DETECT_ASYNC.
+    #WITH YOLO, YOU WOULD NEED TO DO ALL THE WORK ASSOCIATED WITH THEREAD HANDLING.
+    #PLAN: USE MEDIAPIPE FOR NOW, AND IF IT DOESN'T PRODUCE GOOD BARBELL DETECTION RESULTS OR IS LARGELY INCOMPATIBLE WITH THE FORM ALGS, THEN SWITCH TO YOLO.
+    
 def export_tflite_model():
     print("Creation starting:")
     #OVERALL:

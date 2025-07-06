@@ -9,11 +9,8 @@ import os
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel.tflite')
 assert os.path.exists(model_path), "Model not exported! Please run bbelldetectioncreator.py to export the model."
 
-
 #DRAWING bounding box live:
-def livebbellbbox():
-    global printresultbbox
-    
+def livebbellbbox():    
     cap = cv.VideoCapture(0)  # 0 for default webcam
     if not cap.isOpened():
         print("Error: Could not open webcam.")
@@ -30,9 +27,9 @@ def livebbellbbox():
         bbell_detector_model.detect_async(mpframe, timestamp_ms)
 
         print('START OF FRAME')
-        if printresultbbox:
-            print("Bounding box:", printresultbbox)
-            cv.rectangle(frame, (printresultbbox.origin_x, printresultbbox.origin_y), (printresultbbox.origin_x+printresultbbox.width, printresultbbox.origin_y+printresultbbox.height), (255,0,0), 2)
+        if barbell_bounding_box:
+            print("Bounding box:", barbell_bounding_box)
+            cv.rectangle(frame, (barbell_bounding_box.origin_x, barbell_bounding_box.origin_y), (barbell_bounding_box.origin_x+barbell_bounding_box.width, barbell_bounding_box.origin_y+barbell_bounding_box.height), (255,0,0), 2)
             
         cv.imshow('Barbell detection', frame)  
         #MAKE SURE THIS IS A BARBELL:
@@ -72,4 +69,26 @@ def drawbbox(path, bbox):
     return
 #[(bbox.origin_x, bbox.origin_y), (bbox.origin_x+bbox.width, bbox.origin_y+bbox.height)]
 
-drawbbox('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/all/images/123.jpg', bbellbbox('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/all/images/250.jpg'))
+#drawbbox('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/!todo/doneimages/250.jpg', bbellbbox('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/!todo/doneimages/250.jpg'))
+
+
+#Draw a rotated rectangle with minAreaRect.
+def testing_yolo_labels(image_num):
+    #.txt label files are in YOLO format, COCO format files are only in the .json file
+    image = cv.imread(f'/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/doneimages/{image_num}.jpg')
+    height, width, _ = image.shape
+    with open(f'/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/donelabels/{image_num}.txt', 'r') as f:
+        bbox_data = f.read().strip().split(' ')
+        bboxcenterx = int(width * float(bbox_data[1]))
+        bboxcentery = int(height * float(bbox_data[2]))
+        bboxwidth = int(width * float(bbox_data[3]))
+        bboxheight = int(height * float(bbox_data[4]))
+        cv.rectangle(image, (bboxcenterx-bboxwidth//2, bboxcentery-bboxheight//2), (bboxcenterx+bboxwidth//2, bboxcentery+bboxheight//2), (255,0,0))
+        window_name = 'Image with bounding box'
+        cv.imshow(window_name, image)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
+        
+#testing_yolo_labels(120)
+
+#NOW GO THROUGH ALL THE IMAGES, AND IF IT DOESN'T HAVE A CORRESPONDING LABEL FILE, THEN DELETE IT:

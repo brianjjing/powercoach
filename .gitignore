@@ -11,6 +11,7 @@ cachetrain/**
 cachevalid/
 cachevalid/**
 
+powercoachapp/bbelldetectiondatasetapikeys.py
 powercoachapp/bbelldetecset.coco/
 powercoachapp/bbelldetecset.coco/**
 powercoachapp/__pycache__/
