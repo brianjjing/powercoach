@@ -178,6 +178,8 @@ def create_coco_dataset():
     #Splitting into train/val/test folders:
     basefolder = '/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone'
     imagefolder = os.path.join(basefolder, 'doneimages')
+    labelfolder = os.path.join(basefolder, 'donelabels')
+    
     traindir = os.path.join(basefolder, 'train')
     trainimages = os.path.join(traindir, 'images')
     trainlabels = os.path.join(traindir, 'labels')
@@ -195,27 +197,49 @@ def create_coco_dataset():
     os.makedirs(testdir, exist_ok=True)
     try:
         images = [file for file in os.listdir(imagefolder) if os.path.isfile(os.path.join(imagefolder, file))]
+        print("IMAGES: ", images)
 
         train, valtest = train_test_split(images, test_size=0.2, random_state=420)
         val, test = train_test_split(valtest, test_size=0.5, random_state=420)
+        print("TRAIN:", train)
+        print("VAL: ", val)
+        print("TEST: ", test)
 
-        #Moving the images w/ renaming:
+        #Removing .DS_Store:
+        if '.DS_Store' in train:
+            train.remove('.DS_Store')
+        if '.DS_Store' in val:
+            val.remove('.DS_Store')
+        if '.DS_Store' in test:
+            test.remove('.DS_Store')
+        
+        #Moving the images and labels w/ renaming:
         for i in train:
             os.rename(os.path.join(imagefolder, i), os.path.join(trainimages, i))
+            i = i.replace('jpg', 'txt')
+            os.rename(os.path.join(labelfolder, i), os.path.join(trainlabels, i))
         for i in val:
             os.rename(os.path.join(imagefolder, i), os.path.join(valimages, i))
+            i = i.replace('jpg', 'txt')
+            os.rename(os.path.join(labelfolder, i), os.path.join(vallabels, i))
         for i in test:
             os.rename(os.path.join(imagefolder, i), os.path.join(testimages, i))
-    except:
-        print('Not enough images in imagefolder, images already split')
+            i = i.replace('jpg', 'txt')
+            os.rename(os.path.join(labelfolder, i), os.path.join(testlabels, i))
+    except Exception as e:
+        print('SPLITTING ERROR: ', e)
+        return
+        #See if there's a better error message
     
     #Turning the split image folders into label folders:
+    dirorders = [traindir, valdir, testdir]
     splitimagefolders = [trainimages, valimages, testimages]
     labeldirorders = [trainlabels, vallabels, testlabels]
     for i in range(3):
-        #Removing .DS_Store:
         splitimagefolderdir = os.listdir(splitimagefolders[i]) #Doesn't do whole dir before file name, just the name of the file w reference to the directory
-        labelfolderdir = [os.path.join(labeldirorders[i], file.replace('jpg', 'txt')) for file in splitimagefolderdir] #Gets all the label files in the split
+        print("SPLIT IMAGES FOLDERS: ", splitimagefolders[i])
+        labelfolderdir = [file.replace('jpg', 'txt') for file in splitimagefolderdir] #Gets all the label files in the split
+        #Removing .DS_Store:
         if '.DS_Store' in labelfolderdir:
             labelfolderdir.remove('.DS_Store')
             
@@ -240,6 +264,9 @@ def create_coco_dataset():
             imagedic['id'] = id
             imagedic['file_name'] = imagefile
             image = cv.imread(os.path.join(splitimagefolders[i], imagefile))
+            if image is None:
+                print("SKIPPING IMAGE: ", imagefile)
+                continue  # Skip making the coco annotation if the image cannot be read (likely due to it being a gif), MEANING SOME OF THE IMAGES WON'T SHOW UP IN THE LABELS.JSON!! (doesn't affect accuracy, jst waste of space)
             imageheight, imagewidth, channels = image.shape
             imagedic['height'] = imageheight
             imagedic['width'] = imagewidth
@@ -252,35 +279,50 @@ def create_coco_dataset():
             annotationsdic['image_id'] = id
             annotationsdic['category_id'] = barbellid
             
-            yoloannotations = (open(os.path.join(labeldirorders[i], label), 'r').read()).split(' ')
-            bboxcenterx = int(imagewidth * float(yoloannotations[1]))
-            bboxcentery = int(imageheight * float(yoloannotations[2]))
-            bboxwidth = int(imagewidth * float(yoloannotations[3]))
-            bboxheight = int(imageheight * float(yoloannotations[-1].strip()))
-            bbox = [(bboxcenterx - (bboxwidth)/2), (bboxcentery - (bboxheight)/2), bboxwidth, bboxheight]
-            annotationsdic['bbox'] = bbox
-            annotationsdic['area'] = bboxheight*bboxwidth
-            cocoannotations.append(annotationsdic)
-
-            id += 1
+            yoloannotations = (open(os.path.join(labeldirorders[i], label), 'r').read()).split()
+            if len(yoloannotations)==0:
+                annotationsdic['bbox'] = [0,0,0,0]
+                annotationsdic['area'] = 0
+                cocoannotations.append(annotationsdic)
+                id += 1
+            else:
+                for ann_idx in range(len(yoloannotations)//5):
+                    bboxcenterx = int(imagewidth * float(yoloannotations[5*ann_idx + 1]))
+                    bboxcentery = int(imageheight * float(yoloannotations[5*ann_idx + 2]))
+                    bboxwidth = int(imagewidth * float(yoloannotations[5*ann_idx + 3]))
+                    bboxheight = int(imageheight * float(yoloannotations[5*ann_idx + 4]))
+                    bbox = [(bboxcenterx - (bboxwidth)/2), (bboxcentery - (bboxheight)/2), bboxwidth, bboxheight]
+                    annotationsdic['bbox'] = bbox
+                    annotationsdic['area'] = bboxheight*bboxwidth
+                    cocoannotations.append(annotationsdic)
+                    id += 1
 
         cocodataset['images'] = cocoimages
         cocodataset['annotations'] = cocoannotations
 
-        with open(os.path.join(labeldirorders[i], 'labels.json'), 'w') as cocodatasetjson:
+        with open(os.path.join(dirorders[i], 'labels.json'), 'w') as cocodatasetjson:
             json.dump(cocodataset, cocodatasetjson, indent=4)
         print(f"SUCCESS CREATING DATASET")
 
 #create_coco_dataset()
 
-def redirect_to_main_image_folder():
+def redirect_to_main_folders():
     main_image_folder = '/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/doneimages'
+    main_label_folder = '/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/donelabels'
     
+    #Images:
     for path in os.listdir('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/train/images'):
         os.rename(os.path.join('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/train/images', path), os.path.join(main_image_folder, path))
     for path in os.listdir('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/val/images'):
         os.rename(os.path.join('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/val/images', path), os.path.join(main_image_folder, path))
     for path in os.listdir('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/test/images'):
         os.rename(os.path.join('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/test/images', path), os.path.join(main_image_folder, path))
-        
-#redirect_to_main_image_folder()
+    #Labels:
+    for path in os.listdir('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/train/labels'):
+        os.rename(os.path.join('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/train/labels', path), os.path.join(main_label_folder, path))
+    for path in os.listdir('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/val/labels'):
+        os.rename(os.path.join('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/val/labels', path), os.path.join(main_label_folder, path))
+    for path in os.listdir('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/test/labels'):
+        os.rename(os.path.join('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/alldone/test/labels', path), os.path.join(main_label_folder, path))
+
+#redirect_to_main_folders()
