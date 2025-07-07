@@ -12,9 +12,17 @@ cache_test = os.path.join(os.path.dirname(__file__), 'cachetest')
 dataset = coco_path
 traindataset = os.path.join(dataset, 'train')
 print(traindataset)
+if os.path.exists(os.path.join(traindataset, 'images', '.DS_Store')): #One problem is this might not even work, but I don't see it in the files
+    os.remove(os.path.join(traindataset, 'images', '.DS_Store'))
 valdataset = os.path.join(dataset, 'val')
+if os.path.exists(os.path.join(valdataset, 'images', '.DS_Store')):
+    os.remove(os.path.join(valdataset, 'images', '.DS_Store'))
+testdataset = os.path.join(dataset, 'test')
+if os.path.exists(os.path.join(testdataset, 'images', '.DS_Store')):
+    os.remove(os.path.join(testdataset, 'images', '.DS_Store'))
 train_data = object_detector.Dataset.from_coco_folder(traindataset, cache_dir=cache_train)
 validation_data = object_detector.Dataset.from_coco_folder(valdataset, cache_dir=cache_valid)
+test_data = object_detector.Dataset.from_coco_folder(testdataset, cache_dir=cache_test)
 
 #TRADEOFF BETWEEN MEDIAPIPE BARBELL DETECTION MODEL VS YOLO OBJECT DETECTION MODEL:
     #YOLO ACCOUNTS FOR ROTATED BOUNDING BOXES, BUT MEDIAPIPE HAS A BUILT IN DETECT_ASYNC.
@@ -123,12 +131,14 @@ def create_bbell_detection_model():
 
 bbell_detector_model = create_bbell_detection_model()
 
-start_time = time.time()
-for i in range(251):
-    try:
-        print('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/all/images/' + str(i+1) + '.jpg')
-        bbell_detector_model.detect_async(mp.Image.create_from_file('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/all/images/' + str(i+1) + '.jpg'), timestamp_ms=int((time.time() - start_time) * 1000))
-        print(barbell_bounding_box)
-    except Exception as e:
-        print(f"Error while detecting: {e}")
-    #time.sleep(0.05) #For allowing the output to come out before the background thread is killed
+def detect_all():
+    #CODE DOES NOT WORK RN!!!
+    start_time = time.time()
+    for i in range(251):
+        try:
+            print('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/all/images/' + str(i+1) + '.jpg')
+            bbell_detector_model.detect_async(mp.Image.create_from_file('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/all/images/' + str(i+1) + '.jpg'), timestamp_ms=int((time.time() - start_time) * 1000))
+            print(barbell_bounding_box)
+        except Exception as e:
+            print(f"Error while detecting: {e}")
+        #time.sleep(0.05) #For allowing the output to come out before the background thread is killed
