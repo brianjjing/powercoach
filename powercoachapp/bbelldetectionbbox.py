@@ -1,8 +1,6 @@
 import time
 import cv2 as cv
 import mediapipe as mp
-from mediapipe.tasks.python.vision import ObjectDetector, ObjectDetectorOptions
-from powercoachapp.extensions import logger
 from powercoachapp.bbelldetectioncreator import bbell_detector_model, barbell_bounding_box
 
 import os

@@ -2,6 +2,7 @@ import mediapipe as mp
 from mediapipe_model_maker import object_detector
 import os, time
 import tensorflow as tf
+import cv2 as cv
 
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel.tflite')
 coco_path = os.path.join(os.path.dirname(__file__), 'bbelldetecset.coco')
@@ -106,20 +107,23 @@ def create_bbell_detection_model():
     VisionRunningMode = mp.tasks.vision.RunningMode
 
     def output_detection_details(result, output_image: mp.Image, timestamp_ms: int):
-        # Iterate through detections to find if any category is "barbell"
-        for detection in result.detections:
-            global barbell_bounding_box
-            barbell_bounding_box = None
-            if detection.categories:
-                #print(f"Barbell detected with confidence: {detection.categories[0].score:.2f}")
-                barbell_bounding_box = detection.bounding_box
+        print("RESULT CALLBACK: ")
+        global barbell_bounding_box
+        barbell_bounding_box = None #Just make it so that the barbell is forced to refresh every few frames, as opposed to making it none every time
+        if result.detections:
+            print("Detections:")
+            barbell_bounding_box = result.detections[0].bounding_box
+            print(f"Detection: {barbell_bounding_box}")
+            print(f"Confidence: {result.detections[0].categories[0].score}")
+        else:
+            print("No barbell detections")
     
     options = ObjectDetectorOptions(
         base_options = BaseOptions(model_asset_path=model_path),
         running_mode = VisionRunningMode.LIVE_STREAM,
         #display_names_locale = 'en', #Already made english by default
         max_results = 5,
-        score_threshold = 0.001,
+        score_threshold = 0.01, #Retrain with lower score threshold.
         category_allowlist = ['Barbell'], #Only detects barbells
         result_callback = output_detection_details
     )
@@ -131,14 +135,20 @@ def create_bbell_detection_model():
 
 bbell_detector_model = create_bbell_detection_model()
 
-def detect_all():
-    #CODE DOES NOT WORK RN!!!
+#Put this in the bbox file:
+def detect_in_image(path):
     start_time = time.time()
-    for i in range(251):
-        try:
-            print('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/all/images/' + str(i+1) + '.jpg')
-            bbell_detector_model.detect_async(mp.Image.create_from_file('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/all/images/' + str(i+1) + '.jpg'), timestamp_ms=int((time.time() - start_time) * 1000))
-            print(barbell_bounding_box)
-        except Exception as e:
-            print(f"Error while detecting: {e}")
-        #time.sleep(0.05) #For allowing the output to come out before the background thread is killed
+    image = mp.Image.create_from_file(path)
+
+    print("IMAGE: ", image)
+    bbell_detector_model.detect_async(image, timestamp_ms=int((time.time() - start_time) * 1000))
+    time.sleep(1)
+
+    image_np = image.numpy_view()
+    image_bgr = cv.cvtColor(image_np, cv.COLOR_RGB2BGR)
+    cv.rectangle(image_bgr, (barbell_bounding_box.origin_x, barbell_bounding_box.origin_y), (barbell_bounding_box.origin_x+barbell_bounding_box.width, barbell_bounding_box.origin_y+barbell_bounding_box.height), (255,0,0), 2)
+    cv.imshow("Detected Image", image_bgr)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+    
+#detect_in_image('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/test/images/159.jpg')

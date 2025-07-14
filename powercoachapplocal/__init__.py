@@ -1,8 +1,6 @@
 from flask import Flask
-from powercoachapp import auth
 from powercoachapplocal import powercoach
-from powercoachapp.extensions import socketio, db
-from powercoachapp.sqlmodels import User
+from powercoachapplocal.extensions import socketio, db
 import os
 
 #Factory function FOR LOCAL TESTING:
@@ -31,19 +29,7 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
-
-    app.register_blueprint(auth.authbp)
-    app.register_blueprint(powercoach.powercoachbp)
     
-    #Creating the models from sqlmodels.py in database.db:
-    with app.app_context():
-        db.create_all()
-        if not User.query.filter_by(username="brian").first():
-            base_user = User(
-                username="brian",
-                password="test123"  # or whatever password you want
-            )
-            db.session.add(base_user)
-            db.session.commit()
+    app.register_blueprint(powercoach.powercoachbp)
     
     return app

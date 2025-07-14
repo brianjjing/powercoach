@@ -15,3 +15,14 @@ handler = logging.StreamHandler()
 logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 handler.setLevel(logging.DEBUG)
+
+#TEST EXTENSION:
+shared_data = {
+    'start_time': 0,
+    'original_frame': None,
+    'frame_height': None,
+    'frame_width': None,
+    'message': 'BARBELL NOT IN FRAME',
+    'bar_bbox': None,
+    'deadlift_stage': 1
+}

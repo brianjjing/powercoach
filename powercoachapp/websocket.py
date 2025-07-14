@@ -2,8 +2,8 @@ import sys, time
 import logging
 from flask_socketio import emit
 from flask import request
-from powercoachapp.extensions import socketio, logger, clients
-from powercoachapp.powercoachalgmodern import powercoachalg, start_time
+from powercoachapp.extensions import socketio, logger, clients, shared_data
+from powercoachapp.powercoachalgmodern import powercoachalg
 
 @socketio.on('connect')
 def handle_connect():
@@ -37,8 +37,10 @@ def handle_test_message(message):
 
 @socketio.on('start_powercoach')
 def start_powercoach():
-    global start_time
-    start_time = time.time()
+    shared_data['message'] = 'BARBELL NOT IN FRAME'
+    shared_data['bar_bbox'] = None
+    shared_data['deadlift_stage'] = 1
+    shared_data['start_time'] = time.time()
     logger.debug("Powercoach started")
 
 #PRINT AS LOGS (IMPORT LOGGING --> LOGGING.INFO("MESSAGE"))
@@ -48,14 +50,16 @@ def handle_powercoach_frame(base64_string):
     logger.info(f"Length of base64_string[0]: {len(base64_string)}")
     logger.info(f"Byte size: {sys.getsizeof(base64_string)}")
     
-    powercoach_message = powercoachalg(base64_string)
+    powercoachalg(base64_string)
     logger.info("Powercoach alg done on the frame")
     
-    emit('powercoach_message', powercoach_message)
+    emit('powercoach_message', shared_data['message'])
     logger.info("Powercoach message emitted")
     
 @socketio.on('stop_powercoach')
 def stop_powercoach():
-    global start_time
-    start_time = None
+    shared_data['message'] = 'BARBELL NOT IN FRAME'
+    shared_data['bar_bbox'] = None
+    shared_data['deadlift_stage'] = 1
+    shared_data['start_time'] = 0
     logger.debug("Powercoach stopped")

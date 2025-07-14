@@ -1,10 +1,6 @@
-import sys
 import os
-from powercoachapp import OLDpowercoachalgs, bbelldetectionbbox, create_app, socketio, auth, extensions, websocket, bbelldetectioncreator
+from powercoachapplocal import create_app, extensions, socketio, bbellplaceholdermodel, bbellplaceholdermodeltest, websocket
 from flask import request
-
-#import logging
-#logging.basicConfig(level=logging.DEBUG)
 
 app = create_app()
 

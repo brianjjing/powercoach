@@ -1,5 +1,5 @@
 from sklearn.model_selection import train_test_split
-import os, json, requests, csv, time
+import os, json, requests, time
 import cv2 as cv
 import numpy as np
 from bs4 import BeautifulSoup
@@ -265,7 +265,10 @@ def create_coco_dataset():
             imagedic['file_name'] = imagefile
             image = cv.imread(os.path.join(splitimagefolders[i], imagefile))
             if image is None:
-                print("SKIPPING IMAGE: ", imagefile)
+                print("DELETING IMAGE: ", imagefile)
+                os.remove(os.path.join(splitimagefolders[i], imagefile))
+                print("DELETING LABEL: ", label)
+                os.remove(os.path.join(labeldirorders[i], label))
                 continue  # Skip making the coco annotation if the image cannot be read (likely due to it being a gif), MEANING SOME OF THE IMAGES WON'T SHOW UP IN THE LABELS.JSON!! (doesn't affect accuracy, jst waste of space)
             imageheight, imagewidth, channels = image.shape
             imagedic['height'] = imageheight
@@ -302,7 +305,7 @@ def create_coco_dataset():
 
         with open(os.path.join(dirorders[i], 'labels.json'), 'w') as cocodatasetjson:
             json.dump(cocodataset, cocodatasetjson, indent=4)
-        print(f"SUCCESS CREATING DATASET")
+        print(f"SUCCESS CREATING DATASET: ", dirorders[i])
 
 #create_coco_dataset()
 

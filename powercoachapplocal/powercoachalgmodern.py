@@ -10,7 +10,7 @@ from mediapipe.tasks.python import BaseOptions
 from mediapipe.tasks.python.vision import PoseLandmarker, PoseLandmarkerOptions, PoseLandmarkerResult, RunningMode
 from mediapipe.framework.formats import landmark_pb2
 from powercoachapp.bbelldetectionbbox import printresultbbox, livebbelldetection
-from powercoachapp.exercises.deadlift import start
+from powercoachapp.exercises.barbell import start
 from powercoachapp.extensions import logger, handler, socketio
 
 start_time = None
