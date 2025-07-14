@@ -4,7 +4,6 @@ import numpy as np
 import mediapipe as mp
 from mediapipe.tasks.python import BaseOptions
 from mediapipe.tasks.python.vision import PoseLandmarker, PoseLandmarkerOptions, PoseLandmarkerResult, RunningMode
-from powercoachapp.bbelldetectioncreator import bbell_detector_model, barbell_bounding_box
 from powercoachapp.bbelldetectionplaceholdermodel import bbell_detection_model
 from powercoachapp.exercises.barbell import deadlift
 from powercoachapp.extensions import logger, shared_data
@@ -48,5 +47,3 @@ def powercoachalg(base64string):
     poselandmarker.detect_async(mpframe, frame_timestamp_ms)
     #Will use bbelldetectionmodel later, for now using regular object detection as placeholder:
     #bbelldetectionmodel.detect_async(mpframe, frame_timestamp_ms)
-
-#powercoachalg()
