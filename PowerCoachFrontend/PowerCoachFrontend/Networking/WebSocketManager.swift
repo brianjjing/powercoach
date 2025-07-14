@@ -5,8 +5,10 @@
 //  Created by Brian Jing on 3/18/25.
 //
 
+import AVFoundation
 import Foundation
 import SocketIO
+import SwiftUI
 
 //MOVE ALL THE COMMUNICATION LOGIC HERE!!!!
 
@@ -73,28 +75,40 @@ class WebSocketManager: ObservableObject {
         print("WEBSOCKET CONNECTING ...")
         socket.connect()
         print("WEBSOCKET CONNECTED ...")
-        
-//        socket.on("powercoach_connection") { (data, ack) in
-//            if let powerCoachString = data[0] as? String,
-//               let powerCoachData = powerCoachString.data(using: .utf8) {
-//                DispatchQueue.main.async {
-//                    self.powerCoachActive = true
-//                    self.powerCoachMessage = String(decoding: powerCoachData, as: UTF8.self)
-//                }
-//            }
-//        }
-//        socket.on("powercoach_disconnection") { (data, ack) in
-//            if let powerCoachString = data[0] as? String,
-//               let powerCoachData = powerCoachString.data(using: .utf8) {
-//                DispatchQueue.main.async {
-//                    self.powerCoachMessage = String(decoding: powerCoachData, as: UTF8.self)
-//                    self.powerCoachActive = false
-//                }
-//            }
-//        }
+    }
+    
+    enum SocketPayload {
+        case text(String)
+        case binary(Data)
     }
     
     func emit(event: String, with items: String) {
+        print("EMITTING EVENT: \(event)")
+        
+        switch self.socket.status {
+        case .connected:
+            self.socket.emit(event, items)
+            print("EMITTED EVENT: \(event), WITH ITEMS: \(items)")
+            break
+        case .connecting:
+            print("WEBSOCKET STILL CONNECTING, WILL EMIT EVENT \(event) ONCE IT CONNECTS ... \n")
+            self.socket.once(clientEvent: .connect) { (object, ack) in
+                self.socket.emit(event, items)
+                print("EMITTED EVENT: \(event), WITH ITEMS: \(items)")
+            }
+            break
+        case .notConnected:
+            print("ERROR WITH EMITTING EVENT \(event): WEBSOCKET NOT CONNECTED\n")
+            break
+        case .disconnected:
+            print("ERROR WITH EMITTING EVENT \(event): WEBSOCKET DISCONNECTED\n")
+            break
+        default:
+            break
+        }
+    }
+    
+    func emit(event: String, with items: Data) {
         print("EMITTING EVENT: \(event)")
         
         switch self.socket.status {

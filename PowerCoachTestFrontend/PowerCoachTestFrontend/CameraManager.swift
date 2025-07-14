@@ -72,28 +72,39 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
     func captureOutput(_ output: AVCaptureOutput, //output is the OBJECT PRODUCING video frames and sending to delegate
                        didOutput sampleBuffer: CMSampleBuffer, //A sample buffer is just a raw video frame
                        from connection: AVCaptureConnection) {
-
+        
         guard canEmitFrames else { return }
         
         let now = Date()
         guard now.timeIntervalSince(lastSentTime) >= frameSendInterval else { return }
         lastSentTime = now //Only updated once the code gets past the guard statement (so only once every 0.5 seconds)
-                
+        
         // UNDERSTAND THE IMAGE TYPE CONVERSION. MAKE THIS PIPELINE SLOWER:
         // CMSampleBuffer → CVPixelBuffer → CIImage → CGImage → UIImage (understand the data types later)
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         let ciImage = CIImage(cvImageBuffer: pixelBuffer)
         let context = CIContext()
         guard let cgImage = context.createCGImage(ciImage, from: ciImage.extent) else { return }
-        let uiImage = UIImage(cgImage: cgImage)
+        var uiImage = UIImage(cgImage: cgImage)
+        
+        // --- RESIZING ---
+        let targetSize = CGSize(width: 320, height: 320) //256x256 for the actual app, since that is the biggest of poselandmarker + object detector
+        UIGraphicsBeginImageContextWithOptions(targetSize, false, 1.0) // Scale set to 1.0 for pixel-perfect resizing
+        uiImage.draw(in: CGRect(origin: .zero, size: targetSize))
+        if let resizedImage = UIGraphicsGetImageFromCurrentImageContext() {
+            uiImage = resizedImage // Reassign uiImage to the resized version
+        } else {
+            print("Image could not be resized")
+        }
+        UIGraphicsEndImageContext()
+        // --- DONE RESIZING ---
+        
         // Convert to JPEG data
         guard let jpegData = uiImage.jpegData(compressionQuality: 0.1) else { return }
-        // NEED TO MAKE THE JPEG GOOD QUALITY TOO!!!!! 0.4 IS JUST FOR SMALLER BASE64 MESSAGE!!!
-
-        // Convert to base64 string
-        let base64String = jpegData.base64EncodedString()
-        print("SENDING BASE64 STRING - # OF CHARACTERS:", base64String.count)
-        webSocketManager.emit(event: "handle_powercoach_frame", with: base64String)
+        // NEED TO MAKE THE JPEG GOOD QUALITY TOO!!!!! 0.25-0.35 is the sweet spot!!!
+        
+        print("SENDING JPEG DATA W/ # OF CHARACTERS:", jpegData.count)
+        webSocketManager.emit(event: "handle_powercoach_frame", with: jpegData)
     }
     
     func flipCamera() {

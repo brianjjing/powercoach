@@ -25,9 +25,6 @@ struct PowerCoachFrontend: App {
             if isAuthenticated == true {
                 ContentView()
                     .environmentObject(webSocketManager)
-                    .onAppear {
-                        webSocketManager.socket.connect()
-                    }
             }
             else {
                 LoginView()

@@ -45,12 +45,11 @@ def start_powercoach():
 
 #PRINT AS LOGS (IMPORT LOGGING --> LOGGING.INFO("MESSAGE"))
 @socketio.on('handle_powercoach_frame')
-def handle_powercoach_frame(base64_string):
+def handle_powercoach_frame(jpegData: bytes):
     print("POWERCOACH FRAME RECEIVED")
-    print(f"Length of base64_string[0]: {len(base64_string)}")
-    print(f"Byte size: {sys.getsizeof(base64_string)}")
+    print(f"Jpeg data byte size: {len(jpegData)}")
     
-    powercoachalg(base64_string)
+    powercoachalg(jpegData)
     print("Powercoach alg done on the frame")
     
     emit('powercoach_message', shared_data['message'])

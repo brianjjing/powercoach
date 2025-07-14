@@ -23,9 +23,6 @@ struct PowerCoachFrontend: App {
         WindowGroup {
             ContentView()
                 .environmentObject(webSocketManager)
-                .onAppear {
-                    webSocketManager.socket.connect()
-                }
         }
     }
 }

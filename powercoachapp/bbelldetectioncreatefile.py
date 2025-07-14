@@ -1,5 +1,6 @@
 import os
 from mediapipe_model_maker import object_detector
+import tensorflow as tf
 
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel.tflite')
 coco_path = os.path.join(os.path.dirname(__file__), 'bbelldetecset.coco')

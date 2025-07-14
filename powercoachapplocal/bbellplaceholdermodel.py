@@ -1,8 +1,4 @@
-from tracemalloc import start
 import cv2
-import time
-from matplotlib.pyplot import bar
-import numpy as np
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
@@ -28,13 +24,14 @@ def print_result(result, output_image: mp.Image, timestamp_ms: int):
     #     shared_data['deadlift_stage'] = 1
     #     shared_data['message'] = "BARBELL NOT IN FRAME"
     
-    if shared_data['bar_bbox']:
-        start_point = (int(shared_data['bar_bbox'].origin_x), int(shared_data['bar_bbox'].origin_y))  # top-left corner
-        end_point = (int(shared_data['bar_bbox'].origin_x + shared_data['bar_bbox'].width),
-                    int(shared_data['bar_bbox'].origin_y + shared_data['bar_bbox'].height))
-        cv2.rectangle(shared_data['original_frame'], start_point, end_point, color=(255,0,0), thickness=2)
+    #For computer:
+    # if shared_data['bar_bbox']:
+    #     start_point = (int(shared_data['bar_bbox'].origin_x), int(shared_data['bar_bbox'].origin_y))  # top-left corner
+    #     end_point = (int(shared_data['bar_bbox'].origin_x + shared_data['bar_bbox'].width),
+    #                 int(shared_data['bar_bbox'].origin_y + shared_data['bar_bbox'].height))
+    #     cv2.rectangle(shared_data['original_frame'], start_point, end_point, color=(255,0,0), thickness=2)
     
-base_options = python.BaseOptions(model_asset_path='/Users/brian/Downloads/efficientdet_lite0.tflite')
+base_options = python.BaseOptions(model_asset_path='/Users/brian/Documents/Python/PowerCoach/powercoachapp/models/efficientdet_lite0.tflite')
 options = vision.ObjectDetectorOptions(base_options=base_options,
                                        running_mode=VisionRunningMode.LIVE_STREAM,
                                         max_results=5,
