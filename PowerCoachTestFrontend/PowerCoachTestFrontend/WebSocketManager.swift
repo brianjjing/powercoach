@@ -63,6 +63,8 @@ class WebSocketManager: ObservableObject {
             print("WEBSOCKET ALREADY CONNECTED. STATUS: \(socket.status)")
         }
         print("WEBSOCKET CONNECTED ...")
+        
+        print("REMINDER: Turn off firewall and filters when you test from phone to computer when testing. THEN PUT EM BACK ON ONCE YOURE DONE")
     }
     
     func emit(event: String, with items: String) {

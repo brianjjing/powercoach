@@ -1,7 +1,7 @@
 import time
 import cv2 as cv
 import mediapipe as mp
-from powercoachapp.bbelldetectioncreator import bbell_detector_model, barbell_bounding_box
+from powercoachapp.bbelldetectioncreatemodel import bbell_detector_model, barbell_bounding_box
 
 import os
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel.tflite')

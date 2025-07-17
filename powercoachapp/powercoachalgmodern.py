@@ -39,7 +39,7 @@ def powercoachalg(jpegData):
 
     mpframe = mp.Image(mp.ImageFormat.SRGB, data=cv_frame_rgb)
     logger.info("Converted to mediapipe frame")
-    
+        
     #Detecting poses from the image:
     frame_timestamp_ms = int((time.time() - shared_data['start_time']) * 1000)
     
