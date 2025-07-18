@@ -32,7 +32,7 @@ def start_test(poselandmarks, bbox, stage):
         low_tol = 0.6
         upper_tol = 1.4
         #Debugging:
-        shared_data['message'] = f"SHOULDER TO FOOT WIDTH RATIO: {shoulder_width/foot_width}"
+        #shared_data['message'] = f"SHOULDER TO FOOT WIDTH RATIO: {shoulder_width/foot_width}"
         
         if low_tol < (shoulder_width/foot_width) < upper_tol:
             shared_data['deadlift_stage'] = 2
@@ -46,7 +46,7 @@ def start_test(poselandmarks, bbox, stage):
         lt_height = lt.y * shared_data['frame_width']
         rt_height = rt.y * shared_data['frame_height']
         #debugging:
-        shared_data['message'] = f"lt: {lt_height:.2f} rt: {rt_height:.2f} bbox: {(bbox.origin_y - bbox.height):.2f} - {bbox.origin_y:.2f}"
+        #shared_data['message'] = f"lt: {lt_height:.2f} rt: {rt_height:.2f} bbox: {(bbox.origin_y - bbox.height):.2f} - {bbox.origin_y:.2f}"
         
         if ((bbox.origin_y - bbox.height) < lt_height < bbox.origin_y) and ((bbox.origin_y - bbox.height) < rt_height < bbox.origin_y):
             shared_data['deadlift_stage'] = 3
@@ -56,12 +56,35 @@ def start_test(poselandmarks, bbox, stage):
         #Lifting stage, get to lockout
         shared_data['message'] = "LIFT BAR ALL THE WAY UP"
         
+        lh = poselandmarks[mp_pose.PoseLandmark.LEFT_HIP]
+        rh = poselandmarks[mp_pose.PoseLandmark.RIGHT_HIP]
+        lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
+        rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
+        
+        left_threshold_from_hip = (lh.y - lk.y)/5
+        right_threshold_from_hip = (rh.y - rk.y)/5
+        bbell_height = (bbox.origin_y + (bbox.origin_y - bbox.height))/2
+        
+        if ((lh.y - left_threshold_from_hip) < bbell_height) and ((rh.y - right_threshold_from_hip) < bbell_height):
+            shared_data['deadlift_stage'] = 4
+            shared_data['message'] = "DESCEND BARBELL BACK TO GROUND"            
     elif stage == 4:
         #Final stage, descent after lockout
-        shared_data['message'] = "GO BACK DOWN"
+        shared_data['message'] = "DESCEND BARBELL BACK TO GROUND"
         #Make it go back to stage 3 once you're back down, alternating between the two.
+        lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
+        rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
+        la = poselandmarks[mp_pose.PoseLandmark.LEFT_ANKLE]
+        ra = poselandmarks[mp_pose.PoseLandmark.RIGHT_ANKLE]
+        left_threshold_from_ankle = (lk.y - la.y)/3
+        right_threshold_from_ankle = (rk.y - ra.y)/3
+        bbell_height = (bbox.origin_y + (bbox.origin_y - bbox.height))/2
+        
+        if ((la.y + left_threshold_from_ankle) < bbell_height) and ((ra.y + right_threshold_from_ankle) < bbell_height):
+            shared_data['deadlift_stage'] = 3
+            shared_data['message'] = "LIFT BAR ALL THE WAY UP"
     else:
-        shared_data['message'] = f"STAGE IS {shared_data['deadlift_stage']}"
+        shared_data['message'] = f"ERROR: CURRENTLY ON DEADLIFT STAGE {shared_data['deadlift_stage']}"
 
 
 #Change this whole structure to match what's above:

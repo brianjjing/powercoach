@@ -59,11 +59,11 @@ class WebSocketManager: ObservableObject {
         print("WEBSOCKET CONNECTING ...")
         if socket.status == .notConnected || socket.status == .disconnected {
             socket.connect()
+            print("SOCKET STATUS WAS NOT CONNECTED OR DISCONNECTED, SO SOCKET CONNECTED.")
         } else {
             print("WEBSOCKET ALREADY CONNECTED. STATUS: \(socket.status)")
         }
         print("WEBSOCKET CONNECTED ...")
-        
         print("REMINDER: Turn off firewall and filters when you test from phone to computer when testing. THEN PUT EM BACK ON ONCE YOURE DONE")
     }
     

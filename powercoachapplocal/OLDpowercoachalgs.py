@@ -6,7 +6,7 @@ import json
 from flask import jsonify, Response
 import time
 from powercoachapp.bbelldetectionbbox import printresultbbox
-from powercoachapp.exercises.deadlift import start
+from powercoachapp.exercises.barbell import start
 
 mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils
