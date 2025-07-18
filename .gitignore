@@ -20,7 +20,8 @@ powercoachapp/bbelldetecset.coco/**
 powercoachapp/__pycache__/
 powercoachapp/__pycache__/**
 
-powercoachapplocal/database.db
+powercoachapplocal/
+powercoachapplocal/**
 
 py3.11venv/
 py3.11venv/**
