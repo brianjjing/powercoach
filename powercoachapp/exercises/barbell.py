@@ -1,6 +1,3 @@
-import math
-from msvcrt import LK_LOCK
-from turtle import right
 import numpy as np
 import mediapipe as mp
 from powercoachapp.extensions import shared_data
@@ -28,6 +25,16 @@ def calculate_angle(a, b, c):
     cosine_theta = dot_product / (magnitude_ba * magnitude_bc)
     theta_deg = np.degrees(np.arccos(np.clip(cosine_theta, -1.0, 1.0)))
     return theta_deg
+
+def hands_on_bar(bbox, left_thumb, right_thumb):
+    lt_height = left_thumb.y * shared_data['frame_height']
+    rt_height = right_thumb.y * shared_data['frame_height']
+    #debugging:
+    #shared_data['message'] = f"lt: {lt_height:.2f} rt: {rt_height:.2f} bbox: {bbox.origin_y:.2f} - {(bbox.origin_y - bbox.height):.2f}"
+    if not ((bbox.origin_y < lt_height < (bbox.origin_y+bbox.height)) and (bbox.origin_y < rt_height < (bbox.origin_y+bbox.height))):
+        return "HANDS ON THE BARBELL"
+    #MIGHT NEED TO MAKE A WIDER RANGE, SINCE BARBELL DETECTION BBOX WILL BE VERY THIN.
+    return None
 
 def feet_shoulder_width_apart(left_shoulder, right_shoulder, left_ankle, right_ankle, ratio_tolerance):
     ls = left_shoulder
@@ -102,17 +109,53 @@ def get_under_bar_for_squat(bbox, left_shoulder, right_shoulder, left_thumb, rig
         return "PUT THE BAR ON YOUR TRAPS AND GRAB IT WITH BOTH HANDS"
     return None
 
+def leg_lockout(left_hip, right_hip, left_knee, right_knee, left_ankle, right_ankle, lift):
+    lh = left_hip
+    rh = right_hip
+    lk = left_knee
+    rk = right_knee
+    lf = left_ankle
+    rf = right_ankle
+    leg_straightness_angle_left = calculate_angle(lh, lk, lf)
+    leg_straightness_angle_right = calculate_angle(rh, rk, rf)
+    
+    leg_straight_threshold_min = 160 # Degrees, needs tuning. Can be higher like 170-175
+    if lift == 'deadlift':
+        if (leg_straightness_angle_left >= leg_straight_threshold_min) and (leg_straightness_angle_right >= leg_straight_threshold_min):
+            return "DESCEND BAR BACK TO GROUND"
+    elif lift == 'squat':
+        if (leg_straightness_angle_left >= leg_straight_threshold_min) and (leg_straightness_angle_right >= leg_straight_threshold_min):
+            return "DESCEND, PUSH YOUR HIPS DOWN AND KNEES OUT"
+    if lift == 'rdl':
+        if (leg_straightness_angle_left >= leg_straight_threshold_min) and (leg_straightness_angle_right >= leg_straight_threshold_min):
+            return "DESCEND BAR BELOW KNEES, PUSH YOUR HIPS BACK"
+    return None
+
+#Addon function to leg_lockout to check for deadlift finished???
+def bar_at_hip_height(bbox, left_hip, right_hip, left_knee, right_knee):
+    lh_height = left_hip.y * shared_data['frame_height']
+    rh_height = right_hip.y * shared_data['frame_height']
+    lk_height = left_knee.y * shared_data['frame_height']
+    rk_height = right_knee.y * shared_data['frame_height']
+    left_concentric_to_eccentric_y_position = lh_height + (lk_height - lh_height)/2
+    right_concentric_to_eccentric_y_position = rh_height + (rk_height - rh_height)/2
+    bbell_y_position = bbox.origin_y + bbox.height/2
+    
+    #If bbell_y_position goes below the threshold point y position (it needs to have a smaller value, since position is negative as it goes up)
+    if (bbell_y_position <= left_concentric_to_eccentric_y_position) and (bbell_y_position <= right_concentric_to_eccentric_y_position):
+        shared_data['lift_stage'] = 'eccentric'
+        return "DESCEND BAR BACK TO GROUND"
+
 #EXERCISES HERE:
 def conventional_deadlift(poselandmarks, bbox, stage):
     #Check all the constants for every frame first. Make conditions a little lenient, so they aren't triggered all the time:
     
     #1. Hands on bar
-    lt_height = poselandmarks[mp_pose.PoseLandmark.LEFT_THUMB].y * shared_data['frame_height']
-    rt_height = poselandmarks[mp_pose.PoseLandmark.RIGHT_THUMB].y * shared_data['frame_height']
-    #debugging:
-    #shared_data['message'] = f"lt: {lt_height:.2f} rt: {rt_height:.2f} bbox: {bbox.origin_y:.2f} - {(bbox.origin_y - bbox.height):.2f}"
-    if not ((bbox.origin_y < lt_height < (bbox.origin_y+bbox.height)) and (bbox.origin_y < rt_height < (bbox.origin_y+bbox.height))):
-        return "HANDS ON THE BARBELL"
+    lt = poselandmarks[mp_pose.PoseLandmark.LEFT_THUMB]
+    rt = poselandmarks[mp_pose.PoseLandmark.RIGHT_THUMB]
+    hands_on_bar_message = hands_on_bar(bbox, lt, rt)
+    if hands_on_bar_message:
+        return hands_on_bar_message
     #MIGHT NEED TO MAKE A WIDER RANGE, SINCE BARBELL DETECTION BBOX WILL BE VERY THIN.
     
     #2. Feet shoulder width apart
@@ -146,7 +189,7 @@ def conventional_deadlift(poselandmarks, bbox, stage):
     if arm_straightness_angle_left < arm_straight_threshold_min or arm_straightness_angle_right < arm_straight_threshold_min:
         return "KEEP YOUR ARMS STRAIGHT"
     
-    #5. Keep neck neutral (probably need 3d coords)
+    #5. Keep neck neutral
     l_ear = poselandmarks[mp_pose.PoseLandmark.LEFT_EAR]
     keep_neck_straight_message = keep_neck_straight(l_ear, ls, lh, 150)
     if keep_neck_straight_message:
@@ -154,20 +197,16 @@ def conventional_deadlift(poselandmarks, bbox, stage):
     
     #Now for the lifting after the pre-checks:
     if stage == 'concentric':
-        lh_height = lh.y * shared_data['frame_height']
-        rh_height = rh.y * shared_data['frame_height']
-        lk_height = lk.y * shared_data['frame_height']
-        rk_height = rk.y * shared_data['frame_height']
-        left_concentric_to_eccentric_y_position = lh_height + (lk_height - lh_height)/2
-        right_concentric_to_eccentric_y_position = rh_height + (rk_height - rh_height)/2
-        bbell_y_position = bbox.origin_y + bbox.height/2
-        
-        #If bbell_y_position goes below the threshold point y position (it needs to have a smaller value, since position is negative as it goes up)
-        if (bbell_y_position <= left_concentric_to_eccentric_y_position) and (bbell_y_position <= right_concentric_to_eccentric_y_position):
+        #Concentric goal: Get to leg lockout
+        leg_lockout_message = leg_lockout(lh, rh, lk, rk, lf, rf, 'deadlift')
+        if leg_lockout_message:
             shared_data['lift_stage'] = 'eccentric'
-            return "DESCEND BAR BACK TO GROUND"
+            return leg_lockout_message
+        #If this check is bad: Add a second check (function you already defined) for bar at hip level
         return "LIFT BAR TO HIP LEVEL, DRIVE FEET INTO THE GROUND"
     else: #Stage is 'eccentric'.
+        lk_height = lk.y * shared_data['frame_height']
+        rk_height = rk.y * shared_data['frame_height']
         lf_height = lf.y * shared_data['frame_height']
         rf_height = rf.y * shared_data['frame_height']
         left_threshold_from_ankle = lk_height + 2*(lf_height - lk_height)/3
@@ -179,6 +218,73 @@ def conventional_deadlift(poselandmarks, bbox, stage):
             shared_data['lift_stage'] = 'concentric'
             return "LIFT BAR TO HIP LEVEL, DRIVE FEET INTO THE GROUND"
         return "DESCEND BAR BACK TO GROUND"
+
+def rdl(poselandmarks, bbox, stage):
+    #Constants:
+    
+    #1. Hands on bar
+    lt = poselandmarks[mp_pose.PoseLandmark.LEFT_THUMB]
+    rt = poselandmarks[mp_pose.PoseLandmark.RIGHT_THUMB]
+    hands_on_bar_message = hands_on_bar(bbox, lt, rt)
+    if hands_on_bar_message:
+        return hands_on_bar_message
+    #MIGHT NEED TO MAKE A WIDER RANGE, SINCE BARBELL DETECTION BBOX WILL BE VERY THIN.
+    
+    #2. Feet shoulder width apart
+    ls = poselandmarks[mp_pose.PoseLandmark.LEFT_SHOULDER]
+    rs = poselandmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER]
+    lf = poselandmarks[mp_pose.PoseLandmark.LEFT_ANKLE]
+    rf = poselandmarks[mp_pose.PoseLandmark.RIGHT_ANKLE]
+    feet_shoulder_width_message = feet_shoulder_width_apart(ls, rs, lf, rf, 0.4)
+    if feet_shoulder_width_message:
+        return feet_shoulder_width_message
+    
+    #3. Don't round back
+    #SHK threshold: 125 degrees
+    lh = poselandmarks[mp_pose.PoseLandmark.LEFT_HIP]
+    rh = poselandmarks[mp_pose.PoseLandmark.RIGHT_HIP]
+    lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
+    rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
+    dont_round_back_message = dont_round_back(ls, rs, lh, rh, lk, rk)
+    if dont_round_back_message:
+        return dont_round_back_message
+    
+    #4. Arms straight
+    lw = poselandmarks[mp_pose.PoseLandmark.LEFT_WRIST]
+    rw = poselandmarks[mp_pose.PoseLandmark.RIGHT_WRIST]
+    le = poselandmarks[mp_pose.PoseLandmark.LEFT_ELBOW]
+    re = poselandmarks[mp_pose.PoseLandmark.RIGHT_ELBOW]
+    arm_straightness_angle_left = calculate_angle(ls, le, lw)
+    arm_straightness_angle_right = calculate_angle(rs, re, rw)
+    
+    arm_straight_threshold_min = 160 # Degrees, needs tuning. Can be higher like 170-175
+    if arm_straightness_angle_left < arm_straight_threshold_min or arm_straightness_angle_right < arm_straight_threshold_min:
+        return "KEEP YOUR ARMS STRAIGHT"
+    
+    #5. Keep neck neutral
+    l_ear = poselandmarks[mp_pose.PoseLandmark.LEFT_EAR]
+    keep_neck_straight_message = keep_neck_straight(l_ear, ls, lh, 150)
+    if keep_neck_straight_message:
+        return keep_neck_straight_message
+    
+    #Concentric goal: Straight legs
+    if stage == 'concentric':
+        leg_lockout_message = leg_lockout(lh, rh, lk, rk, lf, rf, 'rdl')
+        if leg_lockout_message:
+            shared_data['lift_stage'] = 'eccentric'
+            return leg_lockout_message
+        return "LIFT BAR TO HIP LEVEL, DRIVE FEET INTO THE GROUND"
+    #Eccentric goal: Bar right below knees
+    else:
+        lk_height = lk.y * shared_data['frame_height']
+        rk_height = rk.y * shared_data['frame_height']
+        bbell_y_position = bbox.origin_y + bbox.height/2
+        
+        #If bbell_y_position goes above the threshold point y position (it needs to have a bigger value, since position is negative as it goes up)
+        if (bbell_y_position > lk_height) and (bbell_y_position > rk_height):
+            shared_data['lift_stage'] = 'concentric'
+            return "LIFT BAR TO HIP LEVEL, DRIVE FEET INTO THE GROUND"
+        return "DESCEND BAR BELOW KNEES, PUSH YOUR HIPS BACK"
 
 def deep_squat(poselandmarks, bbox, stage):#Feet HIP width
     #HKF under 60 degrees - Should work for front and back squat
@@ -222,18 +328,10 @@ def deep_squat(poselandmarks, bbox, stage):#Feet HIP width
     if stage == 'concentric':
         #Concentric:
         #Goal is to get legs straight
-        lh = poselandmarks[mp_pose.PoseLandmark.LEFT_HIP]
-        rh = poselandmarks[mp_pose.PoseLandmark.RIGHT_HIP]
-        lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
-        rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
-        lf = poselandmarks[mp_pose.PoseLandmark.LEFT_ANKLE]
-        rf = poselandmarks[mp_pose.PoseLandmark.RIGHT_ANKLE]
-        leg_straightness_angle_left = calculate_angle(lh, lk, lf)
-        leg_straightness_angle_right = calculate_angle(rh, rk, rf)
-        
-        leg_straight_threshold_min = 160 # Degrees, needs tuning. Can be higher like 170-175
-        if (leg_straightness_angle_left >= leg_straight_threshold_min) and (leg_straightness_angle_right >= leg_straight_threshold_min):
-            return "DESCEND, PUSH YOUR HIPS DOWN AND KNEES OUT"
+        leg_lockout_message = leg_lockout(lh, rh, lk, rk, lf, rf, 'squat')
+        if leg_lockout_message:
+            shared_data['lift_stage'] = 'eccentric'
+            return leg_lockout_message
         return "SQUAT, DRIVE YOUR HIPS UP AND PUSH THROUGH FEET"
     else:
         #Eccentric:
@@ -250,6 +348,7 @@ def deep_squat(poselandmarks, bbox, stage):#Feet HIP width
         right_hkf_angle = calculate_angle(rh, rk, rf)
         
         if (lk.z < lf.z) and (rk.z < rf.z) and (left_hkf_angle <= 60) and (right_hkf_angle <= 60):
+            shared_data['lift_stage'] = 'concentric'
             return "SQUAT, DRIVE YOUR HIPS UP AND PUSH THROUGH FEET"
         return "DESCEND, PUSH YOUR HIPS DOWN AND KNEES OUT"
         
@@ -296,18 +395,10 @@ def parallel_squat(poselandmarks, bbox, stage):#Feet HIP width
     if stage == 'concentric':
         #Concentric:
         #Goal is to get legs straight
-        lh = poselandmarks[mp_pose.PoseLandmark.LEFT_HIP]
-        rh = poselandmarks[mp_pose.PoseLandmark.RIGHT_HIP]
-        lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
-        rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
-        lf = poselandmarks[mp_pose.PoseLandmark.LEFT_ANKLE]
-        rf = poselandmarks[mp_pose.PoseLandmark.RIGHT_ANKLE]
-        leg_straightness_angle_left = calculate_angle(lh, lk, lf)
-        leg_straightness_angle_right = calculate_angle(rh, rk, rf)
-        
-        leg_straight_threshold_min = 160 # Degrees, needs tuning. Can be higher like 170-175
-        if (leg_straightness_angle_left >= leg_straight_threshold_min) and (leg_straightness_angle_right >= leg_straight_threshold_min):
-            return "DESCEND, PUSH YOUR HIPS DOWN AND KNEES OUT"
+        leg_lockout_message = leg_lockout(lh, rh, lk, rk, lf, rf, 'squat')
+        if leg_lockout_message:
+            shared_data['lift_stage'] = 'eccentric'
+            return leg_lockout_message
         return "SQUAT, DRIVE YOUR HIPS UP AND PUSH THROUGH FEET"
     else:
         #Eccentric:
@@ -324,6 +415,7 @@ def parallel_squat(poselandmarks, bbox, stage):#Feet HIP width
         right_hkf_angle = calculate_angle(rh, rk, rf)
         
         if (lk.z < lf.z) and (rk.z < rf.z) and (left_hkf_angle <= 80) and (right_hkf_angle <= 80):
+            shared_data['lift_stage'] = 'concentric'
             return "SQUAT, DRIVE YOUR HIPS UP AND PUSH THROUGH FEET"
         return "DESCEND, PUSH YOUR HIPS DOWN AND KNEES OUT"
 
@@ -369,18 +461,10 @@ def quarter_squat(poselandmarks, bbox, stage):#Feet HIP width
     if stage == 'concentric':
         #Concentric:
         #Goal is to get legs straight
-        lh = poselandmarks[mp_pose.PoseLandmark.LEFT_HIP]
-        rh = poselandmarks[mp_pose.PoseLandmark.RIGHT_HIP]
-        lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
-        rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
-        lf = poselandmarks[mp_pose.PoseLandmark.LEFT_ANKLE]
-        rf = poselandmarks[mp_pose.PoseLandmark.RIGHT_ANKLE]
-        leg_straightness_angle_left = calculate_angle(lh, lk, lf)
-        leg_straightness_angle_right = calculate_angle(rh, rk, rf)
-        
-        leg_straight_threshold_min = 160 # Degrees, needs tuning. Can be higher like 170-175
-        if (leg_straightness_angle_left >= leg_straight_threshold_min) and (leg_straightness_angle_right >= leg_straight_threshold_min):
-            return "DESCEND, PUSH YOUR HIPS DOWN AND KNEES OUT"
+        leg_lockout_message = leg_lockout(lh, rh, lk, rk, lf, rf, 'squat')
+        if leg_lockout_message:
+            shared_data['lift_stage'] = 'eccentric'
+            return leg_lockout_message
         return "SQUAT, DRIVE YOUR HIPS UP AND PUSH THROUGH FEET"
     else:
         #Eccentric:
@@ -397,27 +481,38 @@ def quarter_squat(poselandmarks, bbox, stage):#Feet HIP width
         right_hkf_angle = calculate_angle(rh, rk, rf)
         
         if (lk.z < lf.z) and (rk.z < rf.z) and (left_hkf_angle <= 135) and (right_hkf_angle <= 135):
+            shared_data['lift_stage'] = 'concentric'
             return "SQUAT, DRIVE YOUR HIPS UP AND PUSH THROUGH FEET"
         return "DESCEND, PUSH YOUR HIPS DOWN AND KNEES OUT"
 
-def rdl(poselandmarks, bbox, stage):
-    return "Exercise algorithm in creation"
-
-#See if you're over 
-
-def hang_clean(poselandmarks, bbox, stage):
-    return "Exercise algorithm in creation"
-
 def bench(poselandmarks, bbox, stage):
+    #Constants:
+    #Concentric goal:
+    #Eccentric goal:
     return "Exercise algorithm in creation"
 
 def curl(poselandmarks, bbox, stage):
+    #Constants:
+    #Concentric goal:
+    #Eccentric goal:
     return "Exercise algorithm in creation"
 
 def overhead_press(poselandmarks, bbox, stage):
+    #Constants:
+    #Concentric goal:
+    #Eccentric goal:
     return "Exercise algorithm in creation"
 
 def row(poselandmarks, bbox, stage):
+    #Constants:
+    #Concentric goal:
+    #Eccentric goal:
+    return "Exercise algorithm in creation"
+
+def hang_clean(poselandmarks, bbox, stage):
+    #Constants:
+    #Concentric goal:
+    #Eccentric goal:
     return "Exercise algorithm in creation"
 
 #After writing the first ten algorithms^^^, train the dataset to perfection.
