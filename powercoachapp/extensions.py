@@ -19,10 +19,11 @@ handler.setLevel(logging.DEBUG)
 #EXTENSION:
 shared_data = {
     'start_time': 0,
-    'original_frame': None,
-    'frame_height': None,
-    'frame_width': None,
+    'frame_height': 320,
+    'frame_width': 320,
     'message': 'BARBELL NOT IN FRAME',
     'bar_bbox': None,
-    'deadlift_stage': 1
+    'lift_stage': 'concentric',
+    'equipment_type': 'barbell', #Use this later once you have the dumbbell and bodyweight and machine stuff set up
+    'exercise': 'conventional_deadlift'
 }

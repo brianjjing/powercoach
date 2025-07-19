@@ -1,4 +1,4 @@
-import sys, time
+import time
 import logging
 from flask_socketio import emit
 from flask import request
@@ -39,7 +39,7 @@ def handle_test_message(message):
 def start_powercoach():
     shared_data['message'] = 'BARBELL NOT IN FRAME'
     shared_data['bar_bbox'] = None
-    shared_data['deadlift_stage'] = 1
+    shared_data['deadlift_stage'] = 'concentric'
     shared_data['start_time'] = time.time()
     logger.debug("Powercoach started")
 
@@ -59,6 +59,6 @@ def handle_powercoach_frame(jpegData):
 def stop_powercoach():
     shared_data['message'] = 'BARBELL NOT IN FRAME'
     shared_data['bar_bbox'] = None
-    shared_data['deadlift_stage'] = 1
+    shared_data['deadlift_stage'] = 'concentric'
     shared_data['start_time'] = 0
     logger.debug("Powercoach stopped")

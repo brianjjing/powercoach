@@ -7,13 +7,23 @@ import os
 #Factory function for creating remote app:
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
-    app.config.from_mapping(
-        SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL"),
-        SECRET_KEY = os.environ.get("SECRET_KEY", 'dev')
-    )
+    
+    #Use this code for render:
+    # app.config.from_mapping(
+    #     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL"),
+    #     SECRET_KEY = os.environ.get("SECRET_KEY", 'dev')
+    # )
 
-    logger.debug(os.environ.get("DATABASE_URL"))
-    logger.debug(app.config["SQLALCHEMY_DATABASE_URI"])
+    # logger.debug(os.environ.get("DATABASE_URL"))
+    # logger.debug(app.config["SQLALCHEMY_DATABASE_URI"])
+    
+    
+    db_path = os.path.join(os.path.dirname(__file__), 'database.db')
+    db_url = f'sqlite:///{db_path}'
+    app.config.from_mapping(
+        SQLALCHEMY_DATABASE_URI=db_url,
+        SECRET_KEY=os.environ.get("SECRET_KEY", 'dev')
+    )
 
     db.init_app(app)
     socketio.init_app(app, async_mode='eventlet', logger=logger, engineio_logger=logger, cors_allowed_origins='*')

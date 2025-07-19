@@ -5,17 +5,19 @@ import mediapipe as mp
 from mediapipe.tasks.python import BaseOptions
 from mediapipe.tasks.python.vision import PoseLandmarker, PoseLandmarkerOptions, PoseLandmarkerResult, RunningMode
 from powercoachapp.bbelldetectionplaceholdermodel import bbell_detection_model
-from powercoachapp.exercises.barbell import deadlift
+import powercoachapp.exercises.barbell as barbell
 from powercoachapp.extensions import logger, shared_data
 
-#JUST THE FORMAT. EVENTUALLY YOU'LL JUST HAVE EVERY DIFFERENT EXERCISE BE A DIFFERENT FILE.
 def result_format(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
     logger.info("Pose landmarker result achieved, deadlift running ...")
     if result.pose_landmarks and shared_data['bar_bbox']:
-        deadlift(result.pose_landmarks[0], shared_data['bar_bbox'], shared_data['deadlift_stage'])
+        #Eventually you need to handle the case of different equipment types too.
+        exercise_alg = barbell.barbell_exercises[shared_data['exercise']]
+        #Only detect the straight barbells close to the camera, to enforce that only frames with barbell directly in front will be reviewed.
+        message = exercise_alg(result.pose_landmarks[0], shared_data['bar_bbox'], shared_data['lift_stage'])
+        shared_data['message'] = message
         logger.info('Deadlift alg ran.')
 
-#BaseOptions is a class that creates configuration objects to specify properties needed to run the model. baseoptions is the object here specifying it to be the poselandmarker lite mode.
 baseoptions = BaseOptions(model_asset_path=os.path.join(os.path.dirname(__file__), 'models', 'pose_landmarker_lite.task'))
 options = PoseLandmarkerOptions(
     base_options = baseoptions,
@@ -25,17 +27,18 @@ options = PoseLandmarkerOptions(
     min_pose_presence_confidence = 0.5,
     min_tracking_confidence = 0.5,
     output_segmentation_masks = False,
-    result_callback = result_format #basically the result_listener
+    result_callback = result_format
 )
 poselandmarker = PoseLandmarker.create_from_options(options)
 
-# Create a loop to read the latest frame from the camera using VideoCapture
 def powercoachalg(jpegData):
     numpy_frame = np.frombuffer(jpegData, np.uint8)
     logger.info("Converted jpeg data to numpy frame")
     
     cv_frame_rgb = cv.cvtColor(cv.imdecode(numpy_frame, cv.IMREAD_COLOR), cv.COLOR_BGR2RGB)
     logger.info("Decompressed to RGB cv_frame")
+    shared_data['frame_height'] = cv_frame_rgb.shape[0]
+    shared_data['frame_width'] = cv_frame_rgb.shape[1]
 
     mpframe = mp.Image(mp.ImageFormat.SRGB, data=cv_frame_rgb)
     logger.info("Converted to mediapipe frame")

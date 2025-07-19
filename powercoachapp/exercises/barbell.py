@@ -1,70 +1,120 @@
+import math
+import numpy as np
 import mediapipe as mp
 from powercoachapp.extensions import shared_data
 
 mp_pose = mp.solutions.pose
 mplandmarks = mp.solutions.pose.PoseLandmark
 
-#Coordinates are already normalized!
-def deadlift(poselandmarks, bbox, stage):
-    #3 SIMPLE TESTS: FEET SHOULDER WIDTH APART, HANDS ON BAR, BAR SHOULD GO FROM FEET --> HIPS --> FEET
-    if stage == 1:
-    #Initial message: 
-        shared_data['message'] = "FEET SHOULDER WIDTH APART"
+def calculate_angle(a, b, c):
+#Calculates the angle in degrees between three landmarks (a, b, c) with b as the vertex.
+
+    #Converting to pixel coords, and using numpy for faster calculations:
+    ax_pix = a.x * shared_data['frame_width']
+    ay_pix = a.y * shared_data['frame_height']
+    az_val = a.z
+    vec_a_pix = np.array([ax_pix, ay_pix, az_val])
     
-    #1. Feet shoulder width apart:
-        # Shoulders
-        ls = poselandmarks[mp_pose.PoseLandmark.LEFT_SHOULDER]
-        rs = poselandmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER]
-        # Feet
-        lf = poselandmarks[mp_pose.PoseLandmark.LEFT_ANKLE]
-        rf = poselandmarks[mp_pose.PoseLandmark.RIGHT_ANKLE]
-        #Widths:
-        shoulder_width = abs(ls.x - rs.x)
-        foot_width     = abs(lf.x - rf.x) + 1e-8 #To avoid 0 division
-        #Tolerances, tweak these values:
-        low_tol = 0.6
-        upper_tol = 1.4
-        #Debugging:
-        shared_data['message'] = f"SHOULD-FOOT WIDTH RATIO: {shoulder_width/foot_width}"
-        
-        if low_tol < (shoulder_width/foot_width) < upper_tol:
-            shared_data['deadlift_stage'] = 2
-            shared_data['message'] = "HANDS ON BAR"
-    elif stage == 2:
-        #If hands are same y and z val as the bar, then go to the lifting stage:
-        #Thumbs:
-        lt = poselandmarks[mp_pose.PoseLandmark.LEFT_THUMB]
-        rt = poselandmarks[mp_pose.PoseLandmark.RIGHT_THUMB]
-        #Thumb heights:
-        lt_height = lt.y * shared_data['frame_width']
-        rt_height = rt.y * shared_data['frame_height']
-        #debugging:
-        shared_data['message'] = f"lt: {lt_height:.2f} rt: {rt_height:.2f} bbox: {bbox.origin_y:.2f} - {(bbox.origin_y - bbox.height):.2f}"
-        
-        if ((bbox.origin_y - bbox.height) < lt_height < bbox.origin_y) and ((bbox.origin_y - bbox.height) < rt_height < bbox.origin_y):
-            shared_data['deadlift_stage'] = 3
-            shared_data['message'] = "LIFT BAR ALL THE WAY UP"
-    #LIFTING STAGE, 3 IS THE BASELINE NOW. ALSO MAKE FORM CORRECTIONS ALONG THE WAY, BUT FOR NOW JUST HANDLE THE UP/DOWN.
-    elif stage == 3:
-        #Lifting stage, get to lockout
-        shared_data['message'] = "LIFT BAR ALL THE WAY UP"
-        
+    bx_pix = b.x * shared_data['frame_width']
+    by_pix = b.y * shared_data['frame_height']
+    bz_val = b.z
+    vec_b_pix = np.array([bx_pix, by_pix, bz_val])
+    
+    cx_pix = c.x * shared_data['frame_width']
+    cy_pix = c.y * shared_data['frame_height']
+    cz_val = c.z
+    vec_c_pix = np.array([cx_pix, cy_pix, cz_val])
+    
+    #Vector must point from B outwards in both of em, so it's a-b and c-b.
+    ba_vec = vec_a_pix - vec_b_pix
+    bc_vec = vec_c_pix - vec_b_pix
+
+    dot_product = np.dot(ba_vec, bc_vec)
+    magnitude_ba = np.linalg.norm(ba_vec) + 1e-8
+    magnitude_bc = np.linalg.norm(bc_vec) + 1e-8
+
+    # Cosine of the angle, clamped to [-1, 1] to avoid floating point errors with np.arccos (could be smth like -1.0000001)
+    cosine_theta = dot_product / (magnitude_ba * magnitude_bc)
+    theta_deg = np.degrees(np.arccos(np.clip(cosine_theta, -1.0, 1.0)))
+    return theta_deg
+
+#Coordinates are already normalized!
+def conventional_deadlift(poselandmarks, bbox, stage):
+    #Check all the constants for every frame first. Make conditions a little lenient, so they aren't triggered all the time:
+    
+    #1. Hands on bar
+    lt_height = poselandmarks[mp_pose.PoseLandmark.LEFT_THUMB].y * shared_data['frame_height']
+    rt_height = poselandmarks[mp_pose.PoseLandmark.RIGHT_THUMB].y * shared_data['frame_height']
+    #debugging:
+    #shared_data['message'] = f"lt: {lt_height:.2f} rt: {rt_height:.2f} bbox: {bbox.origin_y:.2f} - {(bbox.origin_y - bbox.height):.2f}"
+    if not (bbox.origin_y < lt_height < (bbox.origin_y+bbox.height)) and (bbox.origin_y < rt_height < (bbox.origin_y+bbox.height)):
+        return "HANDS ON THE BARBELL"
+    
+    #2. Feet shoulder width apart
+    # Feet
+    ls = poselandmarks[mp_pose.PoseLandmark.LEFT_SHOULDER]
+    rs = poselandmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER]
+    ls_width = ls.x * shared_data['frame_width']
+    rs_width = rs.x * shared_data['frame_width']
+    lf_width = poselandmarks[mp_pose.PoseLandmark.LEFT_ANKLE].x * shared_data['frame_width']
+    rf_width = poselandmarks[mp_pose.PoseLandmark.RIGHT_ANKLE].x * shared_data['frame_width']
+    shoulder_width = abs(ls_width - rs_width)
+    foot_width = abs(lf_width - rf_width) + 1e-8 #To avoid 0 division
+    #Tolerances, tweak these values:
+    low_tol = 0.6
+    upper_tol = 1.4
+    #Debugging:
+    shared_data['message'] = f"SHOULD-FOOT WIDTH RATIO: {shoulder_width/foot_width}"
+    if not (low_tol < (shoulder_width/foot_width) < upper_tol):
+        return "FEET SHOULD BE SHOULDER WIDTH APART"
+    
+    #3. Don't round back
+    #SHK threshold: 125 degrees
+    lh = poselandmarks[mp_pose.PoseLandmark.LEFT_HIP]
+    rh = poselandmarks[mp_pose.PoseLandmark.RIGHT_HIP]
+    lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
+    rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
+    shk_angle_left = calculate_angle(ls, lh, lk)
+    shk_angle_right = calculate_angle(rs, rh, rk)
+    
+    shk_angle_threshold = 120 # Degrees, needs tuning.
+    if shk_angle_left < shk_angle_threshold or shk_angle_right < shk_angle_threshold:
+        return "KEEP BACK STRAIGHT, DO NOT ROUND BACK"
+    
+    #4. Arms straight
+    lw = poselandmarks[mp_pose.PoseLandmark.LEFT_WRIST]
+    rw = poselandmarks[mp_pose.PoseLandmark.RIGHT_WRIST]
+    le = poselandmarks[mp_pose.PoseLandmark.LEFT_ELBOW]
+    re = poselandmarks[mp_pose.PoseLandmark.RIGHT_ELBOW]
+    arm_straightness_angle_left = calculate_angle(ls, le, lw)
+    arm_straightness_angle_right = calculate_angle(rs, re, rw)
+    
+    arm_straight_threshold_min = 160 # Degrees, needs tuning. Can be higher like 170-175
+    if arm_straightness_angle_left < arm_straight_threshold_min or arm_straightness_angle_right < arm_straight_threshold_min:
+        return "KEEP YOUR ARMS STRAIGHT"
+    
+    #5. Keep neck neutral (probably need 3d coords)
+    l_ear = poselandmarks[mp_pose.PoseLandmark.LEFT_EAR]
+    neck_angle_left = calculate_angle(l_ear, ls, lh)
+    neck_angle_threshold = 150 # Degrees, needs tuning
+    if neck_angle_left < neck_angle_threshold:
+        return "KEEP YOUR NECK NEUTRAL AND ALIGNED WITH YOUR SPINE"    
+    
+    #Now for the lifting after the pre-checks:
+    if stage == 'concentric':
         lh = poselandmarks[mp_pose.PoseLandmark.LEFT_HIP]
         rh = poselandmarks[mp_pose.PoseLandmark.RIGHT_HIP]
         lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
         rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
-        
-        left_threshold_from_hip = (lh.y - lk.y)/5
-        right_threshold_from_hip = (rh.y - rk.y)/5
+        left_threshold_from_hip = (lh.y - lk.y)/2
+        right_threshold_from_hip = (rh.y - rk.y)/2
         bbell_height = (bbox.origin_y + (bbox.origin_y - bbox.height))/2
         
         if ((lh.y - left_threshold_from_hip) <= bbell_height) and ((rh.y - right_threshold_from_hip) <= bbell_height):
-            shared_data['deadlift_stage'] = 4
-            shared_data['message'] = "DESCEND BARBELL BACK TO GROUND"            
-    elif stage == 4:
-        #Final stage, descent after lockout
-        shared_data['message'] = "DESCEND BARBELL BACK TO GROUND"
-        #Make it go back to stage 3 once you're back down, alternating between the two.
+            shared_data['deadlift_stage'] = 'eccentric'
+            return "DESCEND BAR BACK TO GROUND"
+        return "LIFT BAR TO HIP LEVEL, DRIVE FEET INTO THE GROUND"
+    else: #Stage is 'eccentric'.
         lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
         rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
         la = poselandmarks[mp_pose.PoseLandmark.LEFT_ANKLE]
@@ -74,24 +124,46 @@ def deadlift(poselandmarks, bbox, stage):
         bbell_height = (bbox.origin_y + (bbox.origin_y - bbox.height))/2
         
         if ((la.y + left_threshold_from_ankle) <= bbell_height) and ((ra.y + right_threshold_from_ankle) <= bbell_height):
-            shared_data['deadlift_stage'] = 3
-            shared_data['message'] = "LIFT BAR ALL THE WAY UP"
-    else:
-        shared_data['message'] = f"ERROR: DEADLIFT STAGE IS {shared_data['deadlift_stage']}"
+            shared_data['deadlift_stage'] = 'concentric'
+            return "LIFT BAR TO HIP LEVEL, DRIVE FEET INTO THE GROUND"
+        return "DESCEND BAR BACK TO GROUND"
 
-#Steps to implement:
-#1. Feet shoulder width apart (compare x values)
-    #What to do: Find a way to get condition to be met as long as it is, but when it isn't      
-    #Find a way for it to both show this on screen, and say it vocally
-#2. Get BEHIND AND IN MIDDLE OF barbell:
-    #Hips behind shins which are close to and behind barbell (compare z values)
-    #Top and bottom of body are in middlish of the barbell x value
-#3. Hand on barbell: fingers on similar y value??? (you have to detect the barbell too)
-#4. Person is squatted down: (Knees bent - Hip-knee-ankle angle small), (Leaned over - Knee-hip-chest angle small) --> So, head is in front of hips (meaning head z vals will be positive)
-#5. Posterior pelvic tilt: chest similar z value to shoulders
-#6. Arms are straight: shoulder, elbow, wrist in SIMILAR x and z values on both arms:
-    #if poselandmarks.landmark[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x==poselandmarks.landmark[mp_pose.PoseLandmark.LEFT_ELBOW.value].x==poselandmarks.landmark[mp_pose.PoseLandmark.LEFT_WRIST.value].x:
-#7. Looking straight ahead: use angle between nose and eye level (midpoint of eyes) to see if looking straight ahead
-    #similar x level for nose and eyes (no head tilt)
-    #z coords of eyes and nose are equalish (no looking too up or down)
-    #nose and neck (middle of shoulders) similar x value
+def squat(poselandmarks, bbox, stage):#Feet HIP width
+    #Should work for front and back squat
+    
+    #Constants:
+    
+    #Concentric:
+        #Goal is to
+    #Eccentric:
+        #Goal is to
+    return "Exercise algorithm in creation"
+
+def rdl(poselandmarks, bbox, stage):
+    return "Exercise algorithm in creation"
+
+def hang_clean(poselandmarks, bbox, stage):
+    return "Exercise algorithm in creation"
+
+def bench(poselandmarks, bbox, stage):
+    return "Exercise algorithm in creation"
+
+def curl(poselandmarks, bbox, stage):
+    return "Exercise algorithm in creation"
+
+def overhead_press(poselandmarks, bbox, stage):
+    return "Exercise algorithm in creation"
+
+def row(poselandmarks, bbox, stage):
+    return "Exercise algorithm in creation"
+
+barbell_exercises = {
+    'conventional_deadlift': conventional_deadlift, #Only works for conventional since feet shoulder width apart
+    'squat': squat,
+    'rdl': rdl,
+    'hang_clean': hang_clean,
+    'incline_bench': bench,
+    'curl': curl,
+    'overhead_press': overhead_press,
+    'row': row
+}
