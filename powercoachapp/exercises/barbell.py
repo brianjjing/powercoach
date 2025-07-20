@@ -26,6 +26,19 @@ def calculate_angle(a, b, c):
     theta_deg = np.degrees(np.arccos(np.clip(cosine_theta, -1.0, 1.0)))
     return theta_deg
 
+def elbow_flare(left_shoulder, right_shoulder, left_elbow, right_elbow):
+    left_elbow_angle = calculate_angle(right_shoulder, left_shoulder, left_elbow)
+    right_elbow_angle = calculate_angle(left_shoulder, right_shoulder, right_elbow)
+    elbow_flare_angle_min = 100
+    elbow_flare_angle_max = 170
+    
+    if not ((elbow_flare_angle_min < left_elbow_angle < elbow_flare_angle_max) and (elbow_flare_angle_min < right_elbow_angle < elbow_flare_angle_max)):
+        if (left_elbow_angle < elbow_flare_angle_min) or (right_elbow_angle < elbow_flare_angle_min):
+            return "ELBOWS ARE TOO TUCKED INWARDS"
+        else:
+            return "ELBOWS ARE TOO FLARED OUTWARDS"
+    return None
+
 def hands_on_bar(bbox, left_thumb, right_thumb):
     lt_height = left_thumb.y * shared_data['frame_height']
     rt_height = right_thumb.y * shared_data['frame_height']
@@ -56,7 +69,7 @@ def feet_shoulder_width_apart(left_shoulder, right_shoulder, left_ankle, right_a
         return "FEET SHOULD BE SHOULDER WIDTH APART"
     return None
 
-def dont_round_back(left_shoulder, right_shoulder, left_hip, right_hip, left_knee, right_knee):
+def dont_round_back(left_shoulder, right_shoulder, left_hip, right_hip, left_knee, right_knee, shk_min_angle_threshold):
     #SHK threshold: 125 degrees
     ls = left_shoulder
     rs = right_shoulder
@@ -67,9 +80,113 @@ def dont_round_back(left_shoulder, right_shoulder, left_hip, right_hip, left_kne
     shk_angle_left = calculate_angle(ls, lh, lk)
     shk_angle_right = calculate_angle(rs, rh, rk)
     
-    shk_angle_threshold = 125 # Degrees, needs tuning.
-    if (shk_angle_left < shk_angle_threshold) or (shk_angle_right < shk_angle_threshold):
+    #shk_angle_threshold needs tuning.
+    if (shk_angle_left < shk_min_angle_threshold) or (shk_angle_right < shk_min_angle_threshold):
         return "KEEP BACK STRAIGHT, DO NOT ROUND BACK"
+    return None
+
+def bend_down_lower(left_shoulder, right_shoulder, left_hip, right_hip, left_knee, right_knee, shk_max_angle_threshold):
+    ls = left_shoulder
+    rs = right_shoulder
+    lh = left_hip
+    rh = right_hip
+    lk = left_knee
+    rk = right_knee
+    shk_angle_left = calculate_angle(ls, lh, lk)
+    shk_angle_right = calculate_angle(rs, rh, rk)
+    
+    #shk_angle_threshold needs tuning.
+    if (shk_angle_left > shk_max_angle_threshold) or (shk_angle_right > shk_max_angle_threshold):
+        return "BEND DOWN LOWER, KEEPING BACK FLAT"
+    return None
+
+def arms_straight(left_shoulder, right_shoulder, left_elbow, right_elbow, left_wrist, right_wrist):
+    ls = left_shoulder
+    rs = right_shoulder
+    le = left_elbow
+    re = right_elbow
+    lw = left_wrist
+    rw = right_wrist
+    arm_straightness_angle_left = calculate_angle(ls, le, lw)
+    arm_straightness_angle_right = calculate_angle(rs, re, rw)
+    
+    arm_straight_threshold_min = 160 # Degrees, needs tuning. Can be higher like 170-175
+    if (arm_straightness_angle_left < arm_straight_threshold_min) or (arm_straightness_angle_right < arm_straight_threshold_min):
+        return "KEEP YOUR ARMS STRAIGHT"
+    return None
+
+def arm_lockout(left_shoulder, right_shoulder, left_elbow, right_elbow, left_wrist, right_wrist):
+    ls = left_shoulder
+    rs = right_shoulder
+    le = left_elbow
+    re = right_elbow
+    lw = left_wrist
+    rw = right_wrist
+    arm_straightness_angle_left = calculate_angle(ls, le, lw)
+    arm_straightness_angle_right = calculate_angle(rs, re, rw)
+    
+    arm_straight_threshold_min = 160 # Degrees, needs tuning. Can be higher like 170-175
+    if (arm_straightness_angle_left >= arm_straight_threshold_min) or (arm_straightness_angle_right >= arm_straight_threshold_min):
+        return "DESCEND BAR BACK TO CHEST"
+    return None
+
+def arm_fully_stretched(left_shoulder, right_shoulder, left_elbow, right_elbow, left_wrist, right_wrist):
+    ls = left_shoulder
+    rs = right_shoulder
+    le = left_elbow
+    re = right_elbow
+    lw = left_wrist
+    rw = right_wrist
+    arm_straightness_angle_left = calculate_angle(ls, le, lw)
+    arm_straightness_angle_right = calculate_angle(rs, re, rw)
+    
+    arm_straight_threshold_min = 160 # Degrees, needs tuning. Can be higher like 170-175
+    if (arm_straightness_angle_left >= arm_straight_threshold_min) or (arm_straightness_angle_right >= arm_straight_threshold_min):
+        return "CURL BARBELL UPWARDS"
+    return None
+
+def arm_fully_curled(left_shoulder, right_shoulder, left_elbow, right_elbow, left_wrist, right_wrist):
+    ls = left_shoulder
+    rs = right_shoulder
+    le = left_elbow
+    re = right_elbow
+    lw = left_wrist
+    rw = right_wrist
+    arm_curlness_angle_left = calculate_angle(ls, le, lw)
+    arm_curlness_angle_right = calculate_angle(rs, re, rw)
+    
+    arm_curl_threshold_max = 45 # Degrees, needs tuning. Can be higher like 170-175
+    if (arm_curlness_angle_left <= arm_curl_threshold_max) or (arm_curlness_angle_right <= arm_curl_threshold_max):
+        return "LOWER BAR UNTIL ARMS FULLY STRETCHED"
+    return None
+
+def wrist_straight(left_elbow, right_elbow, left_wrist, right_wrist, left_index, right_index):
+    le = left_elbow
+    re = right_elbow
+    lw = left_wrist
+    rw = right_wrist
+    li = left_index
+    ri = right_index
+    wrist_straightness_angle_left = calculate_angle(li, lw, le)
+    wrist_straightness_angle_right = calculate_angle(ri, rw, re)
+    
+    wrist_straight_threshold_min = 120 #Needs tweaking
+    if (wrist_straightness_angle_left <= wrist_straight_threshold_min) or (wrist_straightness_angle_right <= wrist_straight_threshold_min):
+        return "STRAIGHTEN YOUR WRISTS"
+    return None
+
+def elbows_not_too_forward(left_elbow, right_elbow, left_shoulder, right_shoulder, left_hip, right_hip, esh_threshold_max):
+    le = left_elbow
+    re = right_elbow
+    ls = left_shoulder
+    rs = right_shoulder
+    lh = left_hip
+    rh = right_hip
+    esh_angle_left = calculate_angle(le, ls, lh)
+    esh_angle_right = calculate_angle(re, rs, rh)
+    
+    if (esh_angle_left > esh_threshold_max) or (esh_angle_right > esh_threshold_max):
+        return "DO NOT PUSH ELBOWS TOO FAR FORWARD"
     return None
 
 def no_knee_cave(left_knee, right_knee, left_ankle, right_ankle):
@@ -132,7 +249,7 @@ def leg_lockout(left_hip, right_hip, left_knee, right_knee, left_ankle, right_an
     return None
 
 #Addon function to leg_lockout to check for deadlift finished???
-def bar_at_hip_height(bbox, left_hip, right_hip, left_knee, right_knee):
+def bar_at_hip_height(bbox, left_hip, right_hip, left_knee, right_knee, lift):
     lh_height = left_hip.y * shared_data['frame_height']
     rh_height = right_hip.y * shared_data['frame_height']
     lk_height = left_knee.y * shared_data['frame_height']
@@ -141,10 +258,28 @@ def bar_at_hip_height(bbox, left_hip, right_hip, left_knee, right_knee):
     right_concentric_to_eccentric_y_position = rh_height + (rk_height - rh_height)/2
     bbell_y_position = bbox.origin_y + bbox.height/2
     
-    #If bbell_y_position goes below the threshold point y position (it needs to have a smaller value, since position is negative as it goes up)
-    if (bbell_y_position <= left_concentric_to_eccentric_y_position) and (bbell_y_position <= right_concentric_to_eccentric_y_position):
-        shared_data['lift_stage'] = 'eccentric'
-        return "DESCEND BAR BACK TO GROUND"
+    if lift == 'deadlift':
+        #If bbell_y_position goes below the threshold point y position (it needs to have a smaller value, since position is negative as it goes up)
+        if (bbell_y_position <= left_concentric_to_eccentric_y_position) and (bbell_y_position <= right_concentric_to_eccentric_y_position):
+            return "DESCEND BAR BACK TO GROUND"
+    elif lift == 'row':
+        if (bbell_y_position <= left_concentric_to_eccentric_y_position) and (bbell_y_position <= right_concentric_to_eccentric_y_position):
+            return "LOWER BAR BELOW KNEES WITH BACK STRAIGHT"
+    return None
+
+def bar_below_knees(bbox, left_knee, right_knee, lift):
+    lk_height = left_knee.y * shared_data['frame_height']
+    rk_height = right_knee.y * shared_data['frame_height']
+    bbell_y_position = bbox.origin_y + bbox.height/2
+    
+    #If bbell_y_position goes above the threshold point y position (it needs to have a bigger value, since position is negative as it goes up)
+    if lift == 'rdl':
+        if (bbell_y_position > lk_height) and (bbell_y_position > rk_height):
+            return "LIFT BAR TO HIP LEVEL, DRIVE FEET INTO THE GROUND"
+    elif lift == 'row':
+        if (bbell_y_position > lk_height) and (bbell_y_position > rk_height):
+            return "PULL BAR TOWARDS BELLY BUTTON WHILE BENT OVER"
+    return None
 
 #EXERCISES HERE:
 def conventional_deadlift(poselandmarks, bbox, stage):
@@ -173,21 +308,18 @@ def conventional_deadlift(poselandmarks, bbox, stage):
     rh = poselandmarks[mp_pose.PoseLandmark.RIGHT_HIP]
     lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
     rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
-    dont_round_back_message = dont_round_back(ls, rs, lh, rh, lk, rk)
+    dont_round_back_message = dont_round_back(ls, rs, lh, rh, lk, rk, 125)
     if dont_round_back_message:
         return dont_round_back_message
     
     #4. Arms straight
-    lw = poselandmarks[mp_pose.PoseLandmark.LEFT_WRIST]
-    rw = poselandmarks[mp_pose.PoseLandmark.RIGHT_WRIST]
     le = poselandmarks[mp_pose.PoseLandmark.LEFT_ELBOW]
     re = poselandmarks[mp_pose.PoseLandmark.RIGHT_ELBOW]
-    arm_straightness_angle_left = calculate_angle(ls, le, lw)
-    arm_straightness_angle_right = calculate_angle(rs, re, rw)
-    
-    arm_straight_threshold_min = 160 # Degrees, needs tuning. Can be higher like 170-175
-    if arm_straightness_angle_left < arm_straight_threshold_min or arm_straightness_angle_right < arm_straight_threshold_min:
-        return "KEEP YOUR ARMS STRAIGHT"
+    lw = poselandmarks[mp_pose.PoseLandmark.LEFT_WRIST]
+    rw = poselandmarks[mp_pose.PoseLandmark.RIGHT_WRIST]
+    arms_straight_message = arms_straight(ls, rs, le, re, lw, rw)
+    if arms_straight_message:
+        return arms_straight_message
     
     #5. Keep neck neutral
     l_ear = poselandmarks[mp_pose.PoseLandmark.LEFT_EAR]
@@ -250,16 +382,13 @@ def rdl(poselandmarks, bbox, stage):
         return dont_round_back_message
     
     #4. Arms straight
-    lw = poselandmarks[mp_pose.PoseLandmark.LEFT_WRIST]
-    rw = poselandmarks[mp_pose.PoseLandmark.RIGHT_WRIST]
     le = poselandmarks[mp_pose.PoseLandmark.LEFT_ELBOW]
     re = poselandmarks[mp_pose.PoseLandmark.RIGHT_ELBOW]
-    arm_straightness_angle_left = calculate_angle(ls, le, lw)
-    arm_straightness_angle_right = calculate_angle(rs, re, rw)
-    
-    arm_straight_threshold_min = 160 # Degrees, needs tuning. Can be higher like 170-175
-    if arm_straightness_angle_left < arm_straight_threshold_min or arm_straightness_angle_right < arm_straight_threshold_min:
-        return "KEEP YOUR ARMS STRAIGHT"
+    lw = poselandmarks[mp_pose.PoseLandmark.LEFT_WRIST]
+    rw = poselandmarks[mp_pose.PoseLandmark.RIGHT_WRIST]
+    arms_straight_message = arms_straight(ls, rs, le, re, lw, rw)
+    if arms_straight_message:
+        return arms_straight_message
     
     #5. Keep neck neutral
     l_ear = poselandmarks[mp_pose.PoseLandmark.LEFT_EAR]
@@ -311,7 +440,7 @@ def deep_squat(poselandmarks, bbox, stage):#Feet HIP width
     rh = poselandmarks[mp_pose.PoseLandmark.RIGHT_HIP]
     lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
     rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
-    dont_round_back_message = dont_round_back(ls, rs, lh, rh, lk, rk)
+    dont_round_back_message = dont_round_back(ls, rs, lh, rh, lk, rk, 125)
     if dont_round_back_message:
         return dont_round_back_message
     #4. No knee cave
@@ -378,7 +507,7 @@ def parallel_squat(poselandmarks, bbox, stage):#Feet HIP width
     rh = poselandmarks[mp_pose.PoseLandmark.RIGHT_HIP]
     lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
     rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
-    dont_round_back_message = dont_round_back(ls, rs, lh, rh, lk, rk)
+    dont_round_back_message = dont_round_back(ls, rs, lh, rh, lk, rk, 125)
     if dont_round_back_message:
         return dont_round_back_message
     #4. No knee cave
@@ -444,7 +573,7 @@ def quarter_squat(poselandmarks, bbox, stage):#Feet HIP width
     rh = poselandmarks[mp_pose.PoseLandmark.RIGHT_HIP]
     lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
     rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
-    dont_round_back_message = dont_round_back(ls, rs, lh, rh, lk, rk)
+    dont_round_back_message = dont_round_back(ls, rs, lh, rh, lk, rk, 125)
     if dont_round_back_message:
         return dont_round_back_message
     #4. No knee cave
@@ -485,31 +614,225 @@ def quarter_squat(poselandmarks, bbox, stage):#Feet HIP width
             return "SQUAT, DRIVE YOUR HIPS UP AND PUSH THROUGH FEET"
         return "DESCEND, PUSH YOUR HIPS DOWN AND KNEES OUT"
 
+def standing_overhead_press(poselandmarks, bbox, stage):
+    #Can be seated or standing
+    #Constants:
+    #1. Hands on bar
+    lt = poselandmarks[mp_pose.PoseLandmark.LEFT_THUMB]
+    rt = poselandmarks[mp_pose.PoseLandmark.RIGHT_THUMB]
+    hands_on_bar_message = hands_on_bar(bbox, lt, rt)
+    if hands_on_bar_message:
+        return hands_on_bar_message
+    #MIGHT NEED TO MAKE A WIDER RANGE, SINCE BARBELL DETECTION BBOX WILL BE VERY THIN.
+    
+    #2. Feet shoulder width apart
+    ls = poselandmarks[mp_pose.PoseLandmark.LEFT_SHOULDER]
+    rs = poselandmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER]
+    lf = poselandmarks[mp_pose.PoseLandmark.LEFT_ANKLE]
+    rf = poselandmarks[mp_pose.PoseLandmark.RIGHT_ANKLE]
+    feet_shoulder_width_message = feet_shoulder_width_apart(ls, rs, lf, rf, 0.4)
+    if feet_shoulder_width_message:
+        return feet_shoulder_width_message
+    
+    #3. Don't round back
+    lh = poselandmarks[mp_pose.PoseLandmark.LEFT_HIP]
+    rh = poselandmarks[mp_pose.PoseLandmark.RIGHT_HIP]
+    lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
+    rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
+    dont_round_back_message = dont_round_back(ls, rs, lh, rh, lk, rk, 160)
+    if dont_round_back_message:
+        return dont_round_back_message
+    
+    #4. Neck straight
+    l_ear = poselandmarks[mp_pose.PoseLandmark.LEFT_EAR]
+    keep_neck_straight_message = keep_neck_straight(l_ear, ls, lh, 160)
+    if keep_neck_straight_message:
+        return keep_neck_straight_message
+    
+    #5. x and z angles should be between 100 and 170 degrees (of both shoulders + the elbow.)
+    le = poselandmarks[mp_pose.PoseLandmark.LEFT_ELBOW]
+    re = poselandmarks[mp_pose.PoseLandmark.RIGHT_ELBOW]
+    elbow_flare_message = elbow_flare(ls, rs, le, re)
+    if elbow_flare_message:
+        return elbow_flare_message
+    
+    #Concentric goal: Arms straight
+    if stage == 'concentric':
+        lw = poselandmarks[mp_pose.PoseLandmark.LEFT_WRIST]
+        rw = poselandmarks[mp_pose.PoseLandmark.RIGHT_WRIST]
+        arm_lockout_message = arm_lockout(ls, rs, le, re, lw, rw)
+        if arm_lockout_message:
+            shared_data['lift_stage'] = 'eccentric'
+            return arm_lockout_message
+        return "PRESS THE BAR ABOVE YOUR HEAD UNTIL ARMS ARE STRAIGHT"
+    else:
+        lm_height = poselandmarks[mp_pose.PoseLandmark.MOUTH_LEFT].y * shared_data['frame_height']
+        rm_height = poselandmarks[mp_pose.PoseLandmark.MOUTH_RIGHT].y * shared_data['frame_height']
+        bbell_height = bbox.origin_y + bbox.height/2
+        
+        if (lm_height < bbell_height) and (rm_height < bbell_height):
+            shared_data['lift_stage'] = 'concentric'
+            return "PRESS THE BAR ABOVE YOUR HEAD UNTIL ARMS ARE STRAIGHT"
+        return "DESCEND BAR BACK TO CHEST"
+
+def row(poselandmarks, bbox, stage):
+    #Constants:
+    #1. Hands on bar
+    lt = poselandmarks[mp_pose.PoseLandmark.LEFT_THUMB]
+    rt = poselandmarks[mp_pose.PoseLandmark.RIGHT_THUMB]
+    hands_on_bar_message = hands_on_bar(bbox, lt, rt)
+    if hands_on_bar_message:
+        return hands_on_bar_message
+    #MIGHT NEED TO MAKE A WIDER RANGE, SINCE BARBELL DETECTION BBOX WILL BE VERY THIN.
+    
+    #2. Feet shoulder width apart
+    ls = poselandmarks[mp_pose.PoseLandmark.LEFT_SHOULDER]
+    rs = poselandmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER]
+    lf = poselandmarks[mp_pose.PoseLandmark.LEFT_ANKLE]
+    rf = poselandmarks[mp_pose.PoseLandmark.RIGHT_ANKLE]
+    feet_shoulder_width_message = feet_shoulder_width_apart(ls, rs, lf, rf, 0.5)
+    if feet_shoulder_width_message:
+        return feet_shoulder_width_message
+    
+    #3. Don't round back (LENIENT SHK threshold)
+    #SHK threshold: 90 degrees, can't go below
+    lh = poselandmarks[mp_pose.PoseLandmark.LEFT_HIP]
+    rh = poselandmarks[mp_pose.PoseLandmark.RIGHT_HIP]
+    lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
+    rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
+    dont_round_back_message = dont_round_back(ls, rs, lh, rh, lk, rk, 90) #Tweak the 90 degrees here, maybe even lower?
+    if dont_round_back_message:
+        return dont_round_back_message
+    
+    #4. Keep neck neutral
+    l_ear = poselandmarks[mp_pose.PoseLandmark.LEFT_EAR]
+    keep_neck_straight_message = keep_neck_straight(l_ear, ls, lh, 150)
+    if keep_neck_straight_message:
+        return keep_neck_straight_message
+    
+    #5. Don't be too straight (make a LOW SHK threshold)
+    bend_down_lower_message = bend_down_lower(ls, rs, lh, rh, lk, rk, 135)
+    if bend_down_lower_message:
+        bend_down_lower_message
+    
+    #Concentric goal: Bar at hip level
+    if stage == 'concentric':
+        lh = poselandmarks[mp_pose.PoseLandmark.LEFT_HIP]
+        rh = poselandmarks[mp_pose.PoseLandmark.RIGHT_HIP]
+        lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
+        rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
+        bar_at_hip_height_message = bar_at_hip_height(lh, rh, lk, rk, 'row')
+        if bar_at_hip_height_message:
+            shared_data['lift_stage'] = 'eccentric'
+            return bar_at_hip_height_message
+        return "PULL BAR TOWARDS BELLY BUTTON WHILE BENT OVER"
+    #Eccentric goal: Bar below knees
+    else:
+        lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
+        rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
+        bar_below_knees_message = bar_below_knees(bbox, lk, rk, 'row')
+        if bar_below_knees_message:
+            shared_data['lift_stage'] = 'concentric'
+            return bar_below_knees_message
+        return "LOWER BAR BELOW KNEES WITH BACK STRAIGHT"
+
+def curl(poselandmarks, bbox, stage):
+    #Constants:
+    #1. Hands on bar
+    lt = poselandmarks[mp_pose.PoseLandmark.LEFT_THUMB]
+    rt = poselandmarks[mp_pose.PoseLandmark.RIGHT_THUMB]
+    hands_on_bar_message = hands_on_bar(bbox, lt, rt)
+    if hands_on_bar_message:
+        return hands_on_bar_message
+    
+    #2. Feet shoulder width apart
+    ls = poselandmarks[mp_pose.PoseLandmark.LEFT_SHOULDER]
+    rs = poselandmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER]
+    lf = poselandmarks[mp_pose.PoseLandmark.LEFT_ANKLE]
+    rf = poselandmarks[mp_pose.PoseLandmark.RIGHT_ANKLE]
+    feet_shoulder_width_message = feet_shoulder_width_apart(ls, rs, lf, rf, 0.4)
+    if feet_shoulder_width_message:
+        return feet_shoulder_width_message
+    
+    #3. Keep back straight
+    lh = poselandmarks[mp_pose.PoseLandmark.LEFT_HIP]
+    rh = poselandmarks[mp_pose.PoseLandmark.RIGHT_HIP]
+    lk = poselandmarks[mp_pose.PoseLandmark.LEFT_KNEE]
+    rk = poselandmarks[mp_pose.PoseLandmark.RIGHT_KNEE]
+    dont_round_back_message = dont_round_back(ls, rs, lh, rh, lk, rk, 155)
+    if dont_round_back_message:
+        return dont_round_back_message
+    
+    #4. Don't sway elbows, keep them at similar Z as torso
+    le = poselandmarks[mp_pose.PoseLandmark.LEFT_ELBOW]
+    re = poselandmarks[mp_pose.PoseLandmark.RIGHT_ELBOW]
+    elbows_not_too_forward_message = elbows_not_too_forward(le, re, ls, rs, lh, rh, 55)
+    if elbows_not_too_forward_message:
+        return elbows_not_too_forward_message
+    
+    #5. Wrist straight
+    lw = poselandmarks[mp_pose.PoseLandmark.LEFT_WRIST]
+    rw = poselandmarks[mp_pose.PoseLandmark.RIGHT_WRIST]
+    li = poselandmarks[mp_pose.PoseLandmark.LEFT_INDEX]
+    ri = poselandmarks[mp_pose.PoseLandmark.RIGHT_INDEX]
+    wrist_straight_message = wrist_straight(le, re, lw, rw, li, ri)
+    if wrist_straight_message:
+        return wrist_straight_message
+    
+    #Concentric goal: Arms at a 120 degree angle
+    if stage == 'concentric':
+        arm_fully_curled_message = arm_fully_curled(ls, rs, le, re, lw, rw)
+        if arm_fully_curled_message:
+            shared_data['lift_stage'] = 'eccentric'
+            return arm_fully_curled_message
+        return "CURL BARBELL UPWARDS"
+    #Eccentric goal: Arms stretched straight
+    else:
+        arm_fully_stretched_message = arm_fully_stretched(ls, rs, le, re, lw, rw)
+        if arm_fully_stretched_message:
+            shared_data['lift_stage'] = 'concentric'
+            return arm_fully_stretched_message
+        return "LOWER BAR UNTIL ARMS FULLY STRETCHED"
+
+#TO-DO:
+#Should I even do weightlifting exercises, when they happen so fast??? (Maybe just post-lift feedback for those)
+def hang_clean(poselandmarks, bbox, stage):
+    #Constants:
+    #Concentric goal:
+    #Eccentric goal:
+    return "Exercise algorithm in creation"
+
+def power_clean(poselandmarks, bbox, stage):
+    #Constants:
+    #Concentric goal:
+    #Eccentric goal:
+    return "Exercise algorithm in creation"
+
+def clean_and_jerk(poselandmarks, bbox, stage):
+    #Constants:
+    #Concentric goal:
+    #Eccentric goal:
+    return "Exercise algorithm in creation"
+
+def snatch(poselandmarks, bbox, stage):
+    #Constants:
+    #Concentric goal:
+    #Eccentric goal:
+    return "Exercise algorithm in creation"
+
+def seated_overhead_press_or_incline_bench(poselandmarks, bbox, stage):
+    #Constants:
+    #Concentric goal:
+    #Eccentric goal:
+    return "Exercise algorithm in creation"
+
 def bench(poselandmarks, bbox, stage):
     #Constants:
     #Concentric goal:
     #Eccentric goal:
     return "Exercise algorithm in creation"
 
-def curl(poselandmarks, bbox, stage):
-    #Constants:
-    #Concentric goal:
-    #Eccentric goal:
-    return "Exercise algorithm in creation"
-
-def overhead_press(poselandmarks, bbox, stage):
-    #Constants:
-    #Concentric goal:
-    #Eccentric goal:
-    return "Exercise algorithm in creation"
-
-def row(poselandmarks, bbox, stage):
-    #Constants:
-    #Concentric goal:
-    #Eccentric goal:
-    return "Exercise algorithm in creation"
-
-def hang_clean(poselandmarks, bbox, stage):
+def skullcrushers(poselandmarks, bbox, stage):
     #Constants:
     #Concentric goal:
     #Eccentric goal:
@@ -520,13 +843,11 @@ def hang_clean(poselandmarks, bbox, stage):
 
 barbell_exercises = {
     'conventional_deadlift': conventional_deadlift, #Only works for conventional since feet shoulder width apart
+    'rdl': rdl,
     'deep_squat': deep_squat,
     'parallel_squat': parallel_squat,
     'quarter_squat': quarter_squat,
-    'rdl': rdl,
-    'hang_clean': hang_clean,
-    'incline_bench': bench,
+    'standing_overhead_press': standing_overhead_press,
     'curl': curl,
-    'overhead_press': overhead_press,
     'row': row
 }
