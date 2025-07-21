@@ -3,7 +3,7 @@ import logging
 from flask_socketio import emit
 from flask import request
 from powercoachapp.extensions import socketio, logger, clients, shared_data
-from powercoachapp.powercoachalgmodern import powercoachalg
+from powercoachapp.powercoachalg import powercoachalg
 
 @socketio.on('connect')
 def handle_connect():

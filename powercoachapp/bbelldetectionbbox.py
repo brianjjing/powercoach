@@ -1,13 +1,14 @@
 import time
 import cv2 as cv
 import mediapipe as mp
-from powercoachapp.bbelldetectioncreatemodel import bbell_detector_model, barbell_bounding_box
+from powercoachapp.bbelldetectioncreatemodel import bbell_detector_model
 
 import os
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel.tflite')
 assert os.path.exists(model_path), "Model not exported! Please run bbelldetectioncreator.py to export the model."
 
 #DRAWING bounding box live:
+"""
 def livebbellbbox():    
     cap = cv.VideoCapture(0)  # 0 for default webcam
     if not cap.isOpened():
@@ -37,8 +38,8 @@ def livebbellbbox():
     cap.release()
     cv.destroyAllWindows()
     return
-
 #livebbellbbox()
+"""
 
 #GETTING bounding box based on still image
 def bbellbbox(imagepath):
@@ -46,15 +47,16 @@ def bbellbbox(imagepath):
     barbelldetections = bbell_detector_model.detect_async(image, 1000)
 
     barbell = None
-    for i in barbelldetections.detections:
-        if (i.categories[0].category_name)=='Barbell':
-            barbell = i
-            break
-            #This is because the highest confidence barbell will be at the top
-                
-    bbox = barbell.bounding_box
-
-    return bbox
+    if barbelldetections.detections:
+        for i in barbelldetections.detections:
+            if (i.categories[0].category_name)=='Barbell':
+                barbell = i
+                bbox = barbell.bounding_box
+                return bbox
+                #This is because the highest confidence barbell will be at the top
+    else:
+        return "No barbell detected"
+    
 
 #DRAWING bounding box on still image
 def drawbbox(path, bbox):
@@ -66,8 +68,7 @@ def drawbbox(path, bbox):
     cv.destroyAllWindows()
     return
 #[(bbox.origin_x, bbox.origin_y), (bbox.origin_x+bbox.width, bbox.origin_y+bbox.height)]
-
-#drawbbox('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/!todo/doneimages/250.jpg', bbellbbox('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/!todo/doneimages/250.jpg'))
+drawbbox('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/test/images/352.jpg', bbellbbox('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/test/images/352.jpg'))
 
 
 #Draw a rotated rectangle with minAreaRect.

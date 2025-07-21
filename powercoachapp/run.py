@@ -1,5 +1,5 @@
 import os
-from powercoachapp import create_app, socketio, auth, extensions, websocket, powercoachalgmodern, bbelldetectionplaceholdermodel
+from powercoachapp import create_app, powercoachalg, socketio, auth, extensions, websocket, bbelldetectionplaceholdermodel
 from flask import request
 
 app = create_app()
