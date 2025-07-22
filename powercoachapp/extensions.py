@@ -19,8 +19,8 @@ handler.setLevel(logging.DEBUG)
 #EXTENSION:
 shared_data = {
     'start_time': 0,
-    'frame_height': 320,
-    'frame_width': 320,
+    'frame_height': 256,
+    'frame_width': 256,
     'message': 'BARBELL NOT IN FRAME',
     'bar_bbox': None,
     'lift_stage': 'concentric',

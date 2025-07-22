@@ -55,4 +55,4 @@ def detect_in_image(path):
     cv.imshow("Detected Image", image_bgr)
     cv.waitKey(0)
     cv.destroyAllWindows()    
-#detect_in_image('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/test/images/159.jpg')
+detect_in_image('/Users/brian/Downloads/man-working-out-in-a-gym-with-barbell-and-weights-royalty-free-image-1694172345.avif')
