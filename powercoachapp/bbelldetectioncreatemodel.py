@@ -28,7 +28,7 @@ def create_bbell_detection_model():
         running_mode = VisionRunningMode.LIVE_STREAM,
         #display_names_locale = 'en', #Already made english by default
         max_results = 5,
-        score_threshold = 0.01, #Retrain with lower score threshold.
+        score_threshold = 0.2,
         category_allowlist = ['Barbell'], #Only detects barbells
         result_callback = output_detection_details
     )
