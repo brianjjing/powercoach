@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     //@State changes the variable within a VIEW
     //The shared WebSocketManager, which is initialized in WebSocketManager, is set to webSocketManager. It is a ViewModel instance.
+    @EnvironmentObject var webSocketManager: WebSocketManager
     @State var currentTab: Int = 1
     @State var houseSystemName = "house.fill"
     @State var workoutPlannerSystemName = "long.text.page.and.pencil"
@@ -144,7 +145,6 @@ struct ContentView: View {
                 
             }
         }
-        
     }
 }
 

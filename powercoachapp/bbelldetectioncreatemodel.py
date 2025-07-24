@@ -54,5 +54,5 @@ def detect_in_image(path):
     cv.rectangle(image_bgr, (barbell_bounding_box.origin_x, barbell_bounding_box.origin_y), (barbell_bounding_box.origin_x+barbell_bounding_box.width, barbell_bounding_box.origin_y+barbell_bounding_box.height), (255,0,0), 2)
     cv.imshow("Detected Image", image_bgr)
     cv.waitKey(0)
-    cv.destroyAllWindows()    
+    cv.destroyAllWindows()
 #detect_in_image('/Users/brian/Downloads/man-working-out-in-a-gym-with-barbell-and-weights-royalty-free-image-1694172345.avif')

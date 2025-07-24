@@ -66,7 +66,7 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
     }
     
     private var lastSentTime = Date(timeIntervalSince1970: 0) // store last send time
-    private let frameSendInterval: TimeInterval = 2 // seconds between frames (0.5s = 2 FPS)
+    private let frameSendInterval: TimeInterval = 0.1 // seconds between frames (0.5s = 2 FPS)
     
     //Implementing this optional method to deal with frames. Every time a video frame is captured by the output variable, this method will be called, using the frameHandlingQueue
     func captureOutput(_ output: AVCaptureOutput, //output is the OBJECT PRODUCING video frames and sending to delegate

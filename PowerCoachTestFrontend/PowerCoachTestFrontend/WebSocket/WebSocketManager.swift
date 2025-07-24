@@ -22,6 +22,7 @@ class WebSocketManager: ObservableObject {
     @Published var powerCoachMessage = "Connecting..."
     
     init() {
+        print("Calling WebSocketManager()...")
         self.manager = SocketManager(socketURL: URL(string: "http://192.168.1.219:10000")!, config: [.log(true), .compress, .forceWebsockets(true), .path("/socket.io")])
         self.socket = self.manager.defaultSocket
         
@@ -56,14 +57,13 @@ class WebSocketManager: ObservableObject {
             print(data)
         }
         
-        print("WEBSOCKET CONNECTING ...")
         if socket.status == .notConnected || socket.status == .disconnected {
             socket.connect()
-            print("SOCKET STATUS WAS NOT CONNECTED OR DISCONNECTED, SO SOCKET CONNECTED.")
+            emit(event: "connect")
+            print("WEBSOCKET CONNECTING ...")
         } else {
             print("WEBSOCKET ALREADY CONNECTED. STATUS: \(socket.status)")
         }
-        print("WEBSOCKET CONNECTED ...")
         print("REMINDER: Turn off firewall and filters when you test from phone to computer when testing. THEN PUT EM BACK ON ONCE YOURE DONE")
     }
     
@@ -86,12 +86,14 @@ class WebSocketManager: ObservableObject {
                 self.socket.emit(event, items)
             }
             socket.connect()
+            emit(event: "connect")
         case .disconnected:
             print("ERROR WITH EMITTING EVENT \(event): WEBSOCKET DISCONNECTED\n")
             socket.once(clientEvent: .connect) { data, ack in
                 self.socket.emit(event, items)
             }
             socket.connect()
+            emit(event: "connect")
         default:
             break
         }
@@ -116,12 +118,14 @@ class WebSocketManager: ObservableObject {
                 self.socket.emit(event, items)
             }
             socket.connect()
+            emit(event: "connect")
         case .disconnected:
             print("ERROR WITH EMITTING EVENT \(event): WEBSOCKET DISCONNECTED\n")
             socket.once(clientEvent: .connect) { data, ack in
                 self.socket.emit(event, items)
             }
             socket.connect()
+            emit(event: "connect")
         default:
             break
         }
@@ -146,12 +150,14 @@ class WebSocketManager: ObservableObject {
                 self.socket.emit(event)
             }
             socket.connect()
+            emit(event: "connect")
         case .disconnected:
             print("ERROR WITH EMITTING EVENT \(event): WEBSOCKET DISCONNECTED\n")
             socket.once(clientEvent: .connect) { data, ack in
                 self.socket.emit(event)
             }
             socket.connect()
+            emit(event: "connect")
         default:
             break
         }

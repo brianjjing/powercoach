@@ -1,0 +1,6 @@
+powercoachapp/bbelldetectioncreatefile.py
+powercoachapp/bbelldetectiondatasetcreator.py
+powercoachapp/bbelldetectiondatasetapikeys.py
+powercoachapp/test.py
+powercoachapp/bbelldetecset.coco/
+powercoachapp/__pycache__/

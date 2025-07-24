@@ -78,6 +78,12 @@ struct PowerCoachView: View {
         .onDisappear {
             webSocketManager.emit(event: "stop_powercoach")
         }
+        .onChange(of: webSocketManager.powerCoachMessage, initial: false) { oldMessage, newMessage in // iOS 17+ syntax
+            // Ensure you don't speak initial "Connecting..." or empty messages
+            if !newMessage.isEmpty && newMessage != "Connecting..." && newMessage != "Message loading..." {
+                SpeechSynthesizerManager.shared.speak(newMessage)
+            }
+        }
     }
 }
 
