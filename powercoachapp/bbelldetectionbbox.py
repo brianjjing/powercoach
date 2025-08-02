@@ -2,6 +2,7 @@ import time
 import cv2 as cv
 import mediapipe as mp
 from powercoachapp.bbelldetectioncreatemodel import bbell_detector_model
+from powercoachapp.extensions import shared_data
 
 import os
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel.tflite')
@@ -90,4 +91,19 @@ def testing_yolo_labels(image_num):
         
 #testing_yolo_labels(120)
 
-#NOW GO THROUGH ALL THE IMAGES, AND IF IT DOESN'T HAVE A CORRESPONDING LABEL FILE, THEN DELETE IT:
+#Put this in the bbox file:
+def detect_in_image(path):
+    start_time = time.time()
+    image = mp.Image.create_from_file(path)
+
+    print("IMAGE: ", image)
+    bbell_detector_model.detect_async(image, timestamp_ms=int((time.time() - start_time) * 1000))
+    time.sleep(1)
+
+    image_np = image.numpy_view()
+    image_bgr = cv.cvtColor(image_np, cv.COLOR_RGB2BGR)
+    cv.rectangle(image_bgr, (shared_data['bar_bbox'].origin_x, shared_data['bar_bbox'].origin_y), (shared_data['bar_bbox'].origin_x+shared_data['bar_bbox'].width, shared_data['bar_bbox'].origin_y+shared_data['bar_bbox'].height), (255,0,0), 2)
+    cv.imshow("Detected Image", image_bgr)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+#detect_in_image('/Users/brian/Downloads/man-working-out-in-a-gym-with-barbell-and-weights-royalty-free-image-1694172345.avif')

@@ -46,7 +46,9 @@ struct ProfileView: View {
     }
 
     func logout() {
-        guard let url = URL(string: "https://powercoach-1.onrender.com/auth/logout") else { return }
+        //Render: https://powercoach-1.onrender.com/auth/logout
+        //AWS: http://54.67.86.184:10000/auth/logout
+        guard let url = URL(string:"https://powercoach-1.onrender.com/auth/logout") else { return }
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"

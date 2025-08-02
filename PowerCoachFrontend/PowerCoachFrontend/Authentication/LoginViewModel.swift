@@ -16,6 +16,8 @@ class LoginViewModel: ObservableObject {
     @AppStorage("profileMessage") var profileMessage: String = "User not found"
     
     func login() {
+        //Render: https://powercoach-1.onrender.com/auth/login
+        //AWS: http://54.67.86.184:10000/auth/login --> upgrade to aws
         guard let appUrl = URL(string: "https://powercoach-1.onrender.com/auth/login") else {
             self.errorMessage = "Invalid server URL"
             return

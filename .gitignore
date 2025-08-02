@@ -13,7 +13,7 @@ cachevalid/**
 
 powercoachapp/bbelldetectioncreatefile.py
 powercoachapp/bbelldetectiondatasetcreator.py
-powercoachapp/bbelldetectiondatasetapikeys.py
+powercoachapp/apikeys.py
 powercoachapp/test.py
 powercoachapp/bbelldetecset.coco/
 powercoachapp/bbelldetecset.coco/**

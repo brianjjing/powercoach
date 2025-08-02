@@ -62,3 +62,6 @@ def stop_powercoach():
     shared_data['deadlift_stage'] = 'concentric'
     shared_data['start_time'] = 0
     logger.debug("Powercoach stopped")
+    
+#WSGI server already handles the SIGTERM when shutting down the REMOTE server.
+#Just need to manually kill connection when using the LOCAL server.
