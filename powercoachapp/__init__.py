@@ -1,7 +1,6 @@
 from flask import Flask
 from powercoachapp import auth
 from powercoachapp.extensions import socketio, db, logger
-from powercoachapp.sqlmodels import User
 import os
 
 #Factory function for creating remote app:

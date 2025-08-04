@@ -9,7 +9,8 @@ class User(db.Model): #SQLAlchemy automatically converts to lowercase and plural
     
 class UserBackendData(db.Model):
     __tablename__ = 'user_backend_data' #Dunder references object properties
-    
+
+    user_backend_data_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     start_time = db.Column(db.Float)
     frame_height = db.Column(db.Integer)
@@ -24,7 +25,8 @@ class UserBackendData(db.Model):
 class Workout(db.Model):
     __tablename__ = 'workouts'
     
-    user_id = db.Column(db.Integer, primary_key=True)
+    workout_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     workout_name = db.Column(db.String(64), nullable=False)
     num_exercises = db.Column(db.Integer, db.CheckConstraint('num_exercises<=15'), nullable=False)
     exercise_names = db.Column(db.ARRAY(db.String(64)), nullable=False)
