@@ -22,11 +22,11 @@ def create_app(test_config=None):
     # #Render:
     app.config.from_mapping(
         SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL"),
-        SECRET_KEY = os.environ.get("SECRET_KEY", 'dev')
+        SECRET_KEY = os.environ.get("SECRET_KEY") #Make this the actual secret key
     )
 
-    logger.debug(os.environ.get("DATABASE_URL"))
-    logger.debug(app.config["SQLALCHEMY_DATABASE_URI"])
+    #logger.debug(os.environ.get("DATABASE_URL"))
+    #logger.debug(app.config["SQLALCHEMY_DATABASE_URI"])
     
     #Local database:
     # db_path = os.path.join(os.path.dirname(__file__), 'database.db')
