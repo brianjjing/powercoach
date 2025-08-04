@@ -24,7 +24,6 @@ class WebSocketManager: ObservableObject {
     @Published var workoutPlanDisplay = "Connecting..."
     @Published var forumDisplay = "Connecting..."
     @Published var powerCoachMessage = "Connecting..."
-    @Published var useridString = "User ID not found"
     
     @Published var currentWorkout: String?
     
@@ -36,13 +35,6 @@ class WebSocketManager: ObservableObject {
         
         socket.on(clientEvent: .connect) { (data, ack) in
             print("EVENT: SOCKET CONNECTED.")
-            if let sidDict = data[1] as? [String: Any],
-                let sidString = sidDict["sid"] as? String,
-                    let sidData = sidString.data(using: .utf8) {
-                        DispatchQueue.main.async {
-                            self.useridString = "Hi, User \(String(decoding: sidData, as: UTF8.self))!"
-                        }
-            }
             DispatchQueue.main.async {
                 self.homeDisplay = "Press the POWERCOACH logo below to start a lift!"
                 self.workoutPlanDisplay = "Workout plan feature coming soon..."

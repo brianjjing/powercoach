@@ -1,7 +1,6 @@
 import functools
-from flask import Blueprint, flash, g, redirect, request, session, url_for, jsonify
+from flask import Blueprint, g, redirect, request, session, url_for, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
-from flask_sqlalchemy import SQLAlchemy
 from powercoachapp.extensions import db
 from powercoachapp.sqlmodels import User
 
@@ -40,6 +39,7 @@ def login():
     }), 200
     
 @authbp.route('/logout')
+@login_required
 def logout():
     session.clear()
     return jsonify({
@@ -80,17 +80,12 @@ def signup():
             "signup_message": "Please enter a valid username (32 chars max) and password (32 chars max)"
         }), 500
 
-@authbp.route('/debug/users', methods=['GET'])
-def print_all_users():
-    users = User.query.all()
-    usernames = [user.username for user in users]
-
-    print("🧾 All usernames in DB:", usernames)  # this goes to Render's service logs
-    return jsonify({"usernames": usernames})
 
 #This ensures that before a request, your application checks the session,
 #loads the user's data using Flask-SQLAlchemy, and makes it available via g.user. (current session user)
 #(Knows it's the user doing it without having to requery the database every time.)
+
+#This effect is also global, since before_app_request makes it that way somehow.
 @authbp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')

@@ -15,6 +15,8 @@ struct HomeView: View {
         colorScheme == .light ? .black : .white
     }
     
+    @AppStorage("homeDisplayMessage") var homeDisplayMessage: String = "You don't have a workout plan set yet!"
+    
     var body: some View {
         VStack {
             if webSocketManager.currentWorkout != nil{
@@ -28,7 +30,7 @@ struct HomeView: View {
                         .multilineTextAlignment(.center)
                 }
             } else {
-                Text("You don't have a workout plan set yet!")
+                Text(homeDisplayMessage)
                     .font(.title2)
                     .fontWeight(.black)
                     .foregroundColor(Color.red)
