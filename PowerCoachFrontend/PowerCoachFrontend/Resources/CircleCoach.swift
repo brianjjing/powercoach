@@ -11,7 +11,7 @@ import SwiftUI
 
 struct CircleCoach: View {
     var body: some View {
-        Image("powercoachnewlogo")
+        Image("powercoacholdlogo")
             .clipShape(Circle())
             .overlay {
                 Circle().stroke(.white, lineWidth: 4)

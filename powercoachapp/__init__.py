@@ -57,12 +57,5 @@ def create_app(test_config=None):
     #Creating the models from sqlmodels.py in database.db:
     with app.app_context():
         db.create_all()
-        if not User.query.filter_by(username="brian").first(): #Eventually delete this
-            base_user = User(
-                username="brian",
-                password="test123"  # or whatever password you want
-            )
-            db.session.add(base_user)
-            db.session.commit()
 
     return app

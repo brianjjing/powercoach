@@ -60,7 +60,7 @@ def signup():
         return jsonify({'signup_message': 'Password is required.'})
     
     try:
-        if not User.query.filter_by(username=signup_username).first():
+        if not User.query.filter_by(username=signup_username).first():            
             new_user = User(
                 username=signup_username,
                 password=signup_password  # or whatever password you want
@@ -70,15 +70,15 @@ def signup():
             
             return jsonify({
                 "signup_message": "Signup successful"
-            }), 200
+            }), 201
         else:
             return jsonify({
                 "signup_message": "Username is taken"
-            }), 200
+            }), 409
     except:
         return jsonify({
-            "signup_message": "Please enter a valid username (50 chars max) and password (75 chars max)"
-        }), 200
+            "signup_message": "Please enter a valid username (32 chars max) and password (32 chars max)"
+        }), 500
 
 @authbp.route('/debug/users', methods=['GET'])
 def print_all_users():
@@ -88,13 +88,16 @@ def print_all_users():
     print("🧾 All usernames in DB:", usernames)  # this goes to Render's service logs
     return jsonify({"usernames": usernames})
 
+#This ensures that before a request, your application checks the session,
+#loads the user's data using Flask-SQLAlchemy, and makes it available via g.user. (current session user)
+#(Knows it's the user doing it without having to requery the database every time.)
 @authbp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
 
+    #g is a global namespace for data for the app context at hand. Shares data across Flask app under the scope of a single request.
+    #However, it only lasts for a request and does not persist. This sets g.user to the user id every request.
     if user_id is None:
         g.user = None
     else:
-        g.user = get_db().execute(
-            'SELECT * FROM user WHERE id = ?', (user_id,)
-        ).fetchone()
+        g.user = User.query.get(user_id)

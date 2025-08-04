@@ -10,11 +10,8 @@ import SwiftUI
 struct ContentView: View {
     //@State changes the variable within a VIEW
     //The shared WebSocketManager, which is initialized in WebSocketManager, is set to webSocketManager. It is a ViewModel instance.
-    @State var currentTab: Int = 1
-    @State var houseSystemName = "house.fill"
-    @State var workoutPlannerSystemName = "long.text.page.and.pencil"
-    @State var forumSystemName = "message"
-    @State var profileSystemName = "person.crop.circle"
+    @EnvironmentObject var webSocketManager: WebSocketManager
+    @EnvironmentObject var tabIcons: TabIcons
     
     var body: some View {
         NavigationStack {
@@ -22,7 +19,7 @@ struct ContentView: View {
                 //Adapt the colors to the color scheme!!! (light mode vs dark mode)
                 
                 Group {
-                    switch currentTab {
+                    switch tabIcons.currentTab {
                     case 1:
                         HomeView()
                     case 2:
@@ -47,16 +44,16 @@ struct ContentView: View {
                         
                         Button {
                             DispatchQueue.main.async {
-                                currentTab = 1
-                                houseSystemName = "house.fill"
-                                workoutPlannerSystemName = "long.text.page.and.pencil"
-                                forumSystemName = "message"
-                                profileSystemName = "person.crop.circle"
+                                tabIcons.currentTab = 1
+                                tabIcons.houseSystemName = "house.fill"
+                                tabIcons.workoutPlannerSystemName = "long.text.page.and.pencil"
+                                tabIcons.forumSystemName = "message"
+                                tabIcons.profileSystemName = "person.crop.circle"
                             }
                         } label: {
                             VStack (alignment: .center) {
                                 Spacer().frame(height: UIScreen.main.bounds.height/3)
-                                Image(systemName: houseSystemName)
+                                Image(systemName: tabIcons.houseSystemName)
                                     .resizable()
                                     .colorMultiply(Color.black)
                                     .frame(width: UIScreen.main.bounds.width/14, height: UIScreen.main.bounds.width/14)
@@ -68,16 +65,16 @@ struct ContentView: View {
                         
                         Button {
                             DispatchQueue.main.async {
-                                currentTab = 2
-                                houseSystemName = "house"
-                                workoutPlannerSystemName = "long.text.page.and.pencil.fill"
-                                forumSystemName = "message"
-                                profileSystemName = "person.crop.circle"
+                                tabIcons.currentTab = 2
+                                tabIcons.houseSystemName = "house"
+                                tabIcons.workoutPlannerSystemName = "long.text.page.and.pencil.fill"
+                                tabIcons.forumSystemName = "message"
+                                tabIcons.profileSystemName = "person.crop.circle"
                             }
                         } label: {
                             VStack (alignment: .center) {
                                 Spacer().frame(height: UIScreen.main.bounds.height/3)
-                                Image(systemName: workoutPlannerSystemName)
+                                Image(systemName: tabIcons.workoutPlannerSystemName)
                                     .resizable()
                                     .colorMultiply(Color.black)
                                     .frame(width: UIScreen.main.bounds.width/14, height: UIScreen.main.bounds.width/14)
@@ -99,16 +96,16 @@ struct ContentView: View {
                         
                         Button {
                             DispatchQueue.main.async {
-                                currentTab = 4
-                                houseSystemName = "house"
-                                workoutPlannerSystemName = "long.text.page.and.pencil"
-                                forumSystemName = "message.fill"
-                                profileSystemName = "person.crop.circle"
+                                tabIcons.currentTab = 4
+                                tabIcons.houseSystemName = "house"
+                                tabIcons.workoutPlannerSystemName = "long.text.page.and.pencil"
+                                tabIcons.forumSystemName = "message.fill"
+                                tabIcons.profileSystemName = "person.crop.circle"
                             }
                         } label: {
                             VStack (alignment: .center) {
                                 Spacer().frame(height: UIScreen.main.bounds.height/3)
-                                Image(systemName: forumSystemName)
+                                Image(systemName: tabIcons.forumSystemName)
                                     .resizable()
                                     .colorMultiply(Color.black)
                                     .frame(width: UIScreen.main.bounds.width/14, height: UIScreen.main.bounds.width/14)
@@ -120,16 +117,16 @@ struct ContentView: View {
                         
                         Button {
                             DispatchQueue.main.async {
-                                currentTab = 5
-                                houseSystemName = "house"
-                                workoutPlannerSystemName = "long.text.page.and.pencil"
-                                forumSystemName = "message"
-                                profileSystemName = "person.crop.circle.fill"
+                                tabIcons.currentTab = 5
+                                tabIcons.houseSystemName = "house"
+                                tabIcons.workoutPlannerSystemName = "long.text.page.and.pencil"
+                                tabIcons.forumSystemName = "message"
+                                tabIcons.profileSystemName = "person.crop.circle.fill"
                             }
                         } label: {
                             VStack (alignment: .center) {
                                 Spacer().frame(height: UIScreen.main.bounds.height/3)
-                                Image(systemName: profileSystemName)
+                                Image(systemName: tabIcons.profileSystemName)
                                     .resizable()
                                     .colorMultiply(Color.black)
                                     .frame(width: UIScreen.main.bounds.width/14, height: UIScreen.main.bounds.width/14)
@@ -139,7 +136,6 @@ struct ContentView: View {
                         
                         Spacer().frame(width: UIScreen.main.bounds.width/20)
                     }
-                    //Spacer().frame(height: UIScreen.main.bounds.height/50)
                 }
                 
             }
@@ -151,4 +147,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environmentObject(WebSocketManager.shared)
+        .environmentObject(TabIcons.sharedTab)
 }

@@ -26,10 +26,12 @@ class WebSocketManager: ObservableObject {
     @Published var powerCoachMessage = "Connecting..."
     @Published var useridString = "User ID not found"
     
+    @Published var currentWorkout: String?
+    
     init() {
         //RENDER API URL: https://powercoach-1.onrender.com
         //AWS IP: http://50.18.29.18:10000
-        self.manager = SocketManager(socketURL: URL(string: "http://50.18.29.18:10000")!, config: [.log(true), .compress, .forceWebsockets(true), .path("/socket.io")])
+        self.manager = SocketManager(socketURL: URL(string: "https://powercoach-1.onrender.com")!, config: [.log(true), .compress, .forceWebsockets(true), .path("/socket.io")])
         self.socket = self.manager.defaultSocket
         
         socket.on(clientEvent: .connect) { (data, ack) in
@@ -42,9 +44,9 @@ class WebSocketManager: ObservableObject {
                         }
             }
             DispatchQueue.main.async {
-                self.homeDisplay = "Home screen in progress..."
-                self.workoutPlanDisplay = "Workout plan screen in progress..."
-                self.forumDisplay = "Forum screen in progress..."
+                self.homeDisplay = "Press the POWERCOACH logo below to start a lift!"
+                self.workoutPlanDisplay = "Workout plan feature coming soon..."
+                self.forumDisplay = "POWERCOACH forums coming soon..."
                 self.powerCoachMessage = "Message loading..."
             }
         }

@@ -1,19 +1,19 @@
 //
-//  ForumView.swift
+//  InProgressView.swift
 //  PowerCoachFrontend
 //
-//  Created by Brian Jing on 6/23/25.
+//  Created by Brian Jing on 8/2/25.
 //
 
 import SwiftUI
 
-struct ForumView: View {
+struct InProgressView: View {
     @EnvironmentObject var webSocketManager: WebSocketManager
     
     var body: some View {
         CircleCoach()
         VStack(alignment: .center) {
-            Text("\(webSocketManager.forumDisplay)")
+            Text("This feature is coming in a later update!")
                 .font(.title)
                 .fontWeight(.black)
                 .foregroundColor(Color.red)
@@ -24,19 +24,13 @@ struct ForumView: View {
         .padding()
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text("MY CHATS")
+                Text("POWERCOACH")
                     .font(.title)
                     .fontWeight(.black)
                     .foregroundColor(Color.red)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
                     .foregroundColor(.black)
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                //Make this a button later
-                Image(systemName: "square.and.pencil")
-                    .font(.system(size: UIScreen.main.bounds.width/20))
-                    .foregroundColor(.white)
             }
         }
     }

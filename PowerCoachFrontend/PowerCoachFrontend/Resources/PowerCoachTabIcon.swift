@@ -7,6 +7,19 @@
 
 import SwiftUI
 
+class TabIcons: ObservableObject {
+    static let sharedTab = TabIcons()
+    
+    @Published var currentTab: Int = 1
+    
+    @Published var houseSystemName = "house.fill"
+    @Published var workoutPlannerSystemName = "long.text.page.and.pencil"
+    @Published var forumSystemName = "message"
+    @Published var profileSystemName = "person.crop.circle"
+    
+    init() {}
+}
+
 struct PowerCoachTabIcon: View {
     var body: some View {
         Image("powercoachnewlogo")

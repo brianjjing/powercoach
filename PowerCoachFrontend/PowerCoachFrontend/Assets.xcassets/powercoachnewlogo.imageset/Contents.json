@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "powercoachlogo.jpg",
+      "filename" : "powercoachnewlogo.jpg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "powercoachlogo@2x.jpg",
+      "filename" : "powercoachnewlogo@2x.jpg",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "powercoachlogo@3x.jpg",
+      "filename" : "powercoachnewlogo@3x.jpg",
       "idiom" : "universal",
       "scale" : "3x"
     }

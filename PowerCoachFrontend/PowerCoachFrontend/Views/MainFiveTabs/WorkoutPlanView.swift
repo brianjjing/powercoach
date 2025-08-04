@@ -11,15 +11,19 @@ struct WorkoutPlanView: View {
     @EnvironmentObject var webSocketManager: WebSocketManager
     
     var body: some View {
-        CircleCoach()
         VStack(alignment: .center) {
-            Text("\(webSocketManager.workoutPlanDisplay)")
-                .font(.title)
-                .fontWeight(.black)
-                .foregroundColor(Color.red)
-                .foregroundStyle(.secondary)
-                .foregroundColor(.black)
-                .multilineTextAlignment(.center)
+            CircleCoach()
+            
+            VStack(alignment: .center) {
+                Text("\(webSocketManager.workoutPlanDisplay)")
+                    .font(.title)
+                    .fontWeight(.black)
+                    .foregroundColor(Color.red)
+                    .foregroundStyle(.secondary)
+                    .foregroundColor(.black)
+                    .multilineTextAlignment(.center)
+            }
+            
         }
         .padding()
         .toolbar {
@@ -29,14 +33,15 @@ struct WorkoutPlanView: View {
                     .fontWeight(.black)
                     .foregroundColor(Color.red)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
                     .foregroundColor(.black)
             }
             ToolbarItem(placement: .topBarTrailing) {
-                //Make this a button later
-                Image(systemName: "plus.app")
-                    .font(.system(size: UIScreen.main.bounds.width/20))
-                    .foregroundColor(.white)
+                NavigationLink(destination: InProgressView()) {
+                    Image(systemName: "plus.app")
+                        .font(.system(size: UIScreen.main.bounds.width/20))
+                        .foregroundColor(.primary)
+                }
             }
         }
     }

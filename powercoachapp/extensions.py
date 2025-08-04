@@ -1,7 +1,10 @@
+from powercoachapp import create_app
 from flask_socketio import SocketIO
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 import logging, sys
+
+app = create_app()
 
 socketio = SocketIO()
 

@@ -19,13 +19,16 @@ import SocketIO
 struct PowerCoachFrontend: App {
     @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
     @StateObject var webSocketManager = WebSocketManager.shared
+    @StateObject var tabIcons = TabIcons.sharedTab
     @Environment(\.scenePhase) private var scenePhase
 
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     var body: some Scene {
         WindowGroup {
             if isAuthenticated == true {
                 ContentView()
                     .environmentObject(webSocketManager)
+                    .environmentObject(tabIcons)
             }
             else {
                 LoginView()
@@ -50,5 +53,17 @@ struct PowerCoachFrontend: App {
                 print("App ScenePhase: Unknown new phase.")
             }
         }
+    }
+}
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+    //If you want to begin with portrait mode, set this to portrait
+    static var orientation: UIInterfaceOrientationMask = .portrait
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil)
+        -> Bool {
+        return true
+    }
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        return Self.orientation //Self referrs to the current type
     }
 }
