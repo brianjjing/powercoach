@@ -8,13 +8,7 @@
 import SwiftUI
 
 class HomeScreenViewModel: ObservableObject {
-    @Published var current_workout: String?
-    @Published var workout_name: String?
-    @Published var num_exercises: Int?
-    @Published var workout_exercises: [String]?
-    @Published var workout_sets: [Int]?
-    @Published var workout_reps: [Int]?
-    @Published var workout_weights: [Int]?
+    @Published var workouts: [Workout]
     @Published var errorMessage: String?
     
     @Published var isLoading = false
@@ -55,13 +49,6 @@ class HomeScreenViewModel: ObservableObject {
                     return
                 }
                 
-                if httpResponse.statusCode == 404 {
-                    print("ERROR CODE 404:")
-                    self.homeDisplayMessage = "You don't have a workout plan set yet!"
-                    print(String(describing: self.homeDisplayMessage))
-                    return
-                }
-                
                 // Handle success case (status code 200)
                 guard httpResponse.statusCode == 200 else {
                     self.errorMessage = "Unknown error. Please reload and try again."
@@ -77,16 +64,8 @@ class HomeScreenViewModel: ObservableObject {
                 
                 do {
                     let decodedData = try JSONDecoder().decode(WorkoutResponse.self, from: data)
-                    self.homeDisplayMessage = "Today's workout: \(decodedData.name)"
-                    self.current_workout = decodedData.name
-                    self.workout_name = decodedData.name
-                    self.workout_exercises = decodedData.exercises
-                    self.workout_sets = decodedData.sets
-                    self.workout_sets = decodedData.reps
-                    self.workout_weights = decodedData.weights
-                    self.errorMessage = nil
-                    
-                    print(String(describing: self.current_workout))
+                    self.homeDisplayMessage = "\(decodedData.home_display_message)"
+                    self.workouts = decodedData.workouts
                     
                 } catch {
                     self.errorMessage = "Failed to decode JSON: \(error.localizedDescription)"
@@ -97,12 +76,6 @@ class HomeScreenViewModel: ObservableObject {
     }
     
     private func resetState() {
-        self.current_workout = nil
-        self.workout_name = nil
-        self.workout_exercises = nil
-        self.workout_sets = nil
-        self.workout_reps = nil
-        self.workout_weights = nil
         self.homeDisplayMessage = ""
         self.errorMessage = nil
     }

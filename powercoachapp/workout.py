@@ -67,23 +67,32 @@ def get_workout():
     logger.info("Get workout called ...")
     logger.info(g.user.id)
     #For now just give them the only workout they ever created. Add date functionality later:
-    workout = Workout.query.filter_by(user_id=g.user.id).first()
+    user_workouts = Workout.query.filter_by(user_id=g.user.id).all()
     logger.info(f"WORKOUT QUERY PERFORMED. WORKOUT SELECTED: {workout}")
     
     try:
-        if workout:
+        if user_workouts:
+            # If workouts are found, serialize them to a list of dictionaries
+            workouts_list = []
+            for workout in user_workouts:
+                workouts_list.append({
+                    "name": workout.workout_name,
+                    "num_exercises": workout.num_exercises,
+                    "exercises": workout.exercise_names,
+                    "sets": workout.exercise_sets,
+                    "reps": workout.exercise_reps,
+                    "weights": workout.exercise_weights
+                })
+
             return jsonify({
-                "home_display_message": f"TODAY'S WORKOUT: {workout.workout_name}",
-                "name": workout.workout_name,
-                "num_exercises": workout.num_exercises,
-                "exercises": workout.exercise_names,
-                "sets": workout.exercise_sets,
-                "reps": workout.exercise_reps,
-                "weights": workout.exercise_weights
+                "home_display_message": f"TODAY'S WORKOUT: {user_workouts[0].workout_name}", # Get the first workout name
+                "workouts": workouts_list
             }), 200
         else:
-            logger.info("/GETWORKOUT ERROR 404. WORKOUT DOES NOT EXIST")
-            return jsonify({"home_display_message": "You don't have a workout plan set yet!"}), 404
+            logger.info("/GETWORKOUT ERROR. WORKOUT DOES NOT EXIST")
+            return jsonify({
+                "home_display_message": "You don't have a workout plan set yet!",
+                "workouts": []}), 200
     except Exception as e:
         logger.debug(f"Error getting workout: {e}")
         db.session.rollback()
