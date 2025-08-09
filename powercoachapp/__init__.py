@@ -1,5 +1,5 @@
 from flask import Flask
-from powercoachapp import auth
+from powercoachapp import auth, workout
 from powercoachapp.extensions import socketio, db, logger
 import os
 
@@ -52,6 +52,7 @@ def create_app(test_config=None):
         pass
 
     app.register_blueprint(auth.authbp)
+    app.register_blueprint(workout.workoutbp)
 
     #Creating the models from sqlmodels.py in database.db:
     with app.app_context():

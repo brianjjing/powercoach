@@ -51,6 +51,9 @@ class HomeScreenViewModel: ObservableObject {
                 
                 // Handle success case (status code 200)
                 guard httpResponse.statusCode == 200 else {
+                    print("HTTP Request Failed with status code: \(httpResponse.statusCode)")
+                    print("Request URL: \(String(describing: httpResponse.url))")
+                    print("Response Headers: \(httpResponse.allHeaderFields)")
                     self.errorMessage = "Unknown error. Please reload and try again."
                     print(String(describing: self.errorMessage))
                     return
