@@ -6,6 +6,7 @@
 //
 
 struct Workout: Codable {
+    //let workout_id: Int
     let name: String
     let num_exercises: Int
     let exercises: [String]

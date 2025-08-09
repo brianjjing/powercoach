@@ -77,6 +77,7 @@ def get_workout():
             workouts_list = []
             for workout in user_workouts:
                 workouts_list.append({
+                    "workout_id": workout.workout_id,
                     "name": workout.workout_name,
                     "num_exercises": workout.num_exercises,
                     "exercises": workout.exercise_names,
@@ -87,7 +88,7 @@ def get_workout():
             logger.info("Workouts List: ", workouts_list)
 
             return jsonify({
-                "home_display_message": f"TODAY'S WORKOUT: {user_workouts[0].workout_name}", # Get the first workout name
+                "home_display_message": f"TODAY'S WORKOUT:\n{user_workouts[0].workout_name}", # Get the first workout name
                 "workouts": workouts_list
             }), 200
         else:

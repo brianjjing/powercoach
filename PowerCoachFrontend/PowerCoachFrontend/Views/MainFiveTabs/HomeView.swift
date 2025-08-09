@@ -30,15 +30,17 @@ struct HomeView: View {
                         .multilineTextAlignment(.center)
                     
                     //Will style the workout under it better:
-                    List {
-                        Text("EXERCISE 1: PULL UP")
-                            .font(.title3)
-                            .foregroundColor(.primary)
-                            .listRowBackground(Color.clear)
-                        Text("EXERCISE 2: BARBELL ROW")
-                            .font(.title3)
-                            .foregroundColor(.primary)
-                            .listRowBackground(Color.clear)
+                    // setting id: \. allows for tracking elements in the ForEach as a key path
+                    if let todaysWorkout = viewModel.workouts.first {
+                        List {
+                            // Loop through the 'exercises' array of the first workout
+                            ForEach(todaysWorkout.exercises, id: \.self) { exercise in
+                                Text(exercise)
+                                    .font(.title3)
+                                    .foregroundColor(.primary)
+                                    .listRowBackground(Color.clear)
+                            }
+                        }
                     }
                 }
             } else {
