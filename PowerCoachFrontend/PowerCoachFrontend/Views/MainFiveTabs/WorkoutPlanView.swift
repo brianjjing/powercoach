@@ -37,7 +37,7 @@ struct WorkoutPlanView: View {
                     .foregroundColor(.black)
             }
             ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink(destination: InProgressView()) {
+                NavigationLink(destination: WorkoutCreatorView()) {
                     Image(systemName: "plus.app")
                         .font(.system(size: UIScreen.main.bounds.width/20))
                         .foregroundColor(.primary)

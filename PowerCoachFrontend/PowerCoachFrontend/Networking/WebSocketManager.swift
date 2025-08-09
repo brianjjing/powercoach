@@ -20,7 +20,6 @@ class WebSocketManager: ObservableObject {
     var manager: SocketManager!
     var socket: SocketIOClient!
     
-    @Published var homeDisplay = "Connecting..."
     @Published var workoutPlanDisplay = "Connecting..."
     @Published var forumDisplay = "Connecting..."
     @Published var powerCoachMessage = "Connecting..."
@@ -36,7 +35,6 @@ class WebSocketManager: ObservableObject {
         socket.on(clientEvent: .connect) { (data, ack) in
             print("EVENT: SOCKET CONNECTED.")
             DispatchQueue.main.async {
-                self.homeDisplay = "Press the POWERCOACH logo below to start a lift!"
                 self.workoutPlanDisplay = "Workout plan feature coming soon..."
                 self.forumDisplay = "POWERCOACH forums coming soon..."
                 self.powerCoachMessage = "Message loading..."

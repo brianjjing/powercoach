@@ -7,6 +7,8 @@
 import SwiftUI
 
 struct HomeView: View {
+    @StateObject var viewModel = HomeScreenViewModel()
+    
     @EnvironmentObject var webSocketManager: WebSocketManager
     @EnvironmentObject var tabIcons: TabIcons
     @Environment(\.colorScheme) var colorScheme //Rerenders the variable and its views when the environment object changes, since it depends on it.
@@ -15,22 +17,32 @@ struct HomeView: View {
         colorScheme == .light ? .black : .white
     }
     
-    @AppStorage("homeDisplayMessage") var homeDisplayMessage: String = "You don't have a workout plan set yet!"
-    
     var body: some View {
         VStack {
-            if webSocketManager.currentWorkout != nil{
+            if viewModel.current_workout != nil{
                 VStack {
-                    Text("TODAY'S WORKOUT: \(String(describing: webSocketManager.currentWorkout))")
+                    Text(viewModel.homeDisplayMessage)
                         .font(.title2)
                         .fontWeight(.black)
                         .foregroundColor(Color.red)
                         .foregroundStyle(.primary)
                         .foregroundColor(.black)
                         .multilineTextAlignment(.center)
+                    
+                    //Will style the workout under it better:
+                    List {
+                        Text("EXERCISE 1: PULL UP")
+                            .font(.title3)
+                            .foregroundColor(.primary)
+                            .listRowBackground(Color.clear)
+                        Text("EXERCISE 2: BARBELL ROW")
+                            .font(.title3)
+                            .foregroundColor(.primary)
+                            .listRowBackground(Color.clear)
+                    }
                 }
             } else {
-                Text(homeDisplayMessage)
+                Text(viewModel.homeDisplayMessage)
                     .font(.title2)
                     .fontWeight(.black)
                     .foregroundColor(Color.red)
@@ -40,15 +52,7 @@ struct HomeView: View {
                 
                 Spacer().frame(height: UIScreen.main.bounds.height/16)
                 
-                Button() {
-                    DispatchQueue.main.async {
-                        tabIcons.currentTab = 2
-                        tabIcons.houseSystemName = "house"
-                        tabIcons.workoutPlannerSystemName = "long.text.page.and.pencil.fill"
-                        tabIcons.forumSystemName = "message"
-                        tabIcons.profileSystemName = "person.crop.circle"
-                    }
-                } label: {
+                NavigationLink(destination: WorkoutCreatorView()) {
                     VStack {
                         Text("Create a workout")
                             .padding()
@@ -82,6 +86,11 @@ struct HomeView: View {
             }
         }
         .padding()
+        .onAppear() {
+            DispatchQueue.main.async {
+                viewModel.displayCurrentWorkout()
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text("POWERCOACH")

@@ -64,9 +64,11 @@ def create_workout():
 @workoutbp.route('/getworkout')
 @login_required
 def get_workout():
-    
+    logger.info("Get workout called ...")
+    logger.info(g.user.id)
     #For now just give them the only workout they ever created. Add date functionality later:
     workout = Workout.query.filter_by(user_id=g.user.id).first()
+    logger.info(workout)
     
     try:
         if workout:
