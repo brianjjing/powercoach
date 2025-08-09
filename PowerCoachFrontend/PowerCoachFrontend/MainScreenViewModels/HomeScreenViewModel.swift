@@ -37,8 +37,6 @@ class HomeScreenViewModel: ObservableObject {
         var request = URLRequest(url: appUrl)
         request.httpMethod = "GET"
         
-        
-        
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in //weak self makes self an optional.
             DispatchQueue.main.async {
                 guard let self = self else { return }

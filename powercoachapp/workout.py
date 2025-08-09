@@ -68,7 +68,7 @@ def get_workout():
     logger.info(g.user.id)
     #For now just give them the only workout they ever created. Add date functionality later:
     workout = Workout.query.filter_by(user_id=g.user.id).first()
-    logger.info(workout)
+    logger.info(f"WORKOUT QUERY PERFORMED. WORKOUT SELECTED: {workout}")
     
     try:
         if workout:
@@ -82,6 +82,7 @@ def get_workout():
                 "weights": workout.exercise_weights
             }), 200
         else:
+            logger.info("/GETWORKOUT ERROR 404. WORKOUT DOES NOT EXIST")
             return jsonify({"home_display_message": "You don't have a workout plan set yet!"}), 404
     except Exception as e:
         logger.debug(f"Error getting workout: {e}")
