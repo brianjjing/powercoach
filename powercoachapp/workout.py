@@ -68,11 +68,12 @@ def get_workout():
     logger.info(g.user.id)
     #For now just give them the only workout they ever created. Add date functionality later:
     user_workouts = Workout.query.filter_by(user_id=g.user.id).all()
-    logger.info(f"WORKOUT QUERY PERFORMED. WORKOUT SELECTED: {workout}")
+    logger.info(f"WORKOUT QUERY PERFORMED")
     
     try:
         if user_workouts:
             # If workouts are found, serialize them to a list of dictionaries
+            logger.info("Creating the workouts list:")
             workouts_list = []
             for workout in user_workouts:
                 workouts_list.append({
@@ -83,6 +84,7 @@ def get_workout():
                     "reps": workout.exercise_reps,
                     "weights": workout.exercise_weights
                 })
+            logger.info("Workouts List: ", workouts_list)
 
             return jsonify({
                 "home_display_message": f"TODAY'S WORKOUT: {user_workouts[0].workout_name}", # Get the first workout name
