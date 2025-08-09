@@ -22,6 +22,7 @@ def log_request():
 @app.before_request
 def load_logged_in_user():
     user_id = session.get('user_id')
+    logger.info(f"Attempting to load user w/ user_id: {user_id}")
 
     #g is a global namespace for data for the app context at hand. Shares data across Flask app under the scope of a single request.
     #However, it only lasts for a request and does not persist. This sets g.user to the user id every request.
