@@ -94,8 +94,7 @@ def get_workout():
                 "home_display_message": "You don't have a workout plan set yet!",
                 "workouts": []}), 200
     except Exception as e:
-        logger.debug(f"Error getting workout: {e}")
-        db.session.rollback()
+        logger.info(f"Error getting workout: {e}")
         return jsonify({
             "home_display_message": "Unknown error. Please reload and try again."
         }), 500

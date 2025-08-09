@@ -19,7 +19,7 @@ struct HomeView: View {
     
     var body: some View {
         VStack {
-            if viewModel.current_workout != nil{
+            if !viewModel.workouts.isEmpty {
                 VStack {
                     Text(viewModel.homeDisplayMessage)
                         .font(.title2)

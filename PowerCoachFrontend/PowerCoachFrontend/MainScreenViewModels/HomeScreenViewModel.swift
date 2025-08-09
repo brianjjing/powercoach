@@ -8,7 +8,7 @@
 import SwiftUI
 
 class HomeScreenViewModel: ObservableObject {
-    @Published var workouts: [Workout]
+    @Published var workouts: [Workout] = []
     @Published var errorMessage: String?
     
     @Published var isLoading = false
@@ -77,6 +77,7 @@ class HomeScreenViewModel: ObservableObject {
     
     private func resetState() {
         self.homeDisplayMessage = ""
+        self.workouts = []
         self.errorMessage = nil
     }
 }
