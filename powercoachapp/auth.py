@@ -1,7 +1,7 @@
 import functools
 from flask import Blueprint, g, redirect, request, session, url_for, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
-from powercoachapp.extensions import db
+from powercoachapp.extensions import db, logger
 from powercoachapp.sqlmodels import User
 
 authbp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -11,6 +11,7 @@ def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None:
+            logger.info("g.user not set")
             return redirect(url_for('auth.login'))
         return view(**kwargs)
     return wrapped_view
@@ -29,7 +30,9 @@ def login():
         return jsonify({'login_message': 'Password is required.'})
     
     user = User.query.filter_by(username=username).first()
-
+    session['user_id'] = user.id
+    logger.info(f"USER LOGGED IN WITH ID: {session['user_id']}")
+    
     if user is None or user.password != password:
         return jsonify({"login_message": "Please enter a valid username and password"}), 401
     
@@ -79,20 +82,3 @@ def signup():
         return jsonify({
             "signup_message": "Please enter a valid username (32 chars max) and password (32 chars max)"
         }), 500
-
-
-#This ensures that before a request, your application checks the session,
-#loads the user's data using Flask-SQLAlchemy, and makes it available via g.user. (current session user)
-#(Knows it's the user doing it without having to requery the database every time.)
-
-#This effect is also global, since before_app_request makes it that way somehow.
-@authbp.before_app_request
-def load_logged_in_user():
-    user_id = session.get('user_id')
-
-    #g is a global namespace for data for the app context at hand. Shares data across Flask app under the scope of a single request.
-    #However, it only lasts for a request and does not persist. This sets g.user to the user id every request.
-    if user_id is None:
-        g.user = None
-    else:
-        g.user = User.query.get(user_id)
