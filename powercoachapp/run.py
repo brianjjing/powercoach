@@ -28,9 +28,10 @@ def load_logged_in_user():
     #However, it only lasts for a request and does not persist. This sets g.user to the user id every request.
     if user_id is None:
         g.user = None
+        logger.info(f"user_id not found. No user.")
     else:
         g.user = User.query.get(user_id)
-    logger.info(f"HTTP Request user: {g.user.username}")
+        logger.info(f"HTTP Request user: {g.user.username}")
 
 port = int(os.getenv("PORT", 10000))
 
