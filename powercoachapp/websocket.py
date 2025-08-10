@@ -38,17 +38,11 @@ def handle_test_message(message):
 
 @socketio.on('start_powercoach')
 def start_powercoach():
-    user_data_instance = UserBackendData.query.filter_by(
-        user_id=g.user.id
-    ).first()
-    
-    user_data_instance.message = 'BARBELL NOT IN FRAME'
-    user_data_instance.bar_bbox = None
-    user_data_instance.lift_stage = 'concentric'
-    user_data_instance.lift_stage = time.time()
-    
+    shared_data['message'] = 'BARBELL NOT IN FRAME'
+    shared_data['bar_bbox'] = None
+    shared_data['deadlift_stage'] = 'concentric'
     shared_data['start_time'] = time.time()
-    logger.debug("Powercoach started")
+    logger.info("PowerCoach started")
 
 #PRINT AS LOGS (IMPORT LOGGING --> LOGGING.INFO("MESSAGE"))
 @socketio.on('handle_powercoach_frame')
