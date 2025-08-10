@@ -6,13 +6,15 @@
 //
 
 struct Workout: Codable {
-    //let workout_id: Int
+    let workout_id: Int
     let name: String
     let num_exercises: Int
     let exercises: [String]
     let sets: [Int]
     let reps: [Int]
     let weights: [Int]
+    let completed: [Bool]
+    let every_blank_day: Int
 }
 
 struct WorkoutResponse: Codable {

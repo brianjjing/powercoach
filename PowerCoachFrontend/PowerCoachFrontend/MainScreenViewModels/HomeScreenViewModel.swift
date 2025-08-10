@@ -20,7 +20,7 @@ class HomeScreenViewModel: ObservableObject {
         
         //Render: https://powercoach-1.onrender.com/workout/getworkout
         //AWS: http://54.67.86.184:10000/workout/getworkout --> upgrade to aws
-        let appUrlString = "https://powercoach-1.onrender.com/workout/getworkout"
+        let appUrlString = "https://powercoach-1.onrender.com/workouts/getworkouts"
         
         guard let appUrl = URL(string: appUrlString) else {
             self.errorMessage = "Invalid server URL"

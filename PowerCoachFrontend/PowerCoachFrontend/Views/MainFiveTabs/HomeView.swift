@@ -22,23 +22,23 @@ struct HomeView: View {
             if !viewModel.workouts.isEmpty {
                 VStack {
                     Text(viewModel.homeDisplayMessage)
-                        .font(.title2)
-                        .fontWeight(.black)
-                        .foregroundColor(Color.red)
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .fontDesign(.rounded)
                         .foregroundStyle(.primary)
-                        .foregroundColor(.black)
+                        .foregroundColor(buttonTextColor)
                         .multilineTextAlignment(.center)
+                        .padding(.horizontal)
                     
-                    //Will style the workout under it better:
-                    // setting id: \. allows for tracking elements in the ForEach as a key path
+                    //LET USER SET THE WORKOUT FOR TODAY DISPLAYED AS WELL!!! (can have multiple workouts for a day)
                     if let todaysWorkout = viewModel.workouts.first {
                         List {
-                            // Loop through the 'exercises' array of the first workout
-                            ForEach(todaysWorkout.exercises, id: \.self) { exercise in
-                                Text(exercise)
+                            // Items are already unique, so \.self is used.
+                            ForEach(0..<todaysWorkout.num_exercises, id: \.self) {index in
+                                Text("\(todaysWorkout.sets[index])x\(todaysWorkout.reps[index]) \(todaysWorkout.exercises[index])")
                                     .font(.title3)
-                                    .foregroundColor(.primary)
-                                    .listRowBackground(Color.clear)
+                                    .fontWeight(.bold)
+                                    .fontStyle(.primary)
                             }
                         }
                     }
@@ -46,10 +46,9 @@ struct HomeView: View {
             } else {
                 Text(viewModel.homeDisplayMessage)
                     .font(.title2)
-                    .fontWeight(.black)
-                    .foregroundColor(Color.red)
+                    .fontWeight(.bold)
                     .foregroundStyle(.primary)
-                    .foregroundColor(.black)
+                    .foregroundColor(buttonTextColor)
                     .multilineTextAlignment(.center)
                 
                 Spacer().frame(height: UIScreen.main.bounds.height/16)
