@@ -1,9 +1,9 @@
 import os
-from powercoachapp import create_app, powercoachalg, extensions, auth, websocket, bbelldetectioncreatemodel
-from powercoachapp.extensions import socketio, logger
+from powercoachapp import create_app, powercoachalg, bbelldetectioncreatemodel
+from powercoachapp.auth import login_required
+from powercoachapp.extensions import socketio, db, logger
 from flask import request, session, g
-from powercoachapp.sqlmodels import User
-
+from powercoachapp.sqlmodels import User, UserBackendData
 
 app = create_app()
 
@@ -32,6 +32,45 @@ def load_logged_in_user():
     else:
         g.user = User.query.get(user_id) #Works since id is the primary key integer. Searches the primary key col for user_id.
         logger.info(f"HTTP Request user: {g.user.username}")
+
+@app.before_first_request
+@login_required
+def set_user_data():
+    try:
+        user_data_instance = UserBackendData.query.filter_by(
+            user_id=g.user.id
+        ).first()
+        
+        if user_data_instance:
+            user_data_instance.start_time = 0
+            user_data_instance.frame_height = 0
+            user_data_instance.frame_width = 0
+            user_data_instance.powercoach_message = "BARBELL NOT IN FRAME"
+            user_data_instance.bar_bbox = None
+            user_data_instance.confidence = 0.0
+            user_data_instance.lift_stage = "concentric"
+            user_data_instance.equipment_type = "barbell"
+            user_data_instance.exercise = "conventional_deadlift"
+            db.session.commit()
+        else:
+            new_user_data_instance = UserBackendData(
+                start_time = 0,
+                frame_height = 0,
+                frame_width = 0,
+                powercoach_message = "BARBELL NOT IN FRAME",
+                bar_bbox = None,
+                confidence = 0.0,
+                lift_stage = "concentric",
+                equipment_type = "barbell",
+                exercise = "conventional_deadlift"
+            )
+            db.session.add(new_user_data_instance)
+            db.session.commit()
+        logger.info("User backend data set for the session.")
+        
+    except Exception as e:
+        logger.error(f"Failed to set user data: {e}")
+        #Handle more graciously next time
 
 port = int(os.getenv("PORT", 10000))
 

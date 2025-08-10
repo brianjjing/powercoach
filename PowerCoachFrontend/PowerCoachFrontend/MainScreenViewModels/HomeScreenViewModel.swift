@@ -19,17 +19,32 @@ class HomeScreenViewModel: ObservableObject {
         //self.resetState()
         self.isLoading = true
         
+        //Adding url w/ timezone:
+        let timezoneIdentifier = TimeZone.current.identifier
+        print("Detected timezone: \(timezoneIdentifier)")
+        
         //Render: https://powercoach-1.onrender.com/workout/getworkout
         //AWS: http://54.67.86.184:10000/workout/getworkout --> upgrade to aws
-        let appUrlString = "https://powercoach-1.onrender.com/workout/getworkouts"
+        let appUrlString = "https://powercoach-1.onrender.com/workouts/getworkouts"
         
-        guard let appUrl = URL(string: appUrlString) else {
+        guard var urlComponents = URLComponents(string: appUrlString) else { //Building URL w/ URLComponents. It's the right format, as straight up making a string URL with string formatting has formatting issues due to encoding.
             self.errorMessage = "Invalid server URL"
             self.isLoading = false
             return
         }
         
-        var request = URLRequest(url: appUrl)
+        let timezoneQueryItem = URLQueryItem(name: "timezone", value: timezoneIdentifier)
+        
+        urlComponents.queryItems = [timezoneQueryItem]
+
+        guard let finalUrl = urlComponents.url else {
+            self.errorMessage = "Failed to construct URL with timezone"
+            self.isLoading = false
+            return
+        }
+        print("Final URL: \(finalUrl)")
+        
+        var request = URLRequest(url: finalUrl)
         request.httpMethod = "GET"
         
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in //weak self makes self an optional.

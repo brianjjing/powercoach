@@ -17,7 +17,9 @@ logger.setLevel(logging.DEBUG)
 handler.setLevel(logging.DEBUG)
 
 #EXTENSION:
-shared_data = {
+user_data = {} #Dictionary of dictionaries. user ids are the keys.
+
+{
     'start_time': 0,
     'frame_height': None,
     'frame_width': None,

@@ -1,4 +1,5 @@
-from datetime import date
+from zoneinfo import ZoneInfo
+from datetime import datetime
 from flask import Blueprint, g, request, jsonify
 from powercoachapp.auth import login_required
 from powercoachapp.extensions import db, logger
@@ -65,7 +66,7 @@ def create_workout():
             exercise_reps = reps,
             exercise_weights = weights,
             completed = [False for _ in num_exercises],
-            start_day = date.today(),
+            start_datetime = datetime.now().astimezone(ZoneInfo('UTC')),
             every_blank_days = every_blank_days
         )
         db.session.add(new_workout)
@@ -85,24 +86,36 @@ def create_workout():
 def get_workouts():
     logger.info("Get workout called ...")
     logger.info(g.user.id)
-    today = date.today()
     
     user_workouts = Workout.query.filter_by(user_id=g.user.id).all()
     
     try:
+        client_timezone_str = request.args.get('timezone', 'GMT')
+        current_datetime_tz = datetime.now().astimezone(ZoneInfo(client_timezone_str))
+        today = current_datetime_tz.date()
+        logger.info(today)
+        
         if user_workouts:
             todays_workouts = []
             other_workouts = []
             
             #Getting today's workouts and the other workouts
             for workout in user_workouts:
+                
+                workout_start_datetime_client_tz = workout.start_day.astimezone(ZoneInfo(client_timezone_str))
+                workout_start_date = workout_start_datetime_client_tz.date()
+                
+                #Get the client's timezone from the request query parameters.
+                #Get today's date in the client timezone, and convert start date to client timezone (from UTC which it is stored as).
+                #Now compare the dates for real.                
                 logger.info("Today: ", today)
-                logger.info("Workout start day: ", workout.start_day)
-                logger.info("Int difference: ", (today - workout.start_day).days)
-                logger.info(type((today - workout.start_day).days))
+                logger.info("Workout start day:", workout_start_date)
+                logger.info("Int difference: ", (today - workout_start_date).days)
+                logger.info(type((today - workout_start_date).days))
                 logger.info("Every blank days: ", workout.every_blank_days)
                 logger.info(type(workout.every_blank_days))
-                if ((today - workout.start_day).days % workout.every_blank_days) == 0:
+                
+                if ((today - workout_start_date).days % workout.every_blank_days) == 0:
                     todays_workouts.append({
                         "workout_id": workout.workout_id,
                         "name": workout.workout_name,
@@ -140,7 +153,7 @@ def get_workouts():
                 
             #Else:
             return jsonify({
-                "home_display_message": f"TODAY'S WORKOUT:\n{user_workouts[0].workout_name}", # Get the first workout name
+                "home_display_message": f"TODAY'S WORKOUT:\n{todays_workouts[0].workout_name}", # Get the first workout name
                 "todays_workouts": todays_workouts,
                 "other_workouts": other_workouts
             }), 200

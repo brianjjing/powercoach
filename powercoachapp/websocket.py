@@ -1,9 +1,10 @@
 import time
 import logging
 from flask_socketio import emit
-from flask import request
-from powercoachapp.extensions import socketio, logger, clients, shared_data
+from flask import request, g
+from powercoachapp.extensions import socketio, logger, clients, shared_data, db
 from powercoachapp.powercoachalg import powercoachalg
+from powercoachapp.sqlmodels import UserBackendData
 
 @socketio.on('connect')
 def handle_connect():
@@ -37,9 +38,15 @@ def handle_test_message(message):
 
 @socketio.on('start_powercoach')
 def start_powercoach():
-    shared_data['message'] = 'BARBELL NOT IN FRAME'
-    shared_data['bar_bbox'] = None
-    shared_data['deadlift_stage'] = 'concentric'
+    user_data_instance = UserBackendData.query.filter_by(
+        user_id=g.user.id
+    ).first()
+    
+    user_data_instance.message = 'BARBELL NOT IN FRAME'
+    user_data_instance.bar_bbox = None
+    user_data_instance.lift_stage = 'concentric'
+    user_data_instance.lift_stage = time.time()
+    
     shared_data['start_time'] = time.time()
     logger.debug("Powercoach started")
 

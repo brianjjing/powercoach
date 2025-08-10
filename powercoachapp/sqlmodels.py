@@ -34,5 +34,5 @@ class Workout(db.Model):
     exercise_reps = db.Column(db.ARRAY(db.Integer), nullable=False)
     exercise_weights = db.Column(db.ARRAY(db.Integer), nullable=False)
     completed = db.Column(db.ARRAY(db.Boolean), nullable=False)
-    start_day = db.Column(db.Date, nullable=False)
+    start_datetime = db.Column(db.DateTime(timezone=True), nullable=False)
     every_blank_days = db.Column(db.Integer, nullable=False)
