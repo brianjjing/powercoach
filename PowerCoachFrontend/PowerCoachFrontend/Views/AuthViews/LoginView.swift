@@ -12,7 +12,7 @@ struct LoginView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
+            VStack() {
                 Text("Login")
                     .font(.largeTitle)
                     .bold()
@@ -42,9 +42,10 @@ struct LoginView: View {
                 //Block is recomputed once errorMessage is updated due to the property wrappers @Published, @StateObject, and the DispatchQueue.main.async{} block
                 if let error = viewModel.errorMessage {
                     Text("ERROR: " + String(describing: error))
-                        .font(.largeTitle)
+                        .font(.title3)
                         .bold()
                         .foregroundColor(.red)
+                        .multilineTextAlignment(.leading)
                 }
                 
                 Spacer()

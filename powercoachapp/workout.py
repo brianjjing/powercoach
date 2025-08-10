@@ -153,7 +153,7 @@ def get_workouts():
                 
             #Else:
             return jsonify({
-                "home_display_message": f"TODAY'S WORKOUT:\n{todays_workouts[0].workout_name}", # Get the first workout name
+                "home_display_message": f"TODAY'S WORKOUT:\n{todays_workouts[0]['name']}", # Get the first workout name
                 "todays_workouts": todays_workouts,
                 "other_workouts": other_workouts
             }), 200
