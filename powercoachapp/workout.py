@@ -150,19 +150,13 @@ def get_workouts():
                     "todays_workouts": [],
                     "other_workouts": other_workouts
                 }), 200
-            else:
-                # Use a specific try...except to catch potential serialization errors
-                try:
-                    return jsonify({
+            
+            #Else:
+            return jsonify({
                         "home_display_message": f"TODAY'S WORKOUT:\n{todays_workouts[0]['name']}",
                         "todays_workouts": todays_workouts,
                         "other_workouts": other_workouts
                     }), 200
-                except Exception as json_e:
-                    logger.error(f"Failed to jsonify data: {json_e}")
-                    return jsonify({
-                        "home_display_message": "Internal server error: Could not format response data."
-                    }), 500
         else:
             logger.info("No workouts exist")
             return jsonify({
