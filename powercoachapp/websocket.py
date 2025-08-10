@@ -40,7 +40,7 @@ def handle_test_message(message):
 def start_powercoach():
     shared_data['message'] = 'BARBELL NOT IN FRAME'
     shared_data['bar_bbox'] = None
-    shared_data['deadlift_stage'] = 'concentric'
+    shared_data['lift_stage'] = 'concentric'
     shared_data['start_time'] = time.time()
     logger.info("PowerCoach started")
 
@@ -60,7 +60,7 @@ def handle_powercoach_frame(jpegData):
 def stop_powercoach():
     shared_data['message'] = 'BARBELL NOT IN FRAME'
     shared_data['bar_bbox'] = None
-    shared_data['deadlift_stage'] = 'concentric'
+    shared_data['lift_stage'] = 'concentric'
     shared_data['start_time'] = 0
     logger.debug("Powercoach stopped")
     

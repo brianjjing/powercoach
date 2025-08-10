@@ -26,5 +26,5 @@ shared_data = {
     'confidence': 0,
     'lift_stage': 'concentric',
     'equipment_type': 'barbell', #Use this later once you have the dumbbell and bodyweight and machine stuff set up
-    'exercise': 'conventional_deadlift'
+    'exercise': 'Conventional Deadlift'
 }

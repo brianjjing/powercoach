@@ -37,6 +37,6 @@ struct InProgressView: View {
 }
 
 #Preview {
-    ForumView()
+    InProgressView()
         .environmentObject(WebSocketManager.shared)
 }

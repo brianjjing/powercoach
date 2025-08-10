@@ -20,6 +20,7 @@ struct PowerCoachFrontend: App {
     @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
     @StateObject var webSocketManager = WebSocketManager.shared
     @StateObject var tabIcons = TabIcons.sharedTab
+    @StateObject private var workoutsViewModel = WorkoutsViewModel()
     @Environment(\.scenePhase) private var scenePhase
 
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
@@ -29,6 +30,7 @@ struct PowerCoachFrontend: App {
                 ContentView()
                     .environmentObject(webSocketManager)
                     .environmentObject(tabIcons)
+                    .environmentObject(workoutsViewModel)
             }
             else {
                 LoginView()

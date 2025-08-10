@@ -842,12 +842,12 @@ def skullcrushers(poselandmarks, bbox, stage):
 #Then frontend. Then testtesttest
 
 barbell_exercises = {
-    'conventional_deadlift': conventional_deadlift, #Only works for conventional since feet shoulder width apart
-    'rdl': rdl,
-    'deep_squat': deep_squat,
-    'parallel_squat': parallel_squat,
-    'quarter_squat': quarter_squat,
-    'standing_overhead_press': standing_overhead_press,
-    'curl': curl,
-    'row': row
+    'Conventional Deadlifts': conventional_deadlift, #Only works for conventional since feet shoulder width apart
+    'RDLs': rdl,
+    'Deep Squats': deep_squat,
+    '90-Degree Squats': parallel_squat,
+    'Quarter Squats': quarter_squat,
+    'Barbell Overhead Presses': standing_overhead_press,
+    'Barbell Bicep Curls': curl,
+    'Barbell Rows': row
 }

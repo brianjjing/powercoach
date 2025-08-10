@@ -16,8 +16,6 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             VStack() {
-                //Adapt the colors to the color scheme!!! (light mode vs dark mode)
-                
                 Group {
                     switch tabIcons.currentTab {
                     case 1:
@@ -52,7 +50,6 @@ struct ContentView: View {
                             }
                         } label: {
                             VStack (alignment: .center) {
-                                Spacer().frame(height: UIScreen.main.bounds.height/3)
                                 Image(systemName: tabIcons.houseSystemName)
                                     .resizable()
                                     .colorMultiply(Color.black)
@@ -73,7 +70,6 @@ struct ContentView: View {
                             }
                         } label: {
                             VStack (alignment: .center) {
-                                Spacer().frame(height: UIScreen.main.bounds.height/3)
                                 Image(systemName: tabIcons.workoutPlannerSystemName)
                                     .resizable()
                                     .colorMultiply(Color.black)
@@ -104,7 +100,6 @@ struct ContentView: View {
                             }
                         } label: {
                             VStack (alignment: .center) {
-                                Spacer().frame(height: UIScreen.main.bounds.height/3)
                                 Image(systemName: tabIcons.forumSystemName)
                                     .resizable()
                                     .colorMultiply(Color.black)
@@ -125,7 +120,6 @@ struct ContentView: View {
                             }
                         } label: {
                             VStack (alignment: .center) {
-                                Spacer().frame(height: UIScreen.main.bounds.height/3)
                                 Image(systemName: tabIcons.profileSystemName)
                                     .resizable()
                                     .colorMultiply(Color.black)

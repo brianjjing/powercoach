@@ -35,7 +35,7 @@ class WebSocketManager: ObservableObject {
         socket.on(clientEvent: .connect) { (data, ack) in
             print("EVENT: SOCKET CONNECTED.")
             DispatchQueue.main.async {
-                self.workoutPlanDisplay = "Workout plan feature coming soon..."
+                self.workoutPlanDisplay = "Select a workout below or press the plus button to create a new one!"
                 self.forumDisplay = "POWERCOACH forums coming soon..."
                 self.powerCoachMessage = "Message loading..."
             }

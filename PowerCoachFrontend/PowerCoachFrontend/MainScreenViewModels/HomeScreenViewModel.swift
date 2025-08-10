@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-class HomeScreenViewModel: ObservableObject {
+class WorkoutsViewModel: ObservableObject {
     @Published var todaysWorkouts: [Workout] = []
     @Published var otherWorkouts: [Workout] = []
     @Published var errorMessage: String?
@@ -84,8 +84,8 @@ class HomeScreenViewModel: ObservableObject {
                 do {
                     let decodedData = try JSONDecoder().decode(WorkoutResponse.self, from: data)
                     self.homeDisplayMessage = "\(decodedData.home_display_message)"
-                    self.todays_workouts = decodedData.todays_workouts
-                    self.other_workouts = decodedData.other_workouts
+                    self.todaysWorkouts = decodedData.todays_workouts
+                    self.otherWorkouts = decodedData.other_workouts
                 } catch {
                     self.errorMessage = "Failed to decode JSON: \(error.localizedDescription)"
                     print(String(describing: self.errorMessage))

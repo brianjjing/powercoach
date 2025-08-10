@@ -14,7 +14,7 @@ struct Workout: Codable {
     let reps: [Int]
     let weights: [Int]
     let completed: [Bool]
-    let every_blank_day: Int
+    let every_blank_days: Int
 }
 
 struct WorkoutResponse: Codable {
