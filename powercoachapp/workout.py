@@ -102,7 +102,7 @@ def get_workouts():
             #Getting today's workouts and the other workouts
             for workout in user_workouts:
                 
-                workout_start_datetime_client_tz = workout.start_day.astimezone(ZoneInfo(client_timezone_str))
+                workout_start_datetime_client_tz = workout.start_datetime.astimezone(ZoneInfo(client_timezone_str))
                 workout_start_date = workout_start_datetime_client_tz.date()
                 
                 #Get the client's timezone from the request query parameters.
