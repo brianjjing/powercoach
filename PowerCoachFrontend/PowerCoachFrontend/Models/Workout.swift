@@ -19,5 +19,6 @@ struct Workout: Codable {
 
 struct WorkoutResponse: Codable {
     let home_display_message: String
-    let workouts: [Workout]
+    let todays_workouts: [Workout]
+    let other_workouts: [Workout]
 }

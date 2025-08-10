@@ -19,7 +19,7 @@ struct HomeView: View {
     
     var body: some View {
         VStack {
-            if !viewModel.workouts.isEmpty {
+            if !viewModel.todays_workouts.isEmpty {
                 VStack {
                     Text(viewModel.homeDisplayMessage)
                         .font(.title)
@@ -31,14 +31,14 @@ struct HomeView: View {
                         .padding(.horizontal)
                     
                     //LET USER SET THE WORKOUT FOR TODAY DISPLAYED AS WELL!!! (can have multiple workouts for a day)
-                    if let todaysWorkout = viewModel.workouts.first {
+                    if let todaysWorkout = viewModel.todays_workouts.first {
                         List {
                             // Items are already unique, so \.self is used.
                             ForEach(0..<todaysWorkout.num_exercises, id: \.self) {index in
                                 Text("\(todaysWorkout.sets[index])x\(todaysWorkout.reps[index]) \(todaysWorkout.exercises[index])")
                                     .font(.title3)
                                     .fontWeight(.bold)
-                                    .fontStyle(.primary)
+                                    .foregroundStyle(.primary)
                             }
                         }
                     }

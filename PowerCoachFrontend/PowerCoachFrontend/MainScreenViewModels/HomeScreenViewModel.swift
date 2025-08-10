@@ -8,7 +8,8 @@
 import SwiftUI
 
 class HomeScreenViewModel: ObservableObject {
-    @Published var workouts: [Workout] = []
+    @Published var todays_workouts: [Workout] = []
+    @Published var other_workouts: [Workout] = []
     @Published var errorMessage: String?
     
     @Published var isLoading = false
@@ -20,7 +21,7 @@ class HomeScreenViewModel: ObservableObject {
         
         //Render: https://powercoach-1.onrender.com/workout/getworkout
         //AWS: http://54.67.86.184:10000/workout/getworkout --> upgrade to aws
-        let appUrlString = "https://powercoach-1.onrender.com/workouts/getworkouts"
+        let appUrlString = "https://powercoach-1.onrender.com/workout/getworkouts"
         
         guard let appUrl = URL(string: appUrlString) else {
             self.errorMessage = "Invalid server URL"
@@ -68,8 +69,8 @@ class HomeScreenViewModel: ObservableObject {
                 do {
                     let decodedData = try JSONDecoder().decode(WorkoutResponse.self, from: data)
                     self.homeDisplayMessage = "\(decodedData.home_display_message)"
-                    self.workouts = decodedData.workouts
-                    
+                    self.todays_workouts = decodedData.todays_workouts
+                    self.other_workouts = decodedData.other_workouts
                 } catch {
                     self.errorMessage = "Failed to decode JSON: \(error.localizedDescription)"
                     print(String(describing: self.errorMessage))
@@ -80,7 +81,8 @@ class HomeScreenViewModel: ObservableObject {
     
     private func resetState() {
         self.homeDisplayMessage = ""
-        self.workouts = []
+        self.todays_workouts = []
+        self.other_workouts = []
         self.errorMessage = nil
     }
 }

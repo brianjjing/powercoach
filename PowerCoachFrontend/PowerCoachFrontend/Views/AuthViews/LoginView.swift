@@ -18,8 +18,16 @@ struct LoginView: View {
                     .bold()
                 
                 TextField("Username", text: $viewModel.username)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                
                 SecureField("Password", text: $viewModel.password)
-
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
                 
                 Button(action: viewModel.login) {
                     Text("Login")
@@ -40,6 +48,10 @@ struct LoginView: View {
                 }
                 
                 Spacer()
+                
+                Text("Don't have an account?")
+                    .font(.title3)
+                    .foregroundStyle(.primary)
                 
                 NavigationLink(destination: SignUpView()) {
                     Text("Sign up")

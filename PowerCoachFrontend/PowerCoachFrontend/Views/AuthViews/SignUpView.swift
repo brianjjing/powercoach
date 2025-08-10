@@ -19,7 +19,15 @@ struct SignUpView: View {
                 
                 //$ is used for two-way binding - reading in the typed input and displaying it back.
                 TextField("Username", text: $viewModel.signUpUsername)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
                 SecureField("Password", text: $viewModel.signUpPassword)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
                 
                 Button(action: viewModel.signUp) {
                     Text("Create account")
@@ -48,6 +56,9 @@ struct SignUpView: View {
                 
                 Spacer()
                 
+                Text("Already have an account?")
+                    .font(.title3)
+                    .foregroundStyle(.primary)
                 NavigationLink(destination: LoginView()) {
                     Text("Log In")
                         .foregroundColor(.white)

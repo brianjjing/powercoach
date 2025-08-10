@@ -4,7 +4,7 @@ from powercoachapp.auth import login_required
 from powercoachapp.extensions import db, logger
 from powercoachapp.sqlmodels import Workout
 
-workoutbp = Blueprint('workouts', __name__, url_prefix='/workout')
+workoutbp = Blueprint('workouts', __name__, url_prefix='/workouts')
 
 #Workout Creation Route:
 @workoutbp.route('/createworkout', methods=['POST'])
@@ -96,6 +96,12 @@ def get_workouts():
             
             #Getting today's workouts and the other workouts
             for workout in user_workouts:
+                logger.info("Today: ", today)
+                logger.info("Workout start day: ", workout.start_day)
+                logger.info("Int difference: ", (today - workout.start_day).days)
+                logger.info(type((today - workout.start_day).days))
+                logger.info("Every blank days: ", workout.every_blank_days)
+                logger.info(type(workout.every_blank_days))
                 if ((today - workout.start_day).days % workout.every_blank_days) == 0:
                     todays_workouts.append({
                         "workout_id": workout.workout_id,
