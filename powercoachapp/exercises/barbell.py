@@ -675,7 +675,7 @@ def standing_overhead_press(poselandmarks, bbox, stage):
             return "PRESS THE BAR ABOVE YOUR HEAD UNTIL ARMS ARE STRAIGHT"
         return "DESCEND BAR BACK TO CHEST"
 
-def barbell_row(poselandmarks, bbox, stage):
+def barbell_rows(poselandmarks, bbox, stage):
     #Constants:
     #1. Hands on bar
     lt = poselandmarks[mp_pose.PoseLandmark.LEFT_THUMB]
