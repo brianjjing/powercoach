@@ -2,7 +2,7 @@ from zoneinfo import ZoneInfo
 from datetime import datetime
 from flask import Blueprint, g, request, jsonify
 from powercoachapp.auth import login_required
-from powercoachapp.extensions import db, logger
+from powercoachapp.extensions import db, logger, shared_data
 from powercoachapp.sqlmodels import Workout
 
 workoutbp = Blueprint('workouts', __name__, url_prefix='/workouts')
@@ -67,6 +67,7 @@ def create_workout():
         )
         db.session.add(new_workout)
         db.session.commit()
+        
         return jsonify({
             "workout_creation_message": "Workout creation successful"
         }), 201
@@ -104,11 +105,11 @@ def get_workouts():
                 #Get the client's timezone from the request query parameters.
                 #Get today's date in the client timezone, and convert start date to client timezone (from UTC which it is stored as).
                 #Now compare the dates for real.                
-                logger.info("Today: ", today)
-                logger.info("Workout start day:", workout_start_date)
-                logger.info("Int difference: ", (today - workout_start_date).days)
+                logger.info(f"Today: {today}")
+                logger.info(f"Workout start day: {workout_start_date}")
+                logger.info(f"Int difference: {(today - workout_start_date).day}")
                 logger.info(type((today - workout_start_date).days))
-                logger.info("Every blank days: ", workout.every_blank_days)
+                logger.info(f"Every blank days: {workout.every_blank_days}")
                 logger.info(type(workout.every_blank_days))
                 
                 if ((today - workout_start_date).days % workout.every_blank_days) == 0:

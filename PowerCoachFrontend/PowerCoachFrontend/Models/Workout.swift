@@ -15,7 +15,7 @@ struct CreatedWorkout: Codable {
     var reps: [Int]
     var startDateTime: Date
     var everyBlankDays: Int
-    let availableExercises = ["conventional_deadlift", "rdl", "deep_squat", "quarter_squat", "standing_overhead_press", "barbell_bicep_curls", "barbell_rows"]
+    let availableExercises = ["Conventional Deadlifts", "RDLs", "Deep Squats", "Quarter Squats", "Barbell Overhead Presses", "Barbell Bicep Curls", "Barbell Rows"]
 }
 
 struct Workout: Codable {
