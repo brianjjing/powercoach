@@ -675,7 +675,7 @@ def standing_overhead_press(poselandmarks, bbox, stage):
             return "PRESS THE BAR ABOVE YOUR HEAD UNTIL ARMS ARE STRAIGHT"
         return "DESCEND BAR BACK TO CHEST"
 
-def row(poselandmarks, bbox, stage):
+def barbell_row(poselandmarks, bbox, stage):
     #Constants:
     #1. Hands on bar
     lt = poselandmarks[mp_pose.PoseLandmark.LEFT_THUMB]
@@ -736,7 +736,7 @@ def row(poselandmarks, bbox, stage):
             return bar_below_knees_message
         return "LOWER BAR BELOW KNEES WITH BACK STRAIGHT"
 
-def curl(poselandmarks, bbox, stage):
+def barbell_bicep_curls(poselandmarks, bbox, stage):
     #Constants:
     #1. Hands on bar
     lt = poselandmarks[mp_pose.PoseLandmark.LEFT_THUMB]
@@ -848,6 +848,6 @@ barbell_exercises = {
     '90-Degree Squats': parallel_squat,
     'Quarter Squats': quarter_squat,
     'Barbell Overhead Presses': standing_overhead_press,
-    'Barbell Bicep Curls': curl,
-    'Barbell Rows': row
+    'Barbell Bicep Curls': barbell_bicep_curls,
+    'Barbell Rows': barbell_rows
 }

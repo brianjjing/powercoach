@@ -9,47 +9,55 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject var webSocketManager: WebSocketManager
     @EnvironmentObject var tabIcons: TabIcons
-    @EnvironmentObject var workoutsViewModel: WorkoutsViewModel //Env object is found by TYPE, not name, so it can have a diff name here.
-    @Environment(\.colorScheme) var colorScheme //Rerenders the variable and its views when the environment object changes, since it depends on it.
-    // Changes button text color based on light or dark mode:
+    @EnvironmentObject var workoutsViewModel: WorkoutsViewModel
+    @Environment(\.colorScheme) var colorScheme
+    
     var buttonTextColor: Color {
         colorScheme == .light ? .black : .white
     }
     
+    var rowBackgroundColor: Color {
+        colorScheme == .light ? Color(.systemGray5) : Color(.systemGray4)
+    }
+    
     var body: some View {
         VStack {
-            if !workoutsViewModel.todaysWorkouts.isEmpty {
+            // Check if there are any workouts for today
+            if !(workoutsViewModel.todaysWorkouts.isEmpty) {
+                // Content to display when a workout exists
                 Text(workoutsViewModel.homeDisplayMessage)
                     .font(.title)
                     .fontWeight(.bold)
                     .fontDesign(.rounded)
-                    .foregroundStyle(.primary)
-                    .foregroundColor(buttonTextColor)
+                    .foregroundStyle(buttonTextColor)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
                 
-                //LET USER SET THE WORKOUT FOR TODAY DISPLAYED AS WELL!!! (can have multiple workouts for a day)
+                // ScrollView for the workout buttons.
+                // Note: The structure here assumes you want a scrollable list of
+                // 'today's workouts' and then show details of the first one below.
                 if let todaysWorkout = workoutsViewModel.todaysWorkouts.first {
-                    List {
-                        // Items are already unique, so \.self is used.
-                        ForEach(0..<todaysWorkout.num_exercises, id: \.self) {index in
-                            Text("\(todaysWorkout.sets[index])x\(todaysWorkout.reps[index]) \(todaysWorkout.exercises[index])")
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .foregroundStyle(.primary)
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            ForEach(0..<todaysWorkout.numExercises, id: \.self) { index in
+                                ExerciseDisplayRow(workout: todaysWorkout, index: index)
+                            }
                         }
                     }
-                    .listStyle(.insetGrouped)
+                    .padding()
+                    .background(Color(.systemGroupedBackground))
+                    .scrollIndicators(.visible)
                 }
+                
             } else {
+                // Content to display when no workouts are available
                 Text(workoutsViewModel.homeDisplayMessage)
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundStyle(.primary)
-                    .foregroundColor(buttonTextColor)
+                    .foregroundStyle(buttonTextColor)
                     .multilineTextAlignment(.center)
                 
-                Spacer().frame(height: UIScreen.main.bounds.height/16)
+                Spacer().frame(height: UIScreen.main.bounds.height / 16)
                 
                 NavigationLink(destination: WorkoutCreatorView()) {
                     Text("Create a workout")
@@ -61,13 +69,13 @@ struct HomeView: View {
                         .cornerRadius(12)
                 }
                 
-                Spacer().frame(height: UIScreen.main.bounds.height/20)
+                Spacer().frame(height: UIScreen.main.bounds.height / 20)
                 
-                //Button for one workout
+                // Button for one workout
                 Button() {
-                    //Go to the one workout creator
+                    // Go to the one workout creator
                     DispatchQueue.main.async {
-                        tabIcons.currentTab = 0 //Make this for the one workout creator
+                        tabIcons.currentTab = 0 // Make this for the one workout creator
                     }
                 } label: {
                     Text("One-time workout")
@@ -97,7 +105,7 @@ struct HomeView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink(destination: InProgressView()) {
                     Image(systemName: "bell")
-                        .font(.system(size: UIScreen.main.bounds.width/20))
+                        .font(.system(size: UIScreen.main.bounds.width / 20))
                         .foregroundColor(.primary)
                 }
             }
@@ -105,8 +113,11 @@ struct HomeView: View {
     }
 }
 
+// NOTE: This preview requires `WebSocketManager` and `TabIcons` to be defined
+// For this example, we will just use a minimal preview environment.
 #Preview {
     HomeView()
         .environmentObject(WebSocketManager.shared)
         .environmentObject(TabIcons.sharedTab)
+        .environmentObject(WorkoutsViewModel())
 }

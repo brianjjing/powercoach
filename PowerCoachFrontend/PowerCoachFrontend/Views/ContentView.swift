@@ -53,7 +53,7 @@ struct ContentView: View {
                                 Image(systemName: tabIcons.houseSystemName)
                                     .resizable()
                                     .colorMultiply(Color.black)
-                                    .frame(width: UIScreen.main.bounds.width/14, height: UIScreen.main.bounds.width/14)
+                                    .frame(width: UIScreen.main.bounds.width/13, height: UIScreen.main.bounds.width/14)
                                 Spacer().frame(height: UIScreen.main.bounds.width/21)
                             }
                         }

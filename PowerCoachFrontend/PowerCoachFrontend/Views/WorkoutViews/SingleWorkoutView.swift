@@ -10,20 +10,35 @@ import SwiftUI
 struct SingleWorkoutView: View {
     @EnvironmentObject var webSocketManager: WebSocketManager
     @EnvironmentObject var workoutsViewModel: WorkoutsViewModel
+    @Environment(\.colorScheme) var colorScheme
+    var rowBackgroundColor: Color {
+        colorScheme == .light ? Color(.systemGray5) : Color(.systemGray4)
+    }
     
     let workout: Workout //The parameter that needs to be passed
     
     var body: some View {
-        List {
-            ForEach(0..<workout.num_exercises, id: \.self) {index in
-                Text("\(workout.sets[index])x\(workout.reps[index]) \(workout.exercises[index])")
-                    .font(.title3)
-                    .fontWeight(.bold)
-                    .foregroundStyle(.primary)
+        ScrollView {
+            LazyVStack(spacing: 12) {
+                ForEach(0..<workout.numExercises, id: \.self) { index in
+                    HStack {
+                        Text("\(workout.sets[index])x\(workout.reps[index]) \(workout.exercises[index])")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.primary)
+                            .multilineTextAlignment(.leading)
+                    }
+                    .padding(.vertical, 20)
+                    .padding(.horizontal)
+                    .frame(maxWidth: .infinity)
+                    .background(rowBackgroundColor)
+                    .cornerRadius(12)
+                }
             }
-            .padding()
         }
         .padding()
+        .background(Color(.systemGroupedBackground))
+        .scrollIndicators(.visible)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text(workout.name)
@@ -57,15 +72,14 @@ struct SingleWorkoutView: View {
 
 #Preview {
     let mockWorkout = Workout(
-        workout_id: 1,
+        workoutId: 1,
         name: "Mock Workout",
-        num_exercises: 2,
+        numExercises: 2,
         exercises: ["Pushups", "Squats"],
         sets: [3, 3],
         reps: [10, 10],
-        weights: [0, 0],
         completed: [false, false],
-        every_blank_days: 1
+        everyBlankDays: 1
     )
 
     

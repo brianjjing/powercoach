@@ -43,47 +43,16 @@ struct WorkoutPlanView: View {
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         // Workout_id is the unique identifier
-                        ForEach(workoutsViewModel.todaysWorkouts, id: \.workout_id) {workout in
-                            NavigationLink(destination: SingleWorkoutView(workout: workout)) {
-                                VStack {
-                                    Text(workout.name)
-                                        .font(.title)
-                                        .fontWeight(.black)
-                                        .foregroundStyle(.primary)
-                                        .foregroundColor(.black)
-                                        .multilineTextAlignment(.center)
-                                }
-                                .padding(.vertical, 20)
-                                .padding(.horizontal)
-                                .frame(maxWidth: .infinity)
-                                .background(rowBackgroundColor)
-                                .cornerRadius(12)
-                                
-                            }
-                            .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
+                        ForEach(workoutsViewModel.todaysWorkouts, id: \.workoutId) {workout in
+                            WorkoutRowView(workout: workout)
                             
-                            Spacer().frame(height: UIScreen.main.bounds.height/80)
+                            Spacer().frame(height: UIScreen.main.bounds.height/100)
                         }
                         
-                        ForEach(workoutsViewModel.otherWorkouts, id: \.workout_id) {workout in
-                            NavigationLink(destination: SingleWorkoutView(workout: workout)) {
-                                VStack {
-                                    Text(workout.name)
-                                        .font(.title)
-                                        .fontWeight(.black)
-                                        .foregroundStyle(.primary)
-                                        .foregroundColor(.black)
-                                        .multilineTextAlignment(.center)
-                                }
-                                .padding(.vertical, 20)
-                                .padding(.horizontal)
-                                .frame(maxWidth: .infinity)
-                                .background(rowBackgroundColor)
-                                .cornerRadius(12)
-                            }
-                            .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
+                        ForEach(workoutsViewModel.otherWorkouts, id: \.workoutId) {workout in
+                            WorkoutRowView(workout: workout)
                             
-                            Spacer().frame(height: UIScreen.main.bounds.height/80)
+                            Spacer().frame(height: UIScreen.main.bounds.height/100)
                         }
                     }
                 }

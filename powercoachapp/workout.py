@@ -21,7 +21,6 @@ def create_workout():
     exercises = workout_data['exercises'] #Will be limited to nothing, or a whole list of exercises.
     sets = workout_data['sets']
     reps = workout_data['reps']
-    weights = workout_data['weights']
     num_exercises = len(exercises)
     every_blank_days = workout_data['every_blank_days']
     
@@ -51,8 +50,6 @@ def create_workout():
             return jsonify({'workout_creation_message': 'Number of sets is required.', 'index': exercise_index}), 400
         elif not reps[exercise_index]:
             return jsonify({'workout_creation_message': 'Number of reps is required.', 'index': exercise_index}), 400
-        elif not weights[exercise_index]:
-            return jsonify({'workout_creation_message': 'Exercise weight is required.', 'index': exercise_index}), 400
         elif not every_blank_days[exercise_index]:
             return jsonify({'workout_creation_message': 'Workout frequency is required', 'index': exercise_index}), 400
     
@@ -64,7 +61,6 @@ def create_workout():
             exercise_names = exercises,
             exercise_sets = sets,
             exercise_reps = reps,
-            exercise_weights = weights,
             completed = [False for _ in num_exercises],
             start_datetime = datetime.now().astimezone(ZoneInfo('UTC')),
             every_blank_days = every_blank_days
@@ -123,7 +119,6 @@ def get_workouts():
                         "exercises": workout.exercise_names,
                         "sets": workout.exercise_sets,
                         "reps": workout.exercise_reps,
-                        "weights": workout.exercise_weights,
                         "completed": workout.completed,
                         "every_blank_days": workout.every_blank_days
                     })
@@ -135,7 +130,6 @@ def get_workouts():
                         "exercises": workout.exercise_names,
                         "sets": workout.exercise_sets,
                         "reps": workout.exercise_reps,
-                        "weights": workout.exercise_weights,
                         "completed": workout.completed,
                         "every_blank_days": workout.every_blank_days
                     })
