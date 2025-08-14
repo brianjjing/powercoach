@@ -107,7 +107,7 @@ def get_workouts():
                 #Now compare the dates for real.                
                 logger.info(f"Today: {today}")
                 logger.info(f"Workout start day: {workout_start_date}")
-                logger.info(f"Int difference: {(today - workout_start_date).day}")
+                logger.info(f"Int difference: {(today - workout_start_date).days}")
                 logger.info(type((today - workout_start_date).days))
                 logger.info(f"Every blank days: {workout.every_blank_days}")
                 logger.info(type(workout.every_blank_days))
