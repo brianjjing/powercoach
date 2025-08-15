@@ -57,7 +57,7 @@ struct ExerciseCreationRow: View {
             // This is safer because the ID is stable. The ViewModel can find the index to delete.
             Button(action: { workoutsViewModel.deleteExercise(exercise: exercise) }) {
                 Image(systemName: "trash")
-                    .font(.system(size: UIScreen.main.bounds.width/20))
+                    .font(.title2)
                     .foregroundStyle(.primary)
                     .foregroundColor(.red)
             }

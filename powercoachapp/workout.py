@@ -63,7 +63,7 @@ def create_workout():
             exercise_names = exercises,
             exercise_sets = sets,
             exercise_reps = reps,
-            completed = [False for _ in num_exercises],
+            completed = [False for _ in exercises],
             start_datetime = datetime.now().astimezone(ZoneInfo('UTC')),
             every_blank_days = every_blank_days
         )
