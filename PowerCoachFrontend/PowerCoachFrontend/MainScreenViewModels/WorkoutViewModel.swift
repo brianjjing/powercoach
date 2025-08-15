@@ -13,11 +13,9 @@ class WorkoutsViewModel: ObservableObject {
     @Published var otherWorkouts: [Workout] = []
     
     //Workout creation:
+    // FIX: createdWorkout is now a struct that contains an array of `Exercise` structs.
     @Published var createdWorkout: CreatedWorkout = CreatedWorkout(
         name: "My Workout",
-        exercises: ["Select exercise"],
-        sets: [0],
-        reps: [0],
         everyBlankDays: 7
     )
     
@@ -114,45 +112,36 @@ class WorkoutsViewModel: ObservableObject {
     }
     
     func addExercise() {
-        if self.createdWorkout.exercises.count > 15 {
+        if self.createdWorkout.exercises.count >= 15 {
             self.workoutCreatorViewErrorMessage = "Can't have more than 15 exercises in a workout!"
-            print(workoutCreatorViewErrorMessage)
         }
         else {
             DispatchQueue.main.async {
                 self.workoutCreatorViewErrorMessage = nil
-                self.createdWorkout.exercises.append("Select available exercise")
-                self.createdWorkout.sets.append(0)
-                self.createdWorkout.reps.append(0)
+                self.createdWorkout.exercises.append(Exercise())
             }
         }
     }
     
-    func deleteExercise(deleteIndex: Int) {
-        if deleteIndex < 0 || deleteIndex >= self.createdWorkout.exercises.count {
-            print(deleteIndex)
-            self.workoutCreatorViewErrorMessage = "Invalid index for deletion."
-            print(workoutCreatorViewErrorMessage)
-        }
-        else {
-            print("EXERCISE DELETION:")
-            print(deleteIndex)
-            print(self.createdWorkout.exercises)
-            print(self.createdWorkout.sets)
-            print(self.createdWorkout.reps)
-            print(self.createdWorkout.exercises.count)
-            self.createdWorkout.exercises.remove(at: deleteIndex)
-            self.createdWorkout.sets.remove(at: deleteIndex)
-            self.createdWorkout.reps.remove(at: deleteIndex)
+    // FIX: The delete function now takes an `Exercise` object, not an index.
+    // It finds the correct exercise to remove based on its unique `id`.
+    func deleteExercise(exercise: Exercise) {
+        DispatchQueue.main.async {
+            if let index = self.createdWorkout.exercises.firstIndex(where: { $0.id == exercise.id }) {
+                self.createdWorkout.exercises.remove(at: index)
+                self.workoutCreatorViewErrorMessage = nil
+                print("Successfully deleted exercise with ID: \(exercise.id)")
+                print("New count: \(self.createdWorkout.exercises.count)")
+            } else {
+                self.workoutCreatorViewErrorMessage = "Exercise not found for deletion."
+                print("Error: Exercise with ID \(exercise.id) not found.")
+            }
         }
     }
     
     func createWorkout() {
-        //Set startDate to Date() and every_blank_days
         self.isLoading = true
         
-        //Render: https://powercoach-1.onrender.com/workouts/createworkout
-        //AWS: http://54.67.86.184:10000/workouts/createworkout --> upgrade to aws
         guard let appUrl = URL(string: "https://powercoach-1.onrender.com/workouts/createworkout") else {
             self.errorMessage = "Invalid server URL"
             return
@@ -160,12 +149,15 @@ class WorkoutsViewModel: ObservableObject {
         
         let createdWorkoutData: [String: Any] = [
             "name": createdWorkout.name,
-            "exercises": createdWorkout.exercises,
-            "sets": createdWorkout.sets,
-            "reps": createdWorkout.reps,
+            // Map the new `Exercise` objects to the old array format for the backend
+            "exercises": createdWorkout.exercises.map { $0.name }, //$0 is the implicit argument name, refers to the sole argument in the closure.
+            "sets": createdWorkout.exercises.map { $0.sets },
+            "reps": createdWorkout.exercises.map { $0.reps },
             "every_blank_days": 7
         ]
-
+        
+        print(createdWorkoutData)
+        
         guard let jsonCreatedWorkoutData = try? JSONSerialization.data(withJSONObject: createdWorkoutData) else {
             self.errorMessage = "Failed to encode credentials"
             return
@@ -176,10 +168,13 @@ class WorkoutsViewModel: ObservableObject {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonCreatedWorkoutData
         
+        print("request created")
+        
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 DispatchQueue.main.async {
                     self.errorMessage = "Request failed: \(error.localizedDescription)"
+                    print(self.errorMessage)
                 }
                 return
             }
@@ -187,6 +182,7 @@ class WorkoutsViewModel: ObservableObject {
             guard let data = data else {
                 DispatchQueue.main.async {
                     self.errorMessage = "No data received from server"
+                    print(self.errorMessage)
                 }
                 return
             }
@@ -196,8 +192,10 @@ class WorkoutsViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     if workoutCreationMessage == "Workout creation successful" {
                         self.errorMessage = "Workout creation successful!"
+                        print(self.errorMessage)
                     } else {
                         self.errorMessage = workoutCreationMessage
+                        print(self.errorMessage)
                     }
                 }
             }
@@ -207,7 +205,6 @@ class WorkoutsViewModel: ObservableObject {
     }
     
     func deleteWorkout(workoutToDelete: Workout) {
-        
         self.resetState()
     }
     
@@ -215,14 +212,13 @@ class WorkoutsViewModel: ObservableObject {
         self.homeDisplayMessage = ""
         self.todaysWorkouts = []
         self.otherWorkouts = []
+        // FIX: Resetting to the new data model
         self.createdWorkout = CreatedWorkout(
             name: "My Workout",
-            exercises: ["Select exercise"],
-            sets: [0],
-            reps: [0],
             everyBlankDays: 7
         )
         self.errorMessage = nil
         self.workoutCreatorViewErrorMessage = nil
     }
 }
+

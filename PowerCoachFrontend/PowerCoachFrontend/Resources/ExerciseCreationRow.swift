@@ -8,10 +8,12 @@
 import SwiftUI
 
 struct ExerciseCreationRow: View {
-    var index: Int
-    @Binding var createdWorkout: CreatedWorkout
+    @Binding var exercise: Exercise
+    let availableExercises: [String]
+    
     @EnvironmentObject var workoutsViewModel: WorkoutsViewModel
-    @Environment(\.colorScheme) var colorScheme //Rerenders the variable and its views when the environment object changes, since it depends on it.
+    @Environment(\.colorScheme) var colorScheme
+    
     var rowBackgroundColor: Color {
         colorScheme == .light ? Color(.systemGray5) : Color(.systemGray4)
     }
@@ -23,7 +25,7 @@ struct ExerciseCreationRow: View {
                     Text("Sets:")
                         .font(.body)
                     
-                    Picker("Sets", selection: $createdWorkout.sets[index]) {
+                    Picker("Sets", selection: $exercise.sets) {
                         ForEach(0...12, id: \.self) { number in
                             Text ("\(number)")
                         }
@@ -35,7 +37,7 @@ struct ExerciseCreationRow: View {
                     Text("Reps:")
                         .font(.body)
                     
-                    Picker("Reps", selection: $createdWorkout.reps[index]) {
+                    Picker("Reps", selection: $exercise.reps) {
                         ForEach(0...12, id: \.self) { number in
                             Text ("\(number)")
                         }
@@ -44,15 +46,16 @@ struct ExerciseCreationRow: View {
                 }
             }
             
-                
             ExerciseMenu(
-                selectedExercise: $createdWorkout.exercises[index],
-                availableExercises: createdWorkout.availableExercises
+                selectedExercise: $exercise.name,
+                availableExercises: availableExercises
             )
             
             Spacer()
             
-            Button(action: { workoutsViewModel.deleteExercise(deleteIndex: index) }) {
+            // FIX: Pass the item itself to be deleted, not its index.
+            // This is safer because the ID is stable. The ViewModel can find the index to delete.
+            Button(action: { workoutsViewModel.deleteExercise(exercise: exercise) }) {
                 Image(systemName: "trash")
                     .font(.system(size: UIScreen.main.bounds.width/20))
                     .foregroundStyle(.primary)
@@ -68,7 +71,6 @@ struct ExerciseCreationRow: View {
 }
 
 struct ExerciseMenu: View {
-    // The binding connects directly to the exercise string in the parent view's array.
     @Binding var selectedExercise: String
     let availableExercises: [String]
     

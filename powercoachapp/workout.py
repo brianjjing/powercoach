@@ -17,6 +17,8 @@ def create_workout():
     if not workout_data:
         return jsonify({"workout_creation_message": "Please enter at least one exercise!"}), 400
     
+    logger.info(workout_data)
+    
     #All lists:
     name = workout_data['name']
     exercises = workout_data['exercises'] #Will be limited to nothing, or a whole list of exercises.
@@ -44,7 +46,7 @@ def create_workout():
             "workout_creation_message": f"All workout plans must have the same frequency! You are attempting to add a workout every {every_blank_days} days when your other workout plans are every {existing_workout.every_blank_days} days."
         }), 400
     
-    for exercise_index in num_exercises:
+    for exercise_index in range(num_exercises):
         if not exercises[exercise_index]:
             return jsonify({'workout_creation_message': 'Exercise name is required.', 'index': exercise_index}), 400
         elif not sets[exercise_index]:

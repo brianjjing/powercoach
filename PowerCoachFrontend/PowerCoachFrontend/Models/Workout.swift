@@ -9,11 +9,16 @@ import Foundation
 
 struct CreatedWorkout: Codable {
     var name: String
-    var exercises: [String]
-    var sets: [Int]
-    var reps: [Int]
+    var exercises: [Exercise] = [Exercise()]
     var everyBlankDays: Int
     let availableExercises = ["Conventional Deadlifts", "RDLs", "Deep Squats", "Quarter Squats", "Barbell Overhead Presses", "Barbell Bicep Curls", "Barbell Rows"]
+}
+
+struct Exercise: Identifiable, Codable {
+    var id = UUID()
+    var name: String = "Select exercise"
+    var sets: Int = 0
+    var reps: Int = 0
 }
 
 struct Workout: Codable {

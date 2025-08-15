@@ -20,7 +20,7 @@ struct SingleWorkoutView: View {
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 12) {
-                ForEach(0..<workout.numExercises, id: \.self) { index in
+                ForEach(0..<workout.exercises.count, id: \.self) { index in
                     HStack {
                         Text("\(workout.sets[index])x\(workout.reps[index]) \(workout.exercises[index])")
                             .font(.title3)
@@ -74,7 +74,6 @@ struct SingleWorkoutView: View {
     let mockWorkout = Workout(
         workoutId: 1,
         name: "Mock Workout",
-        numExercises: 2,
         exercises: ["Pushups", "Squats"],
         sets: [3, 3],
         reps: [10, 10],

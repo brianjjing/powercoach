@@ -39,7 +39,7 @@ struct HomeView: View {
                 if let todaysWorkout = workoutsViewModel.todaysWorkouts.first {
                     ScrollView {
                         LazyVStack(spacing: 12) {
-                            ForEach(0..<todaysWorkout.numExercises, id: \.self) { index in
+                            ForEach(0..<todaysWorkout.exercises.count, id: \.self) { index in
                                 ExerciseDisplayRow(workout: todaysWorkout, index: index)
                             }
                         }

@@ -10,8 +10,9 @@ import SwiftUI
 struct WorkoutCreatorView: View {
     @EnvironmentObject var webSocketManager: WebSocketManager
     @EnvironmentObject var workoutsViewModel: WorkoutsViewModel
-    @Environment(\.colorScheme) var colorScheme //Rerenders the variable and its views when the environment object changes, since it depends on it.
-    // Changes button text color based on light or dark mode:
+    @Environment(\.colorScheme) var colorScheme
+    
+    @FocusState private var amountIsFocused: Bool
     var buttonTextColor: Color {
         colorScheme == .light ? .black : .white
     }
@@ -25,19 +26,27 @@ struct WorkoutCreatorView: View {
                 .cornerRadius(10)
                 .disableAutocorrection(true)
                 .multilineTextAlignment(.center)
+                .focused($amountIsFocused)
             
             ScrollView {
                 LazyVStack(spacing: 12) {
-                    ForEach(0..<workoutsViewModel.createdWorkout.numExercises, id: \.self) { index in
-                        ExerciseCreationRow(index: index, createdWorkout: $workoutsViewModel.createdWorkout)
+                    // FIX: Iterate directly over the array of `Exercise` objects
+                    // using `id: \.id`. This gives each view a stable, unique
+                    // identifier that is independent of its position in the array.
+                    ForEach($workoutsViewModel.createdWorkout.exercises) { $exercise in
+                        ExerciseCreationRow(
+                            exercise: $exercise,
+                            availableExercises: workoutsViewModel.createdWorkout.availableExercises
+                        )
                     }
                     
                     if workoutsViewModel.workoutCreatorViewErrorMessage != nil {
-                        Text(String(String(describing: workoutsViewModel.workoutCreatorViewErrorMessage)))
+                        Text(String(describing: workoutsViewModel.workoutCreatorViewErrorMessage!))
                             .font(.headline)
                             .fontWeight(.bold)
                             .foregroundColor(.red)
                     }
+                    
                     Button(action: workoutsViewModel.addExercise) {
                         Text("Add Exercise")
                             .font(.title2)
@@ -70,7 +79,6 @@ struct WorkoutCreatorView: View {
                     .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
                     .background(Color.blue)
                     .cornerRadius(10)
-
             }
         }
         .toolbar {
@@ -83,9 +91,17 @@ struct WorkoutCreatorView: View {
                     .foregroundStyle(.primary)
                     .foregroundColor(.black)
             }
+            if amountIsFocused {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        amountIsFocused = false
+                    }
+                }
+            }
         }
     }
 }
+
 
 #Preview {
     WorkoutCreatorView()
