@@ -53,8 +53,8 @@ def create_workout():
             return jsonify({'workout_creation_message': 'Number of sets is required.', 'index': exercise_index}), 400
         elif not reps[exercise_index]:
             return jsonify({'workout_creation_message': 'Number of reps is required.', 'index': exercise_index}), 400
-        elif not every_blank_days[exercise_index]:
-            return jsonify({'workout_creation_message': 'Workout frequency is required', 'index': exercise_index}), 400
+    if not every_blank_days[exercise_index]:
+        return jsonify({'workout_creation_message': 'Workout frequency is required', 'index': exercise_index}), 400
     
     try:
         new_workout = Workout(
@@ -167,6 +167,8 @@ def get_workouts():
 @workoutbp.route('/deleteworkout', methods=['POST'])
 @login_required
 def delete_workout():
+    
+    
     try:
         return jsonify({
             "workout_deletion_message": "Workout deletion successful"
