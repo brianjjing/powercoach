@@ -4,6 +4,7 @@ from flask import Blueprint, g, request, jsonify
 from powercoachapp.auth import login_required
 from powercoachapp.extensions import db, logger, shared_data
 from powercoachapp.sqlmodels import Workout
+from powercoachapp.exercises.barbell import barbell_exercises
 
 workoutbp = Blueprint('workouts', __name__, url_prefix='/workouts')
 
@@ -57,7 +58,6 @@ def create_workout():
         new_workout = Workout(
             user_id = g.user.id,
             workout_name = name,
-            num_exercises = num_exercises,
             exercise_names = exercises,
             exercise_sets = sets,
             exercise_reps = reps,
@@ -116,7 +116,6 @@ def get_workouts():
                     todays_workouts.append({
                         "workout_id": workout.workout_id,
                         "name": workout.workout_name,
-                        "num_exercises": workout.num_exercises,
                         "exercises": workout.exercise_names,
                         "sets": workout.exercise_sets,
                         "reps": workout.exercise_reps,
@@ -127,7 +126,6 @@ def get_workouts():
                     other_workouts.append({
                         "workout_id": workout.workout_id,
                         "name": workout.workout_name,
-                        "num_exercises": workout.num_exercises,
                         "exercises": workout.exercise_names,
                         "sets": workout.exercise_sets,
                         "reps": workout.exercise_reps,
@@ -163,7 +161,21 @@ def get_workouts():
         return jsonify({
             "home_display_message": "Unknown error. Please reload and try again."
         }), 500
-        
+
+@workoutbp.route('/deleteworkout', methods=['POST'])
+@login_required
+def delete_workout():
+    try:
+        return jsonify({
+            "workout_deletion_message": "Workout deletion successful"
+        }), 201
+    except Exception as e:
+        logger.debug(f"Error creating workout: {e}")
+        db.session.rollback()
+        return jsonify({
+            "workout_creation_message": "Sorry, an error occurred. Please try again."
+        }), 500
+
 @workoutbp.route('/markexercisedone', methods=['POST'])
 @login_required
 def mark_exercise_done():

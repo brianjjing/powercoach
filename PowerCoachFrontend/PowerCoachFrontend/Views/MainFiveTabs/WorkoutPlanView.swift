@@ -62,23 +62,23 @@ struct WorkoutPlanView: View {
             }
         }
         .padding()
+        .onAppear() {
+            DispatchQueue.main.async {
+                workoutsViewModel.getWorkouts()
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .principal) {
-                VStack {
-                    Text("WORKOUT PLAN")
-                        .font(.title)
-                        .fontWeight(.black)
-                        .foregroundColor(Color.red)
-                        .font(.subheadline)
-                        .foregroundStyle(.primary)
-                        .foregroundColor(.black)
-                }
+                Text("WORKOUT PLAN")
+                    .font(.title)
+                    .fontWeight(.black)
+                    .foregroundStyle(.red)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 NavigationLink(destination: WorkoutCreatorView()) {
                     Image(systemName: "plus.app")
                         .font(.system(size: UIScreen.main.bounds.width/20))
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
                 }
             }
         }

@@ -25,6 +25,10 @@ func printAllTimezones() {
     }
 }
 
+func printDate() {
+    print(Date())
+}
+
 // You can call this function from the command line.
 // for example, from a button's action or a view's `onAppear` modifier.
 // Uncomment the line below to run the function when this file is executed as a standalone script.

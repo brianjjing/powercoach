@@ -91,7 +91,7 @@ struct HomeView: View {
         .padding()
         .onAppear() {
             DispatchQueue.main.async {
-                workoutsViewModel.displayCurrentWorkout()
+                workoutsViewModel.getWorkouts()
             }
         }
         .toolbar {

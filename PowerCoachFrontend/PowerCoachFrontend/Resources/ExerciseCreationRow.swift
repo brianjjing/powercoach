@@ -52,7 +52,7 @@ struct ExerciseCreationRow: View {
             
             Spacer()
             
-            Button(action: workoutsViewModel.addExercise) {
+            Button(action: { workoutsViewModel.deleteExercise(deleteIndex: index) }) {
                 Image(systemName: "trash")
                     .font(.system(size: UIScreen.main.bounds.width/20))
                     .foregroundStyle(.primary)

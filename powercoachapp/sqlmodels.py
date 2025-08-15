@@ -1,4 +1,5 @@
 from powercoachapp.extensions import db
+from sqlalchemy import CheckConstraint
 
 class User(db.Model): #SQLAlchemy automatically converts to lowercase and pluralizes
     __tablename__ = 'users'
@@ -28,10 +29,16 @@ class Workout(db.Model):
     workout_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     workout_name = db.Column(db.String(64), nullable=False)
-    num_exercises = db.Column(db.Integer, db.CheckConstraint('num_exercises<=15'), nullable=False)
     exercise_names = db.Column(db.ARRAY(db.String(64)), nullable=False)
     exercise_sets = db.Column(db.ARRAY(db.Integer), nullable=False)
     exercise_reps = db.Column(db.ARRAY(db.Integer), nullable=False)
     completed = db.Column(db.ARRAY(db.Boolean), nullable=False)
     start_datetime = db.Column(db.DateTime(timezone=True), nullable=False)
     every_blank_days = db.Column(db.Integer, nullable=False)
+    
+    __table_args__ = (
+        # This CheckConstraint directly uses a PostgreSQL function to
+        # enforce that the number of exercises (i.e., the length of the array)
+        # is no more than 15. The '1' in the function call refers to the first dimension of the array.
+        CheckConstraint('array_length(exercise_names, 1) <= 15', name='max_15_exercises_check'),
+    )

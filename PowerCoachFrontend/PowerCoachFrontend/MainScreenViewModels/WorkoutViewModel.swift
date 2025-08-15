@@ -15,10 +15,9 @@ class WorkoutsViewModel: ObservableObject {
     //Workout creation:
     @Published var createdWorkout: CreatedWorkout = CreatedWorkout(
         name: "My Workout",
-        numExercises: 1,
+        exercises: ["Select exercise"],
         sets: [0],
         reps: [0],
-        startDateTime: Date(), //Gives the whole datetime
         everyBlankDays: 7
     )
     
@@ -28,7 +27,7 @@ class WorkoutsViewModel: ObservableObject {
     @Published var errorMessage: String? = nil
     @Published var workoutCreatorViewErrorMessage: String? = nil
     
-    func displayCurrentWorkout() {
+    func getWorkouts() {
         self.resetState()
         self.isLoading = true
         
@@ -55,6 +54,7 @@ class WorkoutsViewModel: ObservableObject {
             self.isLoading = false
             return
         }
+        
         print("Final URL: \(finalUrl)")
         
         var request = URLRequest(url: finalUrl)
@@ -95,10 +95,16 @@ class WorkoutsViewModel: ObservableObject {
                 }
                 
                 do {
-                    let decodedData = try JSONDecoder().decode(WorkoutResponse.self, from: data)
+                    let decoder = JSONDecoder()
+                    decoder.keyDecodingStrategy = .convertFromSnakeCase
+                    let decodedData = try decoder.decode(WorkoutResponse.self, from: data)
+                    
                     self.homeDisplayMessage = "\(decodedData.homeDisplayMessage)"
+                    print(self.homeDisplayMessage)
                     self.todaysWorkouts = decodedData.todaysWorkouts
+                    print(self.todaysWorkouts)
                     self.otherWorkouts = decodedData.otherWorkouts
+                    print(self.otherWorkouts)
                 } catch {
                     self.errorMessage = "Failed to decode JSON: \(error.localizedDescription)"
                     print(String(describing: self.errorMessage))
@@ -108,28 +114,42 @@ class WorkoutsViewModel: ObservableObject {
     }
     
     func addExercise() {
-        if self.createdWorkout.numExercises > 15 {
-            workoutCreatorViewErrorMessage = "Can't have more than 15 exercises in a workout!"
-            //Make a function to gray out the foreach.
+        if self.createdWorkout.exercises.count > 15 {
+            self.workoutCreatorViewErrorMessage = "Can't have more than 15 exercises in a workout!"
+            print(workoutCreatorViewErrorMessage)
         }
         else {
-            workoutCreatorViewErrorMessage = nil
-            self.createdWorkout.numExercises += 1
-            self.createdWorkout.exercises.append("Select available exercise")
-            self.createdWorkout.sets.append(0)
-            self.createdWorkout.reps.append(0)
+            DispatchQueue.main.async {
+                self.workoutCreatorViewErrorMessage = nil
+                self.createdWorkout.exercises.append("Select available exercise")
+                self.createdWorkout.sets.append(0)
+                self.createdWorkout.reps.append(0)
+            }
         }
     }
     
-    func deleteExercise() {
-        self.createdWorkout.numExercises -= 1
-        //Add deletionindex logic.
+    func deleteExercise(deleteIndex: Int) {
+        if deleteIndex < 0 || deleteIndex >= self.createdWorkout.exercises.count {
+            print(deleteIndex)
+            self.workoutCreatorViewErrorMessage = "Invalid index for deletion."
+            print(workoutCreatorViewErrorMessage)
+        }
+        else {
+            print("EXERCISE DELETION:")
+            print(deleteIndex)
+            print(self.createdWorkout.exercises)
+            print(self.createdWorkout.sets)
+            print(self.createdWorkout.reps)
+            print(self.createdWorkout.exercises.count)
+            self.createdWorkout.exercises.remove(at: deleteIndex)
+            self.createdWorkout.sets.remove(at: deleteIndex)
+            self.createdWorkout.reps.remove(at: deleteIndex)
+        }
     }
     
     func createWorkout() {
         //Set startDate to Date() and every_blank_days
         self.isLoading = true
-        
         
         //Render: https://powercoach-1.onrender.com/workouts/createworkout
         //AWS: http://54.67.86.184:10000/workouts/createworkout --> upgrade to aws
@@ -140,25 +160,11 @@ class WorkoutsViewModel: ObservableObject {
         
         let createdWorkoutData: [String: Any] = [
             "name": createdWorkout.name,
-            "num_exercises": createdWorkout.numExercises,
             "exercises": createdWorkout.exercises,
             "sets": createdWorkout.sets,
             "reps": createdWorkout.reps,
-            "start_datetime": Date(),
             "every_blank_days": 7
         ]
-        
-        struct CreatedWorkout: Codable {
-            var name: String
-            var numExercises: Int
-            var exercises: [String] = ["Select exercise"]
-            var sets: [Int]
-            var reps: [Int]
-            var startDateTime: Date
-            var everyBlankDays: Int
-            let availableExercises = ["conventional_deadlift", "rdl", "deep_squat", "quarter_squat", "standing_overhead_press", "barbell_bicep_curls", "barbell_rows"]
-        }
-
 
         guard let jsonCreatedWorkoutData = try? JSONSerialization.data(withJSONObject: createdWorkoutData) else {
             self.errorMessage = "Failed to encode credentials"
@@ -200,16 +206,20 @@ class WorkoutsViewModel: ObservableObject {
         self.resetState()
     }
     
+    func deleteWorkout(workoutToDelete: Workout) {
+        
+        self.resetState()
+    }
+    
     private func resetState() {
         self.homeDisplayMessage = ""
         self.todaysWorkouts = []
         self.otherWorkouts = []
         self.createdWorkout = CreatedWorkout(
             name: "My Workout",
-            numExercises: 1,
+            exercises: ["Select exercise"],
             sets: [0],
             reps: [0],
-            startDateTime: Date(), //Make it today
             everyBlankDays: 7
         )
         self.errorMessage = nil
