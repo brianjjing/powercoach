@@ -53,7 +53,7 @@ def create_workout():
             return jsonify({'workout_creation_message': 'Number of sets is required.', 'index': exercise_index}), 400
         elif not reps[exercise_index]:
             return jsonify({'workout_creation_message': 'Number of reps is required.', 'index': exercise_index}), 400
-    if not every_blank_days[exercise_index]:
+    if not every_blank_days:
         return jsonify({'workout_creation_message': 'Workout frequency is required', 'index': exercise_index}), 400
     
     try:
