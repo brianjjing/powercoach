@@ -43,13 +43,7 @@ struct WorkoutPlanView: View {
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         // Workout_id is the unique identifier
-                        ForEach(workoutsViewModel.todaysWorkouts, id: \.workoutId) {workout in
-                            WorkoutRowView(workout: workout)
-                            
-                            Spacer().frame(height: UIScreen.main.bounds.height/100)
-                        }
-                        
-                        ForEach(workoutsViewModel.otherWorkouts, id: \.workoutId) {workout in
+                        ForEach(workoutsViewModel.workouts, id: \.workoutId) {workout in
                             WorkoutRowView(workout: workout)
                             
                             Spacer().frame(height: UIScreen.main.bounds.height/100)

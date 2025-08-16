@@ -126,19 +126,12 @@ def get_workouts():
                 
             logger.info(f"WORKOUT QUERY PERFORMED")
             logger.info(f"Workouts: {workouts}")
+            logger.info("Workouts were found for the user")
             
-            
-            if not workouts:
-                logger.info("Workouts were found for the user")
-                return jsonify({
-                    "home_display_message": "You don't have a workout planned for today!",
-                    "workouts": workouts
-                }), 200
-            #Else:
-            return jsonify({ #Should be 
-                        "home_display_message": f"TODAY'S WORKOUT:\n{workouts[0]['name']}",
-                        "workouts": workouts
-                    }), 200
+            return jsonify({
+                "home_display_message": "You don't have a workout planned for today!", #This is the default but is overriden on frontend.
+                "workouts": workouts
+            }), 200
         else:
             logger.info("No workouts exist")
             return jsonify({

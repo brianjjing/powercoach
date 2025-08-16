@@ -22,10 +22,11 @@ struct HomeView: View {
     
     var body: some View {
         VStack {
-            // Check if there are any workouts for today
-            if !(workoutsViewModel.todaysWorkouts.isEmpty) {
+            let todaysWorkout = workoutsViewModel.workouts.first(where: { $0.today == true }) //Also make it the one where not everything is completed
+            
+            if let todaysWorkout = todaysWorkout {
                 // Content to display when a workout exists
-                Text(workoutsViewModel.homeDisplayMessage)
+                Text("Today's Workout: \(todaysWorkout.name)")
                     .font(.title)
                     .fontWeight(.bold)
                     .fontDesign(.rounded)
@@ -36,19 +37,16 @@ struct HomeView: View {
                 // ScrollView for the workout buttons.
                 // Note: The structure here assumes you want a scrollable list of
                 // 'today's workouts' and then show details of the first one below.
-                if let todaysWorkout = workoutsViewModel.todaysWorkouts.first {
-                    ScrollView {
-                        LazyVStack(spacing: 12) {
-                            ForEach(0..<todaysWorkout.exercises.count, id: \.self) { index in
-                                ExerciseDisplayRow(workout: todaysWorkout, index: index)
-                            }
+                ScrollView {
+                    LazyVStack(spacing: 12) {
+                        ForEach(0..<todaysWorkout.exercises.count, id: \.self) { index in
+                            ExerciseDisplayRow(workout: todaysWorkout, index: index)
                         }
                     }
-                    .padding()
-                    .background(Color(.systemGroupedBackground))
-                    .scrollIndicators(.visible)
                 }
-                
+                .padding()
+                .background(Color(.systemGroupedBackground))
+                .scrollIndicators(.visible)
             } else {
                 // Content to display when no workouts are available
                 Text(workoutsViewModel.homeDisplayMessage)
