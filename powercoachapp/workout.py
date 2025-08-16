@@ -21,23 +21,23 @@ def create_workout():
     
     #All lists:
     name = workout_data['name']
-    exercises = workout_data['exercises'] #Will be limited to nothing, or a whole list of exercises.
+    exercise_names = workout_data['exercise_names'] #Will be limited to nothing, or a whole list of exercises.
     sets = workout_data['sets']
     reps = workout_data['reps']
-    num_exercises = len(exercises)
+    num_exercises = len(exercise_names)
     every_blank_days = workout_data['every_blank_days']
     
     if not name:
         return jsonify({
             "workout_creation_message": f"Write a name for your workout!"
         }), 400
-    if not exercises:
+    if not exercise_names:
         return jsonify({"workout_creation_message": "Please enter at least one exercise!"}), 400
     if Workout.query.filter_by(user_id=g.user.id, workout_name=name).first():
         return jsonify({
             "workout_creation_message": f"You already have a workout called {name}!"
         }), 409
-    if len(set(exercises)) != len(exercises):
+    if len(set(exercise_names)) != len(exercise_names):
         return jsonify({"workout_creation_message": "No repeating exercises in a workout!"}), 400
     
     existing_workout = Workout.query.filter_by(user_id=g.user.id).first()
@@ -47,7 +47,7 @@ def create_workout():
         }), 400
     
     for exercise_index in range(num_exercises):
-        if not exercises[exercise_index]:
+        if not exercise_names[exercise_index]:
             return jsonify({'workout_creation_message': 'Exercise name is required.', 'index': exercise_index}), 400
         elif not sets[exercise_index]:
             return jsonify({'workout_creation_message': 'Number of sets is required.', 'index': exercise_index}), 400
@@ -60,10 +60,10 @@ def create_workout():
         new_workout = Workout(
             user_id = g.user.id,
             workout_name = name,
-            exercise_names = exercises,
+            exercise_names = exercise_names,
             exercise_sets = sets,
             exercise_reps = reps,
-            completed = [False for _ in exercises],
+            completed = [False for _ in exercise_names],
             start_datetime = datetime.now().astimezone(ZoneInfo('UTC')),
             every_blank_days = every_blank_days
         )
@@ -116,7 +116,7 @@ def get_workouts():
                 workouts.append({
                     "workout_id": workout.workout_id,
                     "name": workout.workout_name,
-                    "exercises": workout.exercise_names,
+                    "exercise_names": workout.exercise_names,
                     "sets": workout.exercise_sets,
                     "reps": workout.exercise_reps,
                     "completed": workout.completed,
@@ -136,7 +136,7 @@ def get_workouts():
             logger.info("No workouts exist")
             return jsonify({
                 "home_display_message": "You don't have a workout planned for today!",
-                "workouts": workouts}), 200
+                "workouts": []}), 200
     except Exception as e:
         logger.info(f"Error getting workout: {e}")
         return jsonify({

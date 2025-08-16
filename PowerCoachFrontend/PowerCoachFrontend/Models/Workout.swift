@@ -14,6 +14,7 @@ struct CreatedWorkout: Codable {
     let availableExercises = ["Conventional Deadlifts", "RDLs", "Deep Squats", "Quarter Squats", "Barbell Overhead Presses", "Barbell Bicep Curls", "Barbell Rows"]
 }
 
+//This is for working with ...
 struct Exercise: Identifiable, Codable {
     var id = UUID()
     var name: String = "Select exercise"
@@ -26,7 +27,8 @@ struct Workout: Codable {
     // It is optional because a newly created workout won't have an ID yet.
     var workoutId: Int? //Will be None in createWorkout, since SQL deals with the creation.
     let name: String
-    let exercises: [String]
+    var exercises: [Exercise]? //Exercise objects are only used for moving them around --> apply this in modifyWorkout or smth.
+    let exerciseNames: [String]
     let sets: [Int]
     let reps: [Int]
     let completed: [Bool]

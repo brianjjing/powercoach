@@ -103,6 +103,13 @@ class WorkoutsViewModel: ObservableObject {
                     print(self.homeDisplayMessage)
                     self.workouts = decodedData.workouts
                     print(self.workouts)
+                    
+//                    for workout in self.workouts {
+//                        ForEach(0..<workout.exerciseNames.count) { index in
+//                            workout.exercises?[index].name = workout.exerciseNames[index]
+//                            workout.exercises[index].sets = workout.sets[index]
+//                        }
+//                    }
                 } catch {
                     self.getWorkoutErrorMessage = "Failed to decode JSON: \(error.localizedDescription)"
                     print(String(describing: self.getWorkoutErrorMessage))
@@ -162,7 +169,7 @@ class WorkoutsViewModel: ObservableObject {
         let createdWorkoutData: [String: Any] = [
             "name": createdWorkout.name,
             // Map the new `Exercise` objects to the old array format for the backend
-            "exercises": createdWorkout.exercises.map { $0.name }, //$0 is the implicit argument name, refers to the sole argument in the closure.
+            "exercise_names": createdWorkout.exercises.map { $0.name }, //$0 is the implicit argument name, refers to the sole argument in the closure.
             "sets": createdWorkout.exercises.map { $0.sets },
             "reps": createdWorkout.exercises.map { $0.reps },
             "every_blank_days": 7

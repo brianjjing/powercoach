@@ -24,25 +24,25 @@ struct SingleWorkoutView: View {
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 12) {
-                ForEach(0..<workout.exercises.count, id: \.workoutId) { index in
-                    HStack {
-                        Text("\(workout.sets[index])x\(workout.reps[index]) \(workout.exercises[index])")
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.primary)
-                            .multilineTextAlignment(.leading)
-                    }
-                    .padding(.vertical, 20)
-                    .padding(.horizontal)
-                    .frame(maxWidth: .infinity)
-                    .background(rowBackgroundColor)
-                    .cornerRadius(12)
+                ForEach(0..<workout.exerciseNames.count, id: \.self) { index in
+                    ExerciseDisplayRow(workout: workout, index: index)
+                    
+//                    Text("\(workout.sets[index])x\(workout.reps[index]) \(workout.exercises[index])")
+//                        .font(.title3)
+//                        .fontWeight(.bold)
+//                        .foregroundStyle(.primary)
+//                        .multilineTextAlignment(.leading)
+//                        .padding(.vertical, 20)
+//                        .padding(.horizontal)
+//                        .frame(maxWidth: .infinity)
+//                        .background(rowBackgroundColor)
+//                        .cornerRadius(12)
                 }
-                .onMove(perform: moveExercises)
+                //.onMove(perform: moveExercises)
                 
                 if showingEditMode { //isPresented only works for other views, not for buttons
                     Button(action: {
-                        
+
                         showingDeleteConfirmation = true
                     }) {
                         Text("Delete Workout")
@@ -104,27 +104,28 @@ struct SingleWorkoutView: View {
         .environment(\.editMode, .constant(showingEditMode ? .active : .inactive)) //Sets environment variable for editMode toggled by showingEditMode, which allows for Swift native view editing functionalities.
     }
     
-    private func moveExercises(from source: IndexSet, to destination: Int) {
-        if let currentWorkout = currentWorkout {
-            // Update the local workout state for the UI
-            currentWorkout.exercises.move(fromOffsets: source, toOffset: destination)
-            currentWorkout.sets.move(fromOffsets: source, toOffset: destination)
-            currentWorkout.reps.move(fromOffsets: source, toOffset: destination)
-
-            // Call the view model to handle the data change
-            workoutsViewModel.moveExercises(of: currentWorkout, from: source, to: destination)
-        }
-    }
+//    private func moveExercises(from source: IndexSet, to destination: Int) {
+//        if let currentWorkout = currentWorkout {
+//            // Update the local workout state for the UI
+//            currentWorkout.exercises.move(fromOffsets: source, toOffset: destination)
+//            currentWorkout.sets.move(fromOffsets: source, toOffset: destination)
+//            currentWorkout.reps.move(fromOffsets: source, toOffset: destination)
+//
+//            // Call the view model to handle the data change
+//            workoutsViewModel.moveExercises(of: currentWorkout, from: source, to: destination)
+//        }
+//    }
 }
 
 #Preview {
     let mockWorkout = Workout(
         name: "Mock Workout",
-        exercises: ["Pushups", "Squats"],
+        exerciseNames: ["Pushups", "Squats"],
         sets: [3, 3],
         reps: [10, 10],
         completed: [false, false],
-        everyBlankDays: 1
+        everyBlankDays: 1,
+        today: true
     )
 
     

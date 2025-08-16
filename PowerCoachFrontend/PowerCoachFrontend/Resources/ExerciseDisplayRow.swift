@@ -16,17 +16,15 @@ struct ExerciseDisplayRow: View {
     }
     
     var body: some View {
-        HStack {
-            Text("\(workout.sets[index])x\(workout.reps[index]) \(workout.exercises[index])")
-                .font(.title3)
-                .fontWeight(.black)
-                .foregroundStyle(.primary)
-                .multilineTextAlignment(.leading)
-        }
-        .padding(.vertical, 20)
-        .padding(.horizontal)
-        .frame(maxWidth: .infinity)
-        .background(rowBackgroundColor)
-        .cornerRadius(12)
+        Text("\(workout.sets[index])x\(workout.reps[index]) \(workout.exerciseNames[index])")
+            .font(.title3)
+            .fontWeight(.black)
+            .foregroundStyle(.primary)
+            .multilineTextAlignment(.leading)
+            .padding(.vertical, 20)
+            .padding(.horizontal)
+            .frame(maxWidth: .infinity)
+            .background(rowBackgroundColor)
+            .cornerRadius(12)
     }
 }

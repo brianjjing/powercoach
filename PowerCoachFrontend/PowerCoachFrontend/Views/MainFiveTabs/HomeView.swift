@@ -39,7 +39,7 @@ struct HomeView: View {
                 // 'today's workouts' and then show details of the first one below.
                 ScrollView {
                     LazyVStack(spacing: 12) {
-                        ForEach(0..<todaysWorkout.exercises.count, id: \.self) { index in
+                        ForEach(0..<todaysWorkout.exerciseNames.count, id: \.self) { index in
                             ExerciseDisplayRow(workout: todaysWorkout, index: index)
                         }
                     }
