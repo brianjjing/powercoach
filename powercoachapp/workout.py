@@ -92,17 +92,16 @@ def get_workouts():
         client_timezone_str = request.args.get('timezone', 'GMT')
         current_datetime_tz = datetime.now().astimezone(ZoneInfo(client_timezone_str))
         today = current_datetime_tz.date()
-        logger.info(today)
         
         if user_workouts:
-            todays_workouts = []
-            other_workouts = []
+            workouts = []
             
             #Getting today's workouts and the other workouts
             for workout in user_workouts:
                 
                 workout_start_datetime_client_tz = workout.start_datetime.astimezone(ZoneInfo(client_timezone_str))
                 workout_start_date = workout_start_datetime_client_tz.date()
+                is_workout_today = lambda: True if (((today - workout_start_date).days % workout.every_blank_days) == 0) else False
                 
                 #Get the client's timezone from the request query parameters.
                 #Get today's date in the client timezone, and convert start date to client timezone (from UTC which it is stored as).
@@ -114,50 +113,37 @@ def get_workouts():
                 logger.info(f"Every blank days: {workout.every_blank_days}")
                 logger.info(type(workout.every_blank_days))
                 
-                if ((today - workout_start_date).days % workout.every_blank_days) == 0:
-                    todays_workouts.append({
-                        "workout_id": workout.workout_id,
-                        "name": workout.workout_name,
-                        "exercises": workout.exercise_names,
-                        "sets": workout.exercise_sets,
-                        "reps": workout.exercise_reps,
-                        "completed": workout.completed,
-                        "every_blank_days": workout.every_blank_days
-                    })
-                else:
-                    other_workouts.append({
-                        "workout_id": workout.workout_id,
-                        "name": workout.workout_name,
-                        "exercises": workout.exercise_names,
-                        "sets": workout.exercise_sets,
-                        "reps": workout.exercise_reps,
-                        "completed": workout.completed,
-                        "every_blank_days": workout.every_blank_days
-                    })
+                workouts.append({
+                    "workout_id": workout.workout_id,
+                    "name": workout.workout_name,
+                    "exercises": workout.exercise_names,
+                    "sets": workout.exercise_sets,
+                    "reps": workout.exercise_reps,
+                    "completed": workout.completed,
+                    "every_blank_days": workout.every_blank_days,
+                    "today": is_workout_today()
+                })
+                
             logger.info(f"WORKOUT QUERY PERFORMED")
-            logger.info(f"Today's workouts: {todays_workouts}")
-            logger.info(f"Other workouts: {other_workouts}")
+            logger.info(f"Workouts: {workouts}")
             
-            if not todays_workouts:
-                logger.info("Today's workout does not exist but other_workouts does.")
+            
+            if not workouts:
+                logger.info("Workouts were found for the user")
                 return jsonify({
                     "home_display_message": "You don't have a workout planned for today!",
-                    "todays_workouts": [],
-                    "other_workouts": other_workouts
+                    "workouts": workouts
                 }), 200
-            
             #Else:
-            return jsonify({
-                        "home_display_message": f"TODAY'S WORKOUT:\n{todays_workouts[0]['name']}",
-                        "todays_workouts": todays_workouts,
-                        "other_workouts": other_workouts
+            return jsonify({ #Should be 
+                        "home_display_message": f"TODAY'S WORKOUT:\n{workouts[0]['name']}",
+                        "workouts": workouts
                     }), 200
         else:
             logger.info("No workouts exist")
             return jsonify({
                 "home_display_message": "You don't have a workout planned for today!",
-                "todays_workouts": [],
-                "other_workouts": []}), 200
+                "workouts": workouts}), 200
     except Exception as e:
         logger.info(f"Error getting workout: {e}")
         return jsonify({
@@ -167,17 +153,40 @@ def get_workouts():
 @workoutbp.route('/deleteworkout', methods=['POST'])
 @login_required
 def delete_workout():
-    
+    workout_data = request.get_json()
     
     try:
+        workout_id = workout_data['workout_id']
+        if not workout_id:
+            return jsonify({"workout_deletion_message": "Workout id not found!"}), 400
+    except Exception as e:
+        logger.info(f"Error decoding the workout id: {e}")
+        return jsonify({"workout_deletion_message": "Error decoding the workout id."}), 500
+    logger.info(workout_id)
+    
+    try:
+        # Find the workout by its primary key
+        workout_to_delete = Workout.query.get(workout_id)
+
+        if not workout_to_delete:
+            return jsonify({"workout_deletion_message": "Workout not found."}), 404
+
+        # Authorization check: Ensure the user owns the workout
+        if workout_to_delete.user_id != g.user.id:
+            return jsonify({"workout_deletion_message": "You are not authorized to delete this workout."}), 403
+
+        # Delete the workout from the session
+        db.session.delete(workout_to_delete)
+        db.session.commit()
+        
         return jsonify({
             "workout_deletion_message": "Workout deletion successful"
-        }), 201
+        }), 200
     except Exception as e:
-        logger.debug(f"Error creating workout: {e}")
+        logger.debug(f"Error deleting workout: {e}")
         db.session.rollback()
         return jsonify({
-            "workout_creation_message": "Sorry, an error occurred. Please try again."
+            "workout_deletion_message": "Sorry, an error occurred. Please try again."
         }), 500
 
 @workoutbp.route('/markexercisedone', methods=['POST'])

@@ -9,8 +9,7 @@ import SwiftUI; import Foundation
 
 class WorkoutsViewModel: ObservableObject {
     //Workout getting:
-    @Published var todaysWorkouts: [Workout] = []
-    @Published var otherWorkouts: [Workout] = []
+    @Published var workouts: [Workout] = []
     
     //Workout creation:
     // FIX: createdWorkout is now a struct that contains an array of `Exercise` structs.
@@ -22,11 +21,13 @@ class WorkoutsViewModel: ObservableObject {
     //Messages:
     @Published var isLoading = false
     @Published var homeDisplayMessage: String = "You don't have a workout plan set yet!"
-    @Published var errorMessage: String? = nil
-    @Published var workoutCreatorViewErrorMessage: String? = nil
+    @Published var getWorkoutErrorMessage: String? = nil
+    @Published var addExerciseErrorMessage: String? = nil
+    @Published var createWorkoutErrorMessage: String? = nil
+    @Published var deleteWorkoutErrorMessage: String? = nil
     
     func getWorkouts() {
-        self.resetState()
+        self.getWorkoutErrorMessage = nil
         self.isLoading = true
         
         //Adding url w/ timezone:
@@ -38,7 +39,7 @@ class WorkoutsViewModel: ObservableObject {
         let appUrlString = "https://powercoach-1.onrender.com/workouts/getworkouts"
         
         guard var urlComponents = URLComponents(string: appUrlString) else { //Building URL w/ URLComponents. It's the right format, as straight up making a string URL with string formatting has formatting issues due to encoding.
-            self.errorMessage = "Invalid server URL"
+            self.getWorkoutErrorMessage = "Invalid server URL"
             self.isLoading = false
             return
         }
@@ -48,7 +49,7 @@ class WorkoutsViewModel: ObservableObject {
         urlComponents.queryItems = [timezoneQueryItem]
 
         guard let finalUrl = urlComponents.url else {
-            self.errorMessage = "Failed to construct URL with timezone"
+            self.getWorkoutErrorMessage = "Failed to construct URL with timezone"
             self.isLoading = false
             return
         }
@@ -65,14 +66,14 @@ class WorkoutsViewModel: ObservableObject {
             
                 
                 if let error = error {
-                    self.errorMessage = "Request failed: \(error.localizedDescription)"
-                    print(String(describing: self.errorMessage))
+                    self.getWorkoutErrorMessage = "Request failed: \(error.localizedDescription)"
+                    print(String(describing: self.getWorkoutErrorMessage))
                     return
                 }
                 
                 guard let httpResponse = response as? HTTPURLResponse else {
-                    self.errorMessage = "Invalid server response."
-                    print(String(describing: self.errorMessage))
+                    self.getWorkoutErrorMessage = "Invalid server response."
+                    print(String(describing: self.getWorkoutErrorMessage))
                     return
                 }
                 
@@ -81,14 +82,14 @@ class WorkoutsViewModel: ObservableObject {
                     print("HTTP Request Failed with status code: \(httpResponse.statusCode)")
                     print("Request URL: \(String(describing: httpResponse.url))")
                     print("Response Headers: \(httpResponse.allHeaderFields)")
-                    self.errorMessage = "Unknown error. Please reload and try again."
-                    print(String(describing: self.errorMessage))
+                    self.getWorkoutErrorMessage = "Unknown error. Please reload and try again."
+                    print(String(describing: self.getWorkoutErrorMessage))
                     return
                 }
                 
                 guard let data = data else {
-                    self.errorMessage = "Data not received from server. Please reload and try again."
-                    print(String(describing: self.errorMessage))
+                    self.getWorkoutErrorMessage = "Data not received from server. Please reload and try again."
+                    print(String(describing: self.getWorkoutErrorMessage))
                     return
                 }
                 
@@ -97,27 +98,26 @@ class WorkoutsViewModel: ObservableObject {
                     decoder.keyDecodingStrategy = .convertFromSnakeCase
                     let decodedData = try decoder.decode(WorkoutResponse.self, from: data)
                     
+                    //Display message is name of the first one that is today.
                     self.homeDisplayMessage = "\(decodedData.homeDisplayMessage)"
                     print(self.homeDisplayMessage)
-                    self.todaysWorkouts = decodedData.todaysWorkouts
-                    print(self.todaysWorkouts)
-                    self.otherWorkouts = decodedData.otherWorkouts
-                    print(self.otherWorkouts)
+                    self.workouts = decodedData.workouts
+                    print(self.workouts)
                 } catch {
-                    self.errorMessage = "Failed to decode JSON: \(error.localizedDescription)"
-                    print(String(describing: self.errorMessage))
+                    self.getWorkoutErrorMessage = "Failed to decode JSON: \(error.localizedDescription)"
+                    print(String(describing: self.getWorkoutErrorMessage))
                 }
             }
         }.resume()
     }
     
     func addExercise() {
-        if self.createdWorkout.exercises.count >= 15 {
-            self.workoutCreatorViewErrorMessage = "Can't have more than 15 exercises in a workout!"
-        }
-        else {
-            DispatchQueue.main.async {
-                self.workoutCreatorViewErrorMessage = nil
+        DispatchQueue.main.async {
+            if self.createdWorkout.exercises.count >= 15 {
+                self.addExerciseErrorMessage = "Can't have more than 15 exercises in a workout!"
+            }
+            else {
+                self.addExerciseErrorMessage = nil
                 self.createdWorkout.exercises.append(Exercise())
             }
         }
@@ -129,21 +129,33 @@ class WorkoutsViewModel: ObservableObject {
         DispatchQueue.main.async {
             if let index = self.createdWorkout.exercises.firstIndex(where: { $0.id == exercise.id }) {
                 self.createdWorkout.exercises.remove(at: index)
-                self.workoutCreatorViewErrorMessage = nil
+                self.addExerciseErrorMessage = nil
                 print("Successfully deleted exercise with ID: \(exercise.id)")
                 print("New count: \(self.createdWorkout.exercises.count)")
             } else {
-                self.workoutCreatorViewErrorMessage = "Exercise not found for deletion."
+                self.addExerciseErrorMessage = "Exercise not found for deletion."
                 print("Error: Exercise with ID \(exercise.id) not found.")
             }
         }
     }
     
+//    func moveExercises(of workout: Workout, from source: IndexSet, to destination: Int) {
+//        guard let index = self.workouts.firstIndex(where: { $0.id == workout.workoutId }) else { return }
+//
+//        // Perform the move action on the properties of the found workout
+//        self.workouts[index].exercises.move(fromOffsets: source, toOffset: destination)
+//        self.workouts[index].sets.move(fromOffsets: source, toOffset: destination)
+//        self.workouts[index].reps.move(fromOffsets: source, toOffset: destination)
+//        self.workouts[index].completed.move(fromOffsets: source, toOffset: destination)
+//    }
+    
     func createWorkout() {
+        self.createWorkoutErrorMessage = nil
+        
         self.isLoading = true
         
         guard let appUrl = URL(string: "https://powercoach-1.onrender.com/workouts/createworkout") else {
-            self.errorMessage = "Invalid server URL"
+            self.createWorkoutErrorMessage = "Invalid server URL"
             return
         }
         
@@ -159,7 +171,7 @@ class WorkoutsViewModel: ObservableObject {
         print(createdWorkoutData)
         
         guard let jsonCreatedWorkoutData = try? JSONSerialization.data(withJSONObject: createdWorkoutData) else {
-            self.errorMessage = "Failed to encode credentials"
+            self.createWorkoutErrorMessage = "Failed to encode created workout"
             return
         }
 
@@ -173,16 +185,16 @@ class WorkoutsViewModel: ObservableObject {
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 DispatchQueue.main.async {
-                    self.errorMessage = "Request failed: \(error.localizedDescription)"
-                    print(self.errorMessage)
+                    self.createWorkoutErrorMessage = "Request failed: \(error.localizedDescription)"
+                    print(self.createWorkoutErrorMessage)
                 }
                 return
             }
             
             guard let data = data else {
                 DispatchQueue.main.async {
-                    self.errorMessage = "No data received from server"
-                    print(self.errorMessage)
+                    self.createWorkoutErrorMessage = "No data received from server"
+                    print(self.createWorkoutErrorMessage)
                 }
                 return
             }
@@ -191,34 +203,94 @@ class WorkoutsViewModel: ObservableObject {
                 let workoutCreationMessage = json["workout_creation_message"] as? String {
                 DispatchQueue.main.async {
                     if workoutCreationMessage == "Workout creation successful" {
-                        self.errorMessage = "Workout creation successful!"
-                        print(self.errorMessage)
+                        self.createWorkoutErrorMessage = "Workout creation successful!"
+                        print(self.createWorkoutErrorMessage)
+                        self.resetCreation()
                     } else {
-                        self.errorMessage = workoutCreationMessage
-                        print(self.errorMessage)
+                        self.createWorkoutErrorMessage = workoutCreationMessage
+                        print(self.createWorkoutErrorMessage)
                     }
                 }
             }
         }.resume()
-        
-        self.resetState()
     }
     
     func deleteWorkout(workoutToDelete: Workout) {
-        self.resetState()
+        self.deleteWorkoutErrorMessage = nil
+        
+        guard let url = URL(string: "https://powercoach-1.onrender.com/workouts/deleteworkout") else {
+            deleteWorkoutErrorMessage = "Invalid URL"
+            return
+        }
+        
+        let deletedWorkoutData: [String: Int?] = [
+            "workout_id": workoutToDelete.workoutId
+        ]
+        
+        print(deletedWorkoutData)
+        
+        guard let jsonDeletedWorkoutData = try? JSONSerialization.data(withJSONObject: deletedWorkoutData) else {
+            self.deleteWorkoutErrorMessage = "Failed to encode deleted workout"
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonDeletedWorkoutData
+        
+        print("request created")
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    self.deleteWorkoutErrorMessage = "Request failed: \(error.localizedDescription)"
+                    print(self.deleteWorkoutErrorMessage)
+                }
+                return
+            }
+            
+            guard let data = data else {
+                DispatchQueue.main.async {
+                    self.deleteWorkoutErrorMessage = "No data received from server"
+                    print(self.deleteWorkoutErrorMessage)
+                }
+                return
+            }
+            
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                let workoutDeletionMessage = json["workout_deletion_message"] as? String {
+                DispatchQueue.main.async {
+                    if workoutDeletionMessage == "Workout deletion successful" {
+                        self.deleteWorkoutErrorMessage = "Workout deletion successful!"
+                        print(self.deleteWorkoutErrorMessage)
+                    } else {
+                        self.deleteWorkoutErrorMessage = workoutDeletionMessage
+                        print(self.deleteWorkoutErrorMessage)
+                    }
+                }
+            }
+        }.resume()
     }
     
+    func resetCreation() {
+        self.createdWorkout = CreatedWorkout(
+            name: "My Workout",
+            everyBlankDays: 7
+        )
+    }
+    
+    //Resets absolutely everything
     private func resetState() {
         self.homeDisplayMessage = ""
-        self.todaysWorkouts = []
-        self.otherWorkouts = []
+        self.workouts = []
         // FIX: Resetting to the new data model
         self.createdWorkout = CreatedWorkout(
             name: "My Workout",
             everyBlankDays: 7
         )
-        self.errorMessage = nil
-        self.workoutCreatorViewErrorMessage = nil
+        self.getWorkoutErrorMessage = nil
+        self.addExerciseErrorMessage = nil
+        self.createWorkoutErrorMessage = nil
     }
 }
-

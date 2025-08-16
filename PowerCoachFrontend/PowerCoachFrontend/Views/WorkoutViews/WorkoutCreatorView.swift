@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct WorkoutCreatorView: View {
+    @Environment(\.dismiss) var dismiss
     @EnvironmentObject var webSocketManager: WebSocketManager
     @EnvironmentObject var workoutsViewModel: WorkoutsViewModel
     @Environment(\.colorScheme) var colorScheme
@@ -16,6 +17,8 @@ struct WorkoutCreatorView: View {
     var buttonTextColor: Color {
         colorScheme == .light ? .black : .white
     }
+    // State to control the confirmation dialog
+    @State private var showingCancelAlert = false
     
     var body: some View {
         VStack {
@@ -40,8 +43,8 @@ struct WorkoutCreatorView: View {
                         )
                     }
                     
-                    if workoutsViewModel.workoutCreatorViewErrorMessage != nil {
-                        Text(String(describing: workoutsViewModel.workoutCreatorViewErrorMessage!))
+                    if workoutsViewModel.addExerciseErrorMessage != nil {
+                        Text(String(describing: workoutsViewModel.addExerciseErrorMessage!))
                             .font(.headline)
                             .fontWeight(.bold)
                             .foregroundColor(.red)
@@ -63,7 +66,7 @@ struct WorkoutCreatorView: View {
             .background(Color(.systemGroupedBackground))
             .scrollIndicators(.visible)
             
-            if let errorMessage = workoutsViewModel.errorMessage {
+            if let errorMessage = workoutsViewModel.createWorkoutErrorMessage {
                 Text(errorMessage)
                     .font(.headline)
                     .fontWeight(.bold)
@@ -99,6 +102,27 @@ struct WorkoutCreatorView: View {
                 }
             }
         }
+        .onAppear {
+            workoutsViewModel.addExerciseErrorMessage = nil
+            workoutsViewModel.createWorkoutErrorMessage = nil
+        }
+//        .navigationBarBackButtonHidden(true)
+//        // The confirmation alert
+//        .confirmationDialog("Are you sure?", isPresented: $showingCancelAlert, titleVisibility: .visible) {
+//            Button("Discard and Exit", role: .destructive) {
+//                dismiss() // Pop back to the previous view
+//            }
+//            Button("Cancel", role: .cancel) {
+//                // Do nothing, alert will dismiss
+//            }
+//        } message: {
+//            Text("Your changes will be lost if you leave without creating the workout.")
+//        }
+//        .onDisappear {
+//            // Call the reset method when the view disappears
+//            workoutsViewModel.resetCreation()
+//            print("WorkoutsViewModel state has been reset.")
+//        }
     }
 }
 

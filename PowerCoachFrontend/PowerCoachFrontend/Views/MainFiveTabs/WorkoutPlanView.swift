@@ -21,7 +21,7 @@ struct WorkoutPlanView: View {
     
     var body: some View {
         VStack(alignment: .center) {
-            if (workoutsViewModel.todaysWorkouts.isEmpty) && (workoutsViewModel.otherWorkouts.isEmpty) {
+            if workoutsViewModel.workouts.isEmpty {
                 
                 Spacer().frame(height: UIScreen.main.bounds.height/5)
                 

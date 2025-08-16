@@ -22,17 +22,19 @@ struct Exercise: Identifiable, Codable {
 }
 
 struct Workout: Codable {
-    let workoutId: Int
+    // This property holds the optional ID from the backend.
+    // It is optional because a newly created workout won't have an ID yet.
+    var workoutId: Int? //Will be None in createWorkout, since SQL deals with the creation.
     let name: String
     let exercises: [String]
     let sets: [Int]
     let reps: [Int]
     let completed: [Bool]
     let everyBlankDays: Int
+    let today: Bool
 }
 
 struct WorkoutResponse: Codable {
     let homeDisplayMessage: String
-    let todaysWorkouts: [Workout]
-    let otherWorkouts: [Workout]
+    let workouts: [Workout]
 }
