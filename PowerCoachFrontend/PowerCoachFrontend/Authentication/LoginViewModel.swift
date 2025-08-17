@@ -66,16 +66,16 @@ class LoginViewModel: ObservableObject {
             }
             
             if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let loginMessage = json["login_message"] as? String,
-               let authToken = json["token"] as? String {
+               let loginMessage = json["login_message"] as? String {
                     DispatchQueue.main.async {
-                        if loginMessage == "Login successful" {
+                        if let authToken = json["token"] as? String { //Only when login is successful
                             self.isAuthenticated = true
                             self.profileMessage = self.username
                             self.errorMessage = nil
-                            //self.authToken = authToken
-                            //print("Authentication successful. Token saved: \(String(describing: self.authToken))")
-                        } else {
+                            self.authToken = authToken
+                            print("Authentication successful. Token saved: \(String(describing: self.authToken))")
+                        }
+                        else {
                             self.errorMessage = loginMessage
                         }
                     }

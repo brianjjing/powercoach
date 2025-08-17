@@ -69,6 +69,7 @@ def load_user_from_token():
 def login():
     """
     Authenticates a user and returns a JSON Web Token (JWT).
+    NEXT UPGRADE: MAKE THIS JSON WEB TOKEN REFRESH SO IT KEEPS PERSISTING.
     """
     login_data = request.get_json()
     

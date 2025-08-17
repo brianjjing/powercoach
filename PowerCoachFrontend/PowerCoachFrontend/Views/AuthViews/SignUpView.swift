@@ -43,7 +43,7 @@ struct SignUpView: View {
                 //Block is recomputed once errorMessage is updated due to the property wrappers @Published, @StateObject
                 if let error = viewModel.errorMessage {
                     Text("ERROR: " + String(describing: error))
-                        .font(.title)
+                        .font(.title3)
                         .bold()
                         .foregroundColor(.red)
                 }
