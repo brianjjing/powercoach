@@ -29,13 +29,14 @@ struct PowerCoachFrontend: App {
         WindowGroup {
             if isAuthenticated == true {
                 ContentView()
+                    .environmentObject(loginViewModel)
                     .environmentObject(webSocketManager)
                     .environmentObject(tabIcons)
                     .environmentObject(workoutsViewModel)
-                    .environmentObject(loginViewModel)
             }
             else {
                 LoginView()
+                    .environmentObject(loginViewModel)
             }
         }
         .onChange(of: scenePhase, initial: false) { oldPhase, newPhase in

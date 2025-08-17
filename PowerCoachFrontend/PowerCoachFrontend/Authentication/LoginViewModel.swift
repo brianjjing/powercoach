@@ -12,7 +12,6 @@ class LoginViewModel: ObservableObject {
     @Published var password = ""
     @Published var isLoading = false
     @Published var errorMessage: String?
-    @EnvironmentObject var webSocketManager: WebSocketManager
     
     @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
     @AppStorage("profileMessage") var profileMessage: String = "User not found"
@@ -20,10 +19,10 @@ class LoginViewModel: ObservableObject {
         didSet {
             // This code runs whenever authToken is changed
             // If the token becomes nil, we set isAuthenticated to false.
-            if authToken == nil {
-                self.isAuthenticated = false
-            } else {
+            if authToken != nil {
                 self.isAuthenticated = true
+            } else {
+                self.isAuthenticated = false
             }
         }
     }
@@ -74,9 +73,8 @@ class LoginViewModel: ObservableObject {
                             self.isAuthenticated = true
                             self.profileMessage = self.username
                             self.errorMessage = nil
-                            // MARK: - Save the received authentication token
-                            self.authToken = authToken
-                            print("Authentication successful. Token saved: \(String(describing: self.authToken))")
+                            //self.authToken = authToken
+                            //print("Authentication successful. Token saved: \(String(describing: self.authToken))")
                         } else {
                             self.errorMessage = loginMessage
                         }
@@ -97,7 +95,6 @@ class LoginViewModel: ObservableObject {
             DispatchQueue.main.async {
                 self.isAuthenticated = false
                 self.authToken = nil
-                self.webSocketManager.socket.disconnect()
             }
         }.resume()
     }

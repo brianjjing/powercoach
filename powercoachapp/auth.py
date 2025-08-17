@@ -76,14 +76,20 @@ def login():
     password = login_data.get('password')
     
     if not username or not password:
-        return jsonify({'login_message': 'Username and password are required.'}), 400
+        return jsonify({
+            'login_message': 'Username and password are required.',
+            "token": None
+        }), 400
 
     user = User.query.filter_by(username=username).first()
     
     # Check if the user exists and if the provided password matches the stored hash.
     # We use check_password_hash for secure password verification.
     if user is None or not check_password_hash(user.password, password):
-        return jsonify({"login_message": "Invalid username or password"}), 401
+        return jsonify({
+            "login_message": "Invalid username or password",
+            "token": None
+        }), 401
     
     # If authentication is successful, generate a JWT.
     # The payload includes the user ID and an expiration time.

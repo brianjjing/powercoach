@@ -132,6 +132,9 @@ struct LogOutPopUpView: View {
             Button("Log out") {
                 // This action programmatically dismisses the sheet.
                 loginViewModel.logout()
+                DispatchQueue.main.async {
+                    webSocketManager.socket.disconnect()
+                }
                 showingPopup = false
             }
             .padding()
