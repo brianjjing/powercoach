@@ -25,6 +25,7 @@ struct WorkoutCreatorView: View {
             TextField("Workout Name", text: $workoutsViewModel.createdWorkout.name)
                 .font(.title3)
                 .padding()
+                .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
                 .background(Color(.systemGray6))
                 .cornerRadius(10)
                 .disableAutocorrection(true)
@@ -42,6 +43,7 @@ struct WorkoutCreatorView: View {
                             availableExercises: workoutsViewModel.createdWorkout.availableExercises
                         )
                     }
+                    .onMove(perform: move)
                     
                     if workoutsViewModel.addExerciseErrorMessage != nil {
                         Text(String(describing: workoutsViewModel.addExerciseErrorMessage!))
@@ -102,27 +104,15 @@ struct WorkoutCreatorView: View {
                 }
             }
         }
+        .environment(\.editMode, .constant(.active))
         .onAppear {
             workoutsViewModel.addExerciseErrorMessage = nil
             workoutsViewModel.createWorkoutErrorMessage = nil
         }
-//        .navigationBarBackButtonHidden(true)
-//        // The confirmation alert
-//        .confirmationDialog("Are you sure?", isPresented: $showingCancelAlert, titleVisibility: .visible) {
-//            Button("Discard and Exit", role: .destructive) {
-//                dismiss() // Pop back to the previous view
-//            }
-//            Button("Cancel", role: .cancel) {
-//                // Do nothing, alert will dismiss
-//            }
-//        } message: {
-//            Text("Your changes will be lost if you leave without creating the workout.")
-//        }
-//        .onDisappear {
-//            // Call the reset method when the view disappears
-//            workoutsViewModel.resetCreation()
-//            print("WorkoutsViewModel state has been reset.")
-//        }
+    }
+    
+    func move(from source: IndexSet, to destination: Int) {
+        workoutsViewModel.createdWorkout.exercises.move(fromOffsets: source, toOffset: destination)
     }
 }
 

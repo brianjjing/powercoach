@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @EnvironmentObject var loginViewModel: LoginViewModel
     @EnvironmentObject var webSocketManager: WebSocketManager
     @EnvironmentObject var tabIcons: TabIcons
     @Environment(\.colorScheme) var colorScheme //Rerenders the variable and its views when the environment object changes, since it depends on it.
@@ -118,6 +119,7 @@ struct SettingsView: View {
 
 struct LogOutPopUpView: View {
     @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
+    @EnvironmentObject var loginViewModel: LoginViewModel
     @EnvironmentObject var webSocketManager: WebSocketManager
     @Environment(\.dismiss) var dismiss
     
@@ -129,7 +131,7 @@ struct LogOutPopUpView: View {
                 .font(.title)
             Button("Log out") {
                 // This action programmatically dismisses the sheet.
-                logout()
+                loginViewModel.logout()
                 showingPopup = false
             }
             .padding()
@@ -146,22 +148,6 @@ struct LogOutPopUpView: View {
             
         }
         .padding()
-    }
-     
-    func logout() {
-        //Render: https://powercoach-1.onrender.com/auth/logout
-        //AWS: http://54.67.86.184:10000/auth/logout
-        guard let url = URL(string:"https://powercoach-1.onrender.com/auth/logout") else { return }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-
-        URLSession.shared.dataTask(with: request) { _, _, _ in
-            DispatchQueue.main.async {
-                isAuthenticated = false
-                webSocketManager.socket.disconnect()
-            }
-        }.resume()
     }
 }
 

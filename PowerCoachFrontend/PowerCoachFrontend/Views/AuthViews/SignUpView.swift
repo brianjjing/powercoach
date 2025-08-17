@@ -10,6 +10,7 @@ import SwiftUI
 struct SignUpView: View {
     @StateObject var viewModel = SignUpViewModel()
     
+    
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {

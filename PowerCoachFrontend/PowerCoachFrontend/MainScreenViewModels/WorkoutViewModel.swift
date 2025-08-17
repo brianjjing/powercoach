@@ -10,6 +10,7 @@ import SwiftUI; import Foundation
 class WorkoutsViewModel: ObservableObject {
     //Workout getting:
     @Published var workouts: [Workout] = []
+    @AppStorage("authToken") var authToken: String?
     
     //Workout creation:
     // FIX: createdWorkout is now a struct that contains an array of `Exercise` structs.
@@ -29,6 +30,12 @@ class WorkoutsViewModel: ObservableObject {
     func getWorkouts() {
         self.getWorkoutErrorMessage = nil
         self.isLoading = true
+        
+        guard let token = authToken else {
+            self.getWorkoutErrorMessage = "User is not authenticated."
+            self.isLoading = false
+            return
+        }
         
         //Adding url w/ timezone:
         let timezoneIdentifier = TimeZone.current.identifier
@@ -58,6 +65,7 @@ class WorkoutsViewModel: ObservableObject {
         
         var request = URLRequest(url: finalUrl)
         request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         URLSession.shared.dataTask(with: request) { [weak self] data, response, error in //weak self makes self an optional.
             DispatchQueue.main.async {
@@ -158,8 +166,15 @@ class WorkoutsViewModel: ObservableObject {
     
     func createWorkout() {
         self.createWorkoutErrorMessage = nil
-        
         self.isLoading = true
+        
+        guard let token = authToken else {
+            DispatchQueue.main.async {
+                self.createWorkoutErrorMessage = "User is not authenticated."
+                self.isLoading = false
+            }
+            return
+        }
         
         guard let appUrl = URL(string: "https://powercoach-1.onrender.com/workouts/createworkout") else {
             self.createWorkoutErrorMessage = "Invalid server URL"
@@ -185,6 +200,7 @@ class WorkoutsViewModel: ObservableObject {
         var request = URLRequest(url: appUrl)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Add this line
         request.httpBody = jsonCreatedWorkoutData
         
         print("request created")
@@ -271,6 +287,12 @@ class WorkoutsViewModel: ObservableObject {
                     if workoutDeletionMessage == "Workout deletion successful" {
                         self.deleteWorkoutErrorMessage = "Workout deletion successful!"
                         print(self.deleteWorkoutErrorMessage)
+                        
+                        // Find the index of the workout to delete and remove it from the array
+                        if let index = self.workouts.firstIndex(where: { $0.workoutId == workoutToDelete.workoutId }) {
+                            self.workouts.remove(at: index)
+                            print("Successfully removed workout with ID \(workoutToDelete.workoutId) from local array.")
+                        }
                     } else {
                         self.deleteWorkoutErrorMessage = workoutDeletionMessage
                         print(self.deleteWorkoutErrorMessage)

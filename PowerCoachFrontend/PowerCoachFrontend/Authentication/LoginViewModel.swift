@@ -12,8 +12,21 @@ class LoginViewModel: ObservableObject {
     @Published var password = ""
     @Published var isLoading = false
     @Published var errorMessage: String?
+    @EnvironmentObject var webSocketManager: WebSocketManager
+    
     @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
     @AppStorage("profileMessage") var profileMessage: String = "User not found"
+    @AppStorage("authToken") var authToken: String? {
+        didSet {
+            // This code runs whenever authToken is changed
+            // If the token becomes nil, we set isAuthenticated to false.
+            if authToken == nil {
+                self.isAuthenticated = false
+            } else {
+                self.isAuthenticated = true
+            }
+        }
+    }
     
     func login() {
         //Render: https://powercoach-1.onrender.com/auth/login
@@ -54,16 +67,37 @@ class LoginViewModel: ObservableObject {
             }
             
             if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                let loginMessage = json["login_message"] as? String {
-                DispatchQueue.main.async {
-                    if loginMessage == "Login successful" {
-                        self.isAuthenticated = true
-                        self.profileMessage = self.username
-                        self.errorMessage = nil
-                    } else {
-                        self.errorMessage = loginMessage
+               let loginMessage = json["login_message"] as? String,
+               let authToken = json["token"] as? String {
+                    DispatchQueue.main.async {
+                        if loginMessage == "Login successful" {
+                            self.isAuthenticated = true
+                            self.profileMessage = self.username
+                            self.errorMessage = nil
+                            // MARK: - Save the received authentication token
+                            self.authToken = authToken
+                            print("Authentication successful. Token saved: \(String(describing: self.authToken))")
+                        } else {
+                            self.errorMessage = loginMessage
+                        }
                     }
                 }
+        }.resume()
+    }
+    
+    func logout() {
+        //Render: https://powercoach-1.onrender.com/auth/logout
+        //AWS: http://54.67.86.184:10000/auth/logout
+        guard let url = URL(string:"https://powercoach-1.onrender.com/auth/logout") else { return }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+
+        URLSession.shared.dataTask(with: request) { _, _, _ in
+            DispatchQueue.main.async {
+                self.isAuthenticated = false
+                self.authToken = nil
+                self.webSocketManager.socket.disconnect()
             }
         }.resume()
     }

@@ -21,6 +21,7 @@ struct PowerCoachFrontend: App {
     @StateObject var webSocketManager = WebSocketManager.shared
     @StateObject var tabIcons = TabIcons.sharedTab
     @StateObject private var workoutsViewModel = WorkoutsViewModel()
+    @StateObject private var loginViewModel = LoginViewModel()
     @Environment(\.scenePhase) private var scenePhase
 
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
@@ -31,6 +32,7 @@ struct PowerCoachFrontend: App {
                     .environmentObject(webSocketManager)
                     .environmentObject(tabIcons)
                     .environmentObject(workoutsViewModel)
+                    .environmentObject(loginViewModel)
             }
             else {
                 LoginView()
