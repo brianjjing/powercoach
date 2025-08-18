@@ -6,7 +6,7 @@ class User(db.Model): #SQLAlchemy automatically converts to lowercase and plural
     
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), unique=True, nullable=False)
-    password = db.Column(db.String(128), nullable=False)
+    password = db.Column(db.String(256), nullable=False)
     
 class UserBackendData(db.Model):
     __tablename__ = 'user_backend_data' #Dunder references object properties
