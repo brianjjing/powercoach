@@ -11,6 +11,8 @@ struct WorkoutPlanView: View {
     @EnvironmentObject var webSocketManager: WebSocketManager
     @EnvironmentObject var workoutsViewModel: WorkoutsViewModel //Env object is found by TYPE, not name, so it can have a diff name here.
     @Environment(\.colorScheme) var colorScheme //Rerenders the variable and its views when the environment object changes, since it depends on it.
+    
+    @State private var editMode = EditMode.inactive
     // Changes button text color based on light or dark mode:
     var buttonTextColor: Color {
         colorScheme == .light ? .black : .white
@@ -75,7 +77,11 @@ struct WorkoutPlanView: View {
                         .foregroundStyle(.primary)
                 }
             }
+            ToolbarItem(placement: .topBarLeading) {
+                EditButton()
+            }
         }
+        .environment(\.editMode, $editMode)
     }
 }
 

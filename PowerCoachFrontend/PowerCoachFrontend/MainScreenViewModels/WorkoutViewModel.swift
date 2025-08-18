@@ -222,19 +222,27 @@ class WorkoutsViewModel: ObservableObject {
                 return
             }
             
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                let workoutCreationMessage = json["workout_creation_message"] as? String {
-                DispatchQueue.main.async {
-                    if workoutCreationMessage == "Workout creation successful" {
-                        self.createWorkoutErrorMessage = "Workout creation successful!"
-                        print(self.createWorkoutErrorMessage)
-                        self.resetCreation()
-                    } else {
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let workoutCreationMessage = json["workout_creation_message"] as? String {
+                    DispatchQueue.main.async {
+                        if workoutCreationMessage == "Workout creation successful" {
+                            self.createWorkoutErrorMessage = "Workout creation successful!"
+                            print(self.createWorkoutErrorMessage)
+                            self.resetCreation()
+                        } else {
+                            self.createWorkoutErrorMessage = workoutCreationMessage
+                            print(self.createWorkoutErrorMessage)
+                        }
+                    }
+                }
+                else if let workoutCreationMessage = json["authorization_error_message"] as? String {
+                    DispatchQueue.main.async {
                         self.createWorkoutErrorMessage = workoutCreationMessage
                         print(self.createWorkoutErrorMessage)
                     }
                 }
             }
+                
         }.resume()
     }
     

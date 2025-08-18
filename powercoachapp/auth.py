@@ -23,7 +23,7 @@ def login_required(view):
         if g.user is None:
             logger.info("Access denied: User not authenticated.")
             return jsonify({
-                "error_message": "Unauthorized. Please log in."
+                "authorization_error_message": "Unauthorized. Please log in."
             }), 401
         
         # If g.user is set, proceed to the protected view.

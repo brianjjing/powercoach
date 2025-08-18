@@ -13,6 +13,7 @@ struct WorkoutCreatorView: View {
     @EnvironmentObject var workoutsViewModel: WorkoutsViewModel
     @Environment(\.colorScheme) var colorScheme
     
+    @State private var editMode = EditMode.active
     @FocusState private var amountIsFocused: Bool
     var buttonTextColor: Color {
         colorScheme == .light ? .black : .white
@@ -104,7 +105,7 @@ struct WorkoutCreatorView: View {
                 }
             }
         }
-        .environment(\.editMode, .constant(.active))
+        .environment(\.editMode, $editMode)
         .onAppear {
             workoutsViewModel.addExerciseErrorMessage = nil
             workoutsViewModel.createWorkoutErrorMessage = nil
