@@ -249,6 +249,14 @@ class WorkoutsViewModel: ObservableObject {
     func deleteWorkout(workoutToDelete: Workout) {
         self.deleteWorkoutErrorMessage = nil
         
+        guard let token = authToken else {
+            DispatchQueue.main.async {
+                self.createWorkoutErrorMessage = "User is not authenticated."
+                self.isLoading = false
+            }
+            return
+        }
+        
         guard let url = URL(string: "https://powercoach-1.onrender.com/workouts/deleteworkout") else {
             deleteWorkoutErrorMessage = "Invalid URL"
             return
@@ -268,6 +276,7 @@ class WorkoutsViewModel: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Add this line
         request.httpBody = jsonDeletedWorkoutData
         
         print("request created")
@@ -289,24 +298,32 @@ class WorkoutsViewModel: ObservableObject {
                 return
             }
             
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                let workoutDeletionMessage = json["workout_deletion_message"] as? String {
-                DispatchQueue.main.async {
-                    if workoutDeletionMessage == "Workout deletion successful" {
-                        self.deleteWorkoutErrorMessage = "Workout deletion successful!"
-                        print(self.deleteWorkoutErrorMessage)
-                        
-                        // Find the index of the workout to delete and remove it from the array
-                        if let index = self.workouts.firstIndex(where: { $0.workoutId == workoutToDelete.workoutId }) {
-                            self.workouts.remove(at: index)
-                            print("Successfully removed workout with ID \(workoutToDelete.workoutId) from local array.")
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let workoutDeletionMessage = json["workout_deletion_message"] as? String {
+                    DispatchQueue.main.async {
+                        if workoutDeletionMessage == "Workout deletion successful" {
+                            self.deleteWorkoutErrorMessage = "Workout deletion successful!"
+                            print(self.deleteWorkoutErrorMessage)
+                            
+                            // Find the index of the workout to delete and remove it from the array
+                            if let index = self.workouts.firstIndex(where: { $0.workoutId == workoutToDelete.workoutId }) {
+                                self.workouts.remove(at: index)
+                                print("Successfully removed workout with ID \(workoutToDelete.workoutId) from local array.")
+                            }
+                        } else {
+                            self.deleteWorkoutErrorMessage = workoutDeletionMessage
+                            print(self.deleteWorkoutErrorMessage)
                         }
-                    } else {
-                        self.deleteWorkoutErrorMessage = workoutDeletionMessage
+                    }
+                }
+                else if let workoutCreationMessage = json["authorization_error_message"] as? String {
+                    DispatchQueue.main.async {
+                        self.deleteWorkoutErrorMessage = workoutCreationMessage
                         print(self.deleteWorkoutErrorMessage)
                     }
                 }
             }
+                
         }.resume()
     }
     
