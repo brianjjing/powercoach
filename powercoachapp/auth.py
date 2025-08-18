@@ -25,34 +25,35 @@ def login_required(view):
             return jsonify({
                 "authorization_error_message": "Unauthorized. Please log in."
             }), 401
-        
+        logger.info(f"User in login_required decorator: {g.user}")
         # If g.user is set, proceed to the protected view.
         return view(**kwargs)
     return wrapped_view
 
-# This function runs before every request to check for a token
-# and load the user into the 'g' object if it's valid.
+# This function runs before every request to check for a token and load the user into the 'g' object if it's valid.
 @authbp.before_app_request
 def load_user_from_token():
     """
     Loads a user from a JWT in the Authorization header before each request.
     """
-    # Initialize g.user to None for every request
-    g.user = None
-    
     # Get the token from the Authorization header
     token = request.headers.get('Authorization')
     if token and token.startswith('Bearer '):
         token = token.split(' ')[1]
+        logger.info(token)
         try:
             # Decode the token using the secret key and verify its signature and expiration
             payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
             user_id = payload.get('user_id')
+            logger.info(user_id)
             
             # Look up the user in the database and store them in g.user
             if user_id:
                 g.user = User.query.get(user_id)
-            
+                logger.info('g.user set')
+            else: 
+                logger.info('g.user not set')
+                
             logger.info(f"User loaded from token: {g.user.username if g.user else 'None'}")
             
         except jwt.ExpiredSignatureError:
