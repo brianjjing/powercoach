@@ -38,7 +38,7 @@ struct ExerciseCreationRow: View {
                         .font(.body)
                     
                     Picker("Reps", selection: $exercise.reps) {
-                        ForEach(0...12, id: \.self) { number in
+                        ForEach(0...30, id: \.self) { number in
                             Text ("\(number)")
                         }
                     }

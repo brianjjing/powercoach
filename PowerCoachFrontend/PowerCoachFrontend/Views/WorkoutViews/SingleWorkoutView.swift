@@ -13,6 +13,7 @@ struct SingleWorkoutView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) var dismiss
     
+    @State var newWorkout = Workout?
     @State private var editMode = EditMode.inactive
     var rowBackgroundColor: Color {
         colorScheme == .light ? Color(.systemGray5) : Color(.systemGray4)
@@ -20,39 +21,52 @@ struct SingleWorkoutView: View {
     
     @State private var showingDeleteConfirmation = false
     
-    let workout: Workout //The parameter that needs to be passed
+    @State var workout: Workout //The parameter that needs to be passed
     
     var body: some View {
-        ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(0..<workout.exerciseNames.count, id: \.self) { index in
-                    ExerciseDisplayRow(workout: workout, index: index)
-//                    Text("\(workout.sets[index])x\(workout.reps[index]) \(workout.exercises[index])")
-//                        .font(.title3)
-//                        .fontWeight(.bold)
-//                        .foregroundStyle(.primary)
-//                        .multilineTextAlignment(.leading)
-//                        .padding(.vertical, 20)
-//                        .padding(.horizontal)
-//                        .frame(maxWidth: .infinity)
-//                        .background(rowBackgroundColor)
-//                        .cornerRadius(12)
-                }
-                //.onMove(perform: move)
-                
-                if editMode == EditMode.active { //isPresented only works for other views, not for buttons
-                    Button(action: {
-                        showingDeleteConfirmation = true
-                    }) {
-                        Text("Delete Workout")
-                            .padding(.vertical, 20)
-                            .padding(.horizontal)
-                            .frame(maxWidth: .infinity)
-                            .font(.title2)
+        VStack {
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    ForEach(workout.exerciseNames, id: \.self) { name in
+                        ExerciseDisplayRow(workout: workout, exerciseName: name)
+                    }
+                    .onMove(perform: move)
+                    
+                    if workoutsViewModel.addExerciseErrorMessage != nil {
+                        Text(String(describing: workoutsViewModel.addExerciseErrorMessage!))
+                            .font(.headline)
                             .fontWeight(.bold)
                             .foregroundColor(.red)
-                            .multilineTextAlignment(.center)
                     }
+                    if editMode == EditMode.active { //isPresented only works for other views, not for buttons
+                        Button(action: {
+                            workoutsViewModel.addExerciseToExisting(existingWorkout: workout)
+                        }) {
+                            Text("Add Exercise")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
+                                .background(Color.blue)
+                                .cornerRadius(10)
+                        }
+                    }
+                }
+            }
+            
+            if editMode == EditMode.active { //isPresented only works for other views, not for buttons
+                Button(action: {
+                    showingDeleteConfirmation = true
+                }) {
+                    Text("Delete Workout")
+                        .padding(.vertical, 20)
+                        .padding(.horizontal)
+                        .frame(maxWidth: .infinity)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
                 }
             }
         }
@@ -69,6 +83,14 @@ struct SingleWorkoutView: View {
                     .foregroundStyle(.primary)
                     .foregroundColor(.black)
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                EditButton()
+            }
+        }
+        .environment(\.editMode, $editMode)
+        .onAppear {
+            workoutsViewModel.addExerciseErrorMessage = nil
+            workoutsViewModel.deleteWorkoutErrorMessage = nil
         }
         .confirmationDialog("Are you sure?", isPresented: $showingDeleteConfirmation, titleVisibility: .visible) {
             // Confirmation button
@@ -82,6 +104,10 @@ struct SingleWorkoutView: View {
         } message: {
             Text("This action cannot be undone.")
         }
+    }
+    
+    func move(from source: IndexSet, to destination: Int) {
+        workout.exercises?.move(fromOffsets: source, toOffset: destination)
     }
 }
 

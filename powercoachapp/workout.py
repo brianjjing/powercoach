@@ -21,6 +21,7 @@ def create_workout():
     
     #All lists:
     name = workout_data['name']
+    exercise_uuids = workout_data['exercise_uuids']
     exercise_names = workout_data['exercise_names'] #Will be limited to nothing, or a whole list of exercises.
     sets = workout_data['sets']
     reps = workout_data['reps']
@@ -38,7 +39,7 @@ def create_workout():
             "workout_creation_message": f"You already have a workout called {name}!"
         }), 409
     if len(set(exercise_names)) != len(exercise_names):
-        return jsonify({"workout_creation_message": "No repeating exercises in a workout!"}), 400
+        return jsonify({"workout_creation_message": "No repeating exercises in a workout!"}), 400        
     
     existing_workout = Workout.query.filter_by(user_id=g.user.id).first()
     if existing_workout and (existing_workout.every_blank_days != every_blank_days):
@@ -60,6 +61,7 @@ def create_workout():
         new_workout = Workout(
             user_id = g.user.id,
             workout_name = name,
+            exercise_uuids = exercise_uuids,
             exercise_names = exercise_names,
             exercise_sets = sets,
             exercise_reps = reps,
@@ -116,9 +118,12 @@ def get_workouts():
                 workouts.append({
                     "workout_id": workout.workout_id,
                     "name": workout.workout_name,
-                    "exercise_names": workout.exercise_names,
-                    "sets": workout.exercise_sets,
-                    "reps": workout.exercise_reps,
+                    "exercises": [{
+                                "id": workout.exercise_uuids[index], #Make a database for EVERY SINGLE WORKOUT EVER TYPED BY A USER. (they can be indexed after 5000. add 5000 to their index to show it's a user-created that you can't access an algorithm for.)
+                                "name": workout.exercise_names[index],
+                                "sets": workout.exercise_sets[index],
+                                "reps": workout.exercise_reps[index]
+                                } for index in range(len(workout.exercise_names))],
                     "completed": workout.completed,
                     "every_blank_days": workout.every_blank_days,
                     "today": is_workout_today()
@@ -182,6 +187,43 @@ def delete_workout():
             "workout_deletion_message": "Sorry, an error occurred. Please try again."
         }), 500
 
+@workoutbp.route('/moveexercises', methods=['POST'])
+@login_required
+def edit_workout():
+    new_workout_data = request.get_json()
+    
+    try:
+        workout_id = new_workout_data.get('workout_id')
+        if not workout_id:
+            return jsonify({"workout_edit_message": "Edit failed: Workout ID is required."}), 400
+        
+        workout_to_update = Workout.query.get(workout_id)
+        if not workout_to_update:
+            return jsonify({"workout_edit_message": "Edit failed: Workout not found."}), 404
+
+        # Update the workout attributes with the new data
+        workout_to_update.workout_name = new_workout_data.get('name', workout_to_update.workout_name)
+        
+        new_exercises = new_workout_data.get('exercises', [])
+        workout_to_update.exercise_uuids = [exercise['id'] for exercise in new_exercises]
+        workout_to_update.exercise_names = [exercise['name'] for exercise in new_exercises]
+        workout_to_update.exercise_sets = [exercise['sets'] for exercise in new_exercises]
+        workout_to_update.exercise_reps = [exercise['reps'] for exercise in new_exercises]
+    
+        workout_to_update.completed = [False for _ in new_exercises]
+        workout_to_update.every_blank_days = new_workout_data.get('every_blank_days', workout_to_update.every_blank_days)
+        db.session.commit()
+        
+        return jsonify({"workout_edit_message": "Workout edited successfully."}), 200
+
+    except Exception as e:
+        logger.error(f"Error editing workout: {e}")
+        db.session.rollback()
+        return jsonify({"workout_edit_message": "Edit failed: Unexpected error occurred"}), 500
+    
+    #JUST REPLACE THE OLD WORKOUT WITH THIS NEW ONE. EDIT WORKOUT WILL ALWAYS JUST HAVE A NEW WORKOUT SENT.
+
+#To do way later - might just store in cache w 24 hour period:
 @workoutbp.route('/markexercisedone', methods=['POST'])
 @login_required
 def mark_exercise_done():

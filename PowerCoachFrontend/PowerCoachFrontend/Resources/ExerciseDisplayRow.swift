@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ExerciseDisplayRow: View {
     var workout: Workout
-    var index: Int
+    var exerciseName: String
     @Environment(\.colorScheme) var colorScheme
     var rowBackgroundColor: Color {
         colorScheme == .light ? Color(.systemGray5) : Color(.systemGray4)

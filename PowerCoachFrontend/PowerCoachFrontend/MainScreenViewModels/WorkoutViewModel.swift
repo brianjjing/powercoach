@@ -16,6 +16,7 @@ class WorkoutsViewModel: ObservableObject {
     // FIX: createdWorkout is now a struct that contains an array of `Exercise` structs.
     @Published var createdWorkout: CreatedWorkout = CreatedWorkout(
         name: "My Workout",
+        exercises: [Exercise(id: UUID())],
         everyBlankDays: 7
     )
     
@@ -111,13 +112,6 @@ class WorkoutsViewModel: ObservableObject {
                     print(self.homeDisplayMessage)
                     self.workouts = decodedData.workouts
                     print(self.workouts)
-                    
-//                    for workout in self.workouts {
-//                        ForEach(0..<workout.exerciseNames.count) { index in
-//                            workout.exercises?[index].name = workout.exerciseNames[index]
-//                            workout.exercises[index].sets = workout.sets[index]
-//                        }
-//                    }
                 } catch {
                     self.getWorkoutErrorMessage = "Failed to decode JSON: \(error.localizedDescription)"
                     print(String(describing: self.getWorkoutErrorMessage))
@@ -133,7 +127,7 @@ class WorkoutsViewModel: ObservableObject {
             }
             else {
                 self.addExerciseErrorMessage = nil
-                self.createdWorkout.exercises.append(Exercise())
+                self.createdWorkout.exercises.append(Exercise(id: UUID()))
             }
         }
     }
@@ -154,15 +148,21 @@ class WorkoutsViewModel: ObservableObject {
         }
     }
     
-//    func moveExercises(of workout: Workout, from source: IndexSet, to destination: Int) {
-//        guard let index = self.workouts.firstIndex(where: { $0.id == workout.workoutId }) else { return }
-//
-//        // Perform the move action on the properties of the found workout
-//        self.workouts[index].exercises.move(fromOffsets: source, toOffset: destination)
-//        self.workouts[index].sets.move(fromOffsets: source, toOffset: destination)
-//        self.workouts[index].reps.move(fromOffsets: source, toOffset: destination)
-//        self.workouts[index].completed.move(fromOffsets: source, toOffset: destination)
-//    }
+    func addExerciseToExisting(workout: Workout) {
+        DispatchQueue.main.async {
+            ...
+        }
+    }
+    
+    func deleteExerciseFromExisting(workout: Workout) {
+        DispatchQueue.main.async {
+            ...
+        }
+    }
+    
+    func editWorkout(workout: Workout) {
+        //Convert the exercise ids to strings!
+    }
     
     func createWorkout() {
         self.createWorkoutErrorMessage = nil
@@ -184,6 +184,7 @@ class WorkoutsViewModel: ObservableObject {
         let createdWorkoutData: [String: Any] = [
             "name": createdWorkout.name,
             // Map the new `Exercise` objects to the old array format for the backend
+            "exercise_uuids": createdWorkout.exercises.map { String(describing: $0.id) },
             "exercise_names": createdWorkout.exercises.map { $0.name }, //$0 is the implicit argument name, refers to the sole argument in the closure.
             "sets": createdWorkout.exercises.map { $0.sets },
             "reps": createdWorkout.exercises.map { $0.reps },
@@ -346,5 +347,6 @@ class WorkoutsViewModel: ObservableObject {
         self.getWorkoutErrorMessage = nil
         self.addExerciseErrorMessage = nil
         self.createWorkoutErrorMessage = nil
+        self.deleteWorkoutErrorMessage = nil
     }
 }

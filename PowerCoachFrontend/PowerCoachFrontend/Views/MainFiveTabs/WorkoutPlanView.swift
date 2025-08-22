@@ -11,8 +11,11 @@ struct WorkoutPlanView: View {
     @EnvironmentObject var webSocketManager: WebSocketManager
     @EnvironmentObject var workoutsViewModel: WorkoutsViewModel //Env object is found by TYPE, not name, so it can have a diff name here.
     @Environment(\.colorScheme) var colorScheme //Rerenders the variable and its views when the environment object changes, since it depends on it.
+    @Environment(\.dismiss) var dismiss
     
-    @State private var editMode = EditMode.inactive
+    @State var showingDeleteConfirmation = false
+    @State var workoutToDelete: Workout? = nil
+    @State var editMode = EditMode.inactive
     // Changes button text color based on light or dark mode:
     var buttonTextColor: Color {
         colorScheme == .light ? .black : .white
@@ -46,8 +49,12 @@ struct WorkoutPlanView: View {
                     LazyVStack(spacing: 12) {
                         // Workout_id is the unique identifier
                         ForEach(workoutsViewModel.workouts, id: \.workoutId) {workout in
-                            WorkoutRowView(workout: workout)
-                            
+                            WorkoutRowView(
+                                workout: workout,
+                                editMode: $editMode,
+                                showingDeleteConfirmation: $showingDeleteConfirmation,
+                                workoutToDelete: $workoutToDelete
+                            )
                             Spacer().frame(height: UIScreen.main.bounds.height/100)
                         }
                     }
@@ -82,6 +89,20 @@ struct WorkoutPlanView: View {
             }
         }
         .environment(\.editMode, $editMode)
+        .confirmationDialog("Are you sure?", isPresented: $showingDeleteConfirmation, titleVisibility: .visible) {
+            // Confirmation button
+            Button("Delete Workout", role: .destructive) {
+                Task {
+                    if let workout = workoutToDelete { //If let UNWRAPS the value and makes it non-optional
+                        await workoutsViewModel.deleteWorkout(workoutToDelete: workout)
+                        dismiss()
+                    }
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This action cannot be undone.")
+        }
     }
 }
 

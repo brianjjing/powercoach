@@ -29,6 +29,7 @@ class Workout(db.Model):
     workout_id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     workout_name = db.Column(db.String(64), nullable=False)
+    exercise_uuids = db.Column(db.ARRAY(db.String(256)), unique=True, nullable=False)
     exercise_names = db.Column(db.ARRAY(db.String(64)), nullable=False)
     exercise_sets = db.Column(db.ARRAY(db.Integer), nullable=False)
     exercise_reps = db.Column(db.ARRAY(db.Integer), nullable=False)
