@@ -14,6 +14,14 @@ struct CreatedWorkout: Codable {
     let availableExercises = ["Conventional Deadlifts", "RDLs", "Deep Squats", "Quarter Squats", "Barbell Overhead Presses", "Barbell Bicep Curls", "Barbell Rows"]
 }
 
+struct EditedWorkout: Codable {
+    var workoutId: Int?
+    var name: String
+    var exercises: [Exercise]
+    var everyBlankDays: Int
+    let availableExercises = ["Conventional Deadlifts", "RDLs", "Deep Squats", "Quarter Squats", "Barbell Overhead Presses", "Barbell Bicep Curls", "Barbell Rows"]
+}
+
 //This is for working with ...
 struct Exercise: Identifiable, Codable, Hashable {
     var id: UUID

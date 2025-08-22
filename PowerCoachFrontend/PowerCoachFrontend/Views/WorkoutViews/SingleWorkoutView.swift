@@ -27,12 +27,26 @@ struct SingleWorkoutView: View {
             ScrollView {
                 LazyVStack(spacing: 12) {
                     ForEach($workoutsViewModel.editedWorkout.exercises, id: \.id) { $exercise in
-                        if editMode == .inactive { ExerciseDisplayRow(exercise: exercise, editMode: $editMode) }
+                        if editMode == .inactive {
+                            ExerciseDisplayRow(exercise: exercise, editMode: $editMode)
+                        }
                         else {
-                            ExerciseCreationRow(
-                                exercise: $exercise,
-                                availableExercises: workoutsViewModel.createdWorkout.availableExercises,
-                                mode: "edit")
+                            VStack {
+                                TextField("Workout Name", text: $workoutsViewModel.editedWorkout.name)
+                                    .font(.title3)
+                                    .padding()
+                                    .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(10)
+                                    .disableAutocorrection(true)
+                                    .multilineTextAlignment(.center)
+                                    //.focused($amountIsFocused)
+
+                                ExerciseCreationRow(
+                                    exercise: $exercise,
+                                    availableExercises: workoutsViewModel.createdWorkout.availableExercises,
+                                    mode: "edit")
+                            }
                         }
                     }
                     .onMove(perform: move)
@@ -94,6 +108,9 @@ struct SingleWorkoutView: View {
         }
         .environment(\.editMode, $editMode)
         .onAppear {
+            if let workoutId = workout.workoutId {
+                workoutsViewModel.editedWorkout.workoutId = workoutId
+            }
             workoutsViewModel.editedWorkout.exercises = workout.exercises
             workoutsViewModel.editWorkoutErrorMessage = nil
         }

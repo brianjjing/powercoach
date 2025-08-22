@@ -19,7 +19,8 @@ class WorkoutsViewModel: ObservableObject {
         exercises: [Exercise(id: UUID())],
         everyBlankDays: 7
     )
-    @Published var editedWorkout: CreatedWorkout = CreatedWorkout(
+    @Published var editedWorkout: EditedWorkout = EditedWorkout(
+        workoutId: nil,
         name: "My Workout",
         exercises: [Exercise(id: UUID())],
         everyBlankDays: 7
@@ -189,6 +190,8 @@ class WorkoutsViewModel: ObservableObject {
     }
     
     func editWorkout() {
+        print("Edit workout called")
+        
         self.editWorkoutErrorMessage = nil
         self.isLoading = true
         
@@ -201,24 +204,25 @@ class WorkoutsViewModel: ObservableObject {
         }
         
         guard let appUrl = URL(string: "https://powercoach-1.onrender.com/workouts/editworkout") else {
-            self.createWorkoutErrorMessage = "Invalid server URL"
+            self.editWorkoutErrorMessage = "Invalid server URL"
             return
         }
         
-        let createdWorkoutData: [String: Any] = [
-            "name": createdWorkout.name,
+        let editedWorkoutData: [String: Any] = [
+            "workout_id": editedWorkout.workoutId,
+            "name": editedWorkout.name,
             // Map the new `Exercise` objects to the old array format for the backend
-            "exercise_uuids": createdWorkout.exercises.map { String(describing: $0.id) },
-            "exercise_names": createdWorkout.exercises.map { $0.name }, //$0 is the implicit argument name, refers to the sole argument in the closure.
-            "sets": createdWorkout.exercises.map { $0.sets },
-            "reps": createdWorkout.exercises.map { $0.reps },
+            "exercise_uuids": editedWorkout.exercises.map { String(describing: $0.id) },
+            "exercise_names": editedWorkout.exercises.map { $0.name }, //$0 is the implicit argument name, refers to the sole argument in the closure.
+            "sets": editedWorkout.exercises.map { $0.sets },
+            "reps": editedWorkout.exercises.map { $0.reps },
             "every_blank_days": 7
         ]
         
-        print(createdWorkoutData)
+        print("Edited workout data: \(editedWorkoutData)")
         
-        guard let jsonCreatedWorkoutData = try? JSONSerialization.data(withJSONObject: createdWorkoutData) else {
-            self.createWorkoutErrorMessage = "Failed to encode created workout"
+        guard let jsonEditedWorkoutData = try? JSONSerialization.data(withJSONObject: editedWorkoutData) else {
+            self.editWorkoutErrorMessage = "Failed to encode edited workout"
             return
         }
 
@@ -226,44 +230,43 @@ class WorkoutsViewModel: ObservableObject {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Add this line
-        request.httpBody = jsonCreatedWorkoutData
+        request.httpBody = jsonEditedWorkoutData
         
         print("request created")
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
                 DispatchQueue.main.async {
-                    self.createWorkoutErrorMessage = "Request failed: \(error.localizedDescription)"
-                    print(self.createWorkoutErrorMessage)
+                    self.editWorkoutErrorMessage = "Request failed: \(error.localizedDescription)"
+                    print(self.editWorkoutErrorMessage)
                 }
                 return
             }
             
             guard let data = data else {
                 DispatchQueue.main.async {
-                    self.createWorkoutErrorMessage = "No data received from server"
-                    print(self.createWorkoutErrorMessage)
+                    self.editWorkoutErrorMessage = "No data received from server"
+                    print(self.editWorkoutErrorMessage)
                 }
                 return
             }
             
             if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                if let workoutCreationMessage = json["workout_creation_message"] as? String {
+                if let workoutEditMessage = json["workout_edit_message"] as? String {
                     DispatchQueue.main.async {
-                        if workoutCreationMessage == "Workout creation successful" {
-                            self.createWorkoutErrorMessage = "Workout creation successful!"
-                            print(self.createWorkoutErrorMessage)
-                            self.resetCreation()
+                        if workoutEditMessage == "Workout edited successfully." {
+                            self.editWorkoutErrorMessage = "Workout edited successfully!"
+                            print(self.editWorkoutErrorMessage)
                         } else {
-                            self.createWorkoutErrorMessage = workoutCreationMessage
-                            print(self.createWorkoutErrorMessage)
+                            self.editWorkoutErrorMessage = workoutEditMessage
+                            print(self.editWorkoutErrorMessage)
                         }
                     }
                 }
-                else if let workoutCreationMessage = json["authorization_error_message"] as? String {
+                else if let workoutEditMessage = json["authorization_error_message"] as? String {
                     DispatchQueue.main.async {
-                        self.createWorkoutErrorMessage = workoutCreationMessage
-                        print(self.createWorkoutErrorMessage)
+                        self.editWorkoutErrorMessage = workoutEditMessage
+                        print(self.editWorkoutErrorMessage)
                     }
                 }
             }
@@ -444,7 +447,8 @@ class WorkoutsViewModel: ObservableObject {
     }
     
     func resetEdit() {
-        self.editedWorkout = CreatedWorkout(
+        self.editedWorkout = EditedWorkout(
+            workoutId: nil,
             name: "My Workout",
             exercises: [Exercise(id: UUID())],
             everyBlankDays: 7

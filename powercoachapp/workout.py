@@ -190,10 +190,53 @@ def delete_workout():
 @workoutbp.route('/editworkout', methods=['POST'])
 @login_required
 def edit_workout():
-    new_workout_data = request.get_json()
+    workout_data = request.get_json()
+    
+    if not workout_data:
+        return jsonify({"workout_edit_message": "Cannot create an empty workout!"}), 400
+    
+    logger.info(workout_data)
+    
+    #All lists:
+    name = workout_data['name']
+    exercise_uuids = workout_data['exercise_uuids']
+    exercise_names = workout_data['exercise_names'] #Will be limited to nothing, or a whole list of exercises.
+    sets = workout_data['sets']
+    reps = workout_data['reps']
+    num_exercises = len(exercise_names)
+    every_blank_days = workout_data['every_blank_days']
+    
+    if not name:
+        return jsonify({
+            "workout_creation_message": f"Include a name for your workout!"
+        }), 400
+    if not exercise_names:
+        return jsonify({"workout_creation_message": "Workout must have at least one exercise!"}), 400
+    if Workout.query.filter_by(user_id=g.user.id, workout_name=name).first():
+        return jsonify({
+            "workout_creation_message": f"You already have a workout called {name}!"
+        }), 409
+    if len(set(exercise_names)) != len(exercise_names):
+        return jsonify({"workout_creation_message": "No repeating exercises in a workout!"}), 400        
+    
+    existing_workout = Workout.query.filter_by(user_id=g.user.id).first()
+    if existing_workout and (existing_workout.every_blank_days != every_blank_days):
+        return jsonify({
+            "workout_creation_message": f"All workout plans must have the same frequency! You are attempting to add a workout every {every_blank_days} days when your other workout plans are every {existing_workout.every_blank_days} days."
+        }), 400
+    
+    for exercise_index in range(num_exercises):
+        if not exercise_names[exercise_index]:
+            return jsonify({'workout_creation_message': 'Exercise name is required.', 'index': exercise_index}), 400
+        elif not sets[exercise_index]:
+            return jsonify({'workout_creation_message': 'Number of sets is required.', 'index': exercise_index}), 400
+        elif not reps[exercise_index]:
+            return jsonify({'workout_creation_message': 'Number of reps is required.', 'index': exercise_index}), 400
+    if not every_blank_days:
+        return jsonify({'workout_creation_message': 'Workout frequency is required', 'index': exercise_index}), 400
     
     try:
-        workout_id = new_workout_data.get('workout_id')
+        workout_id = workout_data.get('workout_id')
         if not workout_id:
             return jsonify({"workout_edit_message": "Edit failed: Workout ID is required."}), 400
         
@@ -202,16 +245,14 @@ def edit_workout():
             return jsonify({"workout_edit_message": "Edit failed: Workout not found."}), 404
 
         # Update the workout attributes with the new data
-        workout_to_update.workout_name = new_workout_data.get('name', workout_to_update.workout_name)
-        
-        new_exercises = new_workout_data.get('exercises', [])
-        workout_to_update.exercise_uuids = [exercise['id'] for exercise in new_exercises]
-        workout_to_update.exercise_names = [exercise['name'] for exercise in new_exercises]
-        workout_to_update.exercise_sets = [exercise['sets'] for exercise in new_exercises]
-        workout_to_update.exercise_reps = [exercise['reps'] for exercise in new_exercises]
+        workout_to_update.workout_name = name
+        workout_to_update.exercise_uuids = exercise_uuids
+        workout_to_update.exercise_names = exercise_names
+        workout_to_update.exercise_sets = sets
+        workout_to_update.exercise_reps = reps
     
-        workout_to_update.completed = [False for _ in new_exercises]
-        workout_to_update.every_blank_days = new_workout_data.get('every_blank_days', workout_to_update.every_blank_days)
+        workout_to_update.completed = [False for _ in num_exercises]
+        workout_to_update.every_blank_days = every_blank_days
         db.session.commit()
         
         return jsonify({"workout_edit_message": "Workout edited successfully."}), 200
