@@ -13,7 +13,6 @@ struct SingleWorkoutView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) var dismiss
     
-    @State var newWorkout = Workout?
     @State private var editMode = EditMode.inactive
     var rowBackgroundColor: Color {
         colorScheme == .light ? Color(.systemGray5) : Color(.systemGray4)
@@ -27,20 +26,26 @@ struct SingleWorkoutView: View {
         VStack {
             ScrollView {
                 LazyVStack(spacing: 12) {
-                    ForEach(workout.exerciseNames, id: \.self) { name in
-                        ExerciseDisplayRow(workout: workout, exerciseName: name)
+                    ForEach($workoutsViewModel.editedWorkout.exercises, id: \.id) { $exercise in
+                        if editMode == .inactive { ExerciseDisplayRow(exercise: exercise, editMode: $editMode) }
+                        else {
+                            ExerciseCreationRow(
+                                exercise: $exercise,
+                                availableExercises: workoutsViewModel.createdWorkout.availableExercises,
+                                mode: "edit")
+                        }
                     }
                     .onMove(perform: move)
                     
-                    if workoutsViewModel.addExerciseErrorMessage != nil {
-                        Text(String(describing: workoutsViewModel.addExerciseErrorMessage!))
+                    if workoutsViewModel.editWorkoutErrorMessage != nil {
+                        Text(String(describing: workoutsViewModel.editWorkoutErrorMessage!))
                             .font(.headline)
                             .fontWeight(.bold)
                             .foregroundColor(.red)
                     }
-                    if editMode == EditMode.active { //isPresented only works for other views, not for buttons
+                    if editMode == EditMode.active {
                         Button(action: {
-                            workoutsViewModel.addExerciseToExisting(existingWorkout: workout)
+                            workoutsViewModel.addExercise(mode: "edit")
                         }) {
                             Text("Add Exercise")
                                 .font(.title2)
@@ -54,8 +59,10 @@ struct SingleWorkoutView: View {
                     }
                 }
             }
+            // Removed the redundant toolbar modifier from the ScrollView.
+            // This was the source of the "ambiguous use" error.
             
-            if editMode == EditMode.active { //isPresented only works for other views, not for buttons
+            if editMode == EditMode.active {
                 Button(action: {
                     showingDeleteConfirmation = true
                 }) {
@@ -73,15 +80,13 @@ struct SingleWorkoutView: View {
         .padding()
         .background(Color(.systemGroupedBackground))
         .scrollIndicators(.visible)
+        // Correctly apply the single toolbar to the top-level container (VStack).
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text(workout.name)
                     .font(.title)
                     .fontWeight(.black)
-                    .foregroundColor(Color.red)
-                    .font(.subheadline)
                     .foregroundStyle(.primary)
-                    .foregroundColor(.black)
             }
             ToolbarItem(placement: .topBarTrailing) {
                 EditButton()
@@ -89,8 +94,16 @@ struct SingleWorkoutView: View {
         }
         .environment(\.editMode, $editMode)
         .onAppear {
-            workoutsViewModel.addExerciseErrorMessage = nil
-            workoutsViewModel.deleteWorkoutErrorMessage = nil
+            workoutsViewModel.editedWorkout.exercises = workout.exercises
+            workoutsViewModel.editWorkoutErrorMessage = nil
+        }
+        .onDisappear {
+            workoutsViewModel.resetEdit()
+        }
+        .onChange(of: editMode) {
+            if editMode == .inactive {
+                workoutsViewModel.editWorkout()
+            }
         }
         .confirmationDialog("Are you sure?", isPresented: $showingDeleteConfirmation, titleVisibility: .visible) {
             // Confirmation button
@@ -107,23 +120,20 @@ struct SingleWorkoutView: View {
     }
     
     func move(from source: IndexSet, to destination: Int) {
-        workout.exercises?.move(fromOffsets: source, toOffset: destination)
+        workout.exercises.move(fromOffsets: source, toOffset: destination)
     }
 }
 
 #Preview {
     let mockWorkout = Workout(
         name: "Mock Workout",
-        exerciseNames: ["Pushups", "Squats"],
-        sets: [3, 3],
-        reps: [10, 10],
+        exercises: [Exercise(id: UUID(), name: "Push-Ups", sets: 3, reps: 10), Exercise(id: UUID(), name: "Squats", sets: 3, reps: 10)],
         completed: [false, false],
         everyBlankDays: 1,
         today: true
     )
-
     
-    SingleWorkoutView(workout: mockWorkout)
+    return SingleWorkoutView(workout: mockWorkout)
         .environmentObject(WebSocketManager.shared)
         .environmentObject(WorkoutsViewModel())
 }

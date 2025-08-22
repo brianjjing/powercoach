@@ -12,6 +12,8 @@ struct HomeView: View {
     @EnvironmentObject var workoutsViewModel: WorkoutsViewModel
     @Environment(\.colorScheme) var colorScheme
     
+    @State var editMode = EditMode.inactive
+    
     var buttonTextColor: Color {
         colorScheme == .light ? .black : .white
     }
@@ -39,8 +41,8 @@ struct HomeView: View {
                 // 'today's workouts' and then show details of the first one below.
                 ScrollView {
                     LazyVStack(spacing: 12) {
-                        ForEach(0..<todaysWorkout.exerciseNames.count, id: \.self) { index in
-                            ExerciseDisplayRow(workout: todaysWorkout, index: index)
+                        ForEach(todaysWorkout.exercises, id: \.self) { exercise in
+                            ExerciseDisplayRow(exercise: exercise, editMode: $editMode)
                         }
                     }
                 }
@@ -92,6 +94,7 @@ struct HomeView: View {
                 workoutsViewModel.getWorkouts()
             }
         }
+        .environment(\.editMode, $editMode)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 Text("POWERCOACH")

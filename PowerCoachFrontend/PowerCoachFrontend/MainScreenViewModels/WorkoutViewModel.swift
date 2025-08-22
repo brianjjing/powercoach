@@ -19,6 +19,11 @@ class WorkoutsViewModel: ObservableObject {
         exercises: [Exercise(id: UUID())],
         everyBlankDays: 7
     )
+    @Published var editedWorkout: CreatedWorkout = CreatedWorkout(
+        name: "My Workout",
+        exercises: [Exercise(id: UUID())],
+        everyBlankDays: 7
+    )
     
     //Messages:
     @Published var isLoading = false
@@ -27,6 +32,7 @@ class WorkoutsViewModel: ObservableObject {
     @Published var addExerciseErrorMessage: String? = nil
     @Published var createWorkoutErrorMessage: String? = nil
     @Published var deleteWorkoutErrorMessage: String? = nil
+    @Published var editWorkoutErrorMessage: String? = nil
     
     func getWorkouts() {
         self.getWorkoutErrorMessage = nil
@@ -120,48 +126,149 @@ class WorkoutsViewModel: ObservableObject {
         }.resume()
     }
     
-    func addExercise() {
+//    func addExercise() {
+//        DispatchQueue.main.async {
+//            if self.createdWorkout.exercises.count >= 15 {
+//                self.addExerciseErrorMessage = "Can't have more than 15 exercises in a workout!"
+//            }
+//            else {
+//                self.addExerciseErrorMessage = nil
+//                self.createdWorkout.exercises.append(Exercise(id: UUID()))
+//            }
+//        }
+//    }
+
+    func addExercise(mode: String) {
         DispatchQueue.main.async {
-            if self.createdWorkout.exercises.count >= 15 {
-                self.addExerciseErrorMessage = "Can't have more than 15 exercises in a workout!"
+            if mode == "create" {
+                if self.createdWorkout.exercises.count >= 15 {
+                    self.addExerciseErrorMessage = "Can't have more than 15 exercises in a workout!"
+                }
+                else {
+                    self.addExerciseErrorMessage = nil
+                    self.createdWorkout.exercises.append(Exercise(id: UUID()))
+                }
             }
-            else {
-                self.addExerciseErrorMessage = nil
-                self.createdWorkout.exercises.append(Exercise(id: UUID()))
+            else if mode == "edit" {
+                if self.editedWorkout.exercises.count >= 15 {
+                    self.editWorkoutErrorMessage = "Can't have more than 15 exercises in a workout!"
+                }
+                else {
+                    self.editWorkoutErrorMessage = nil
+                    self.editedWorkout.exercises.append(Exercise(id: UUID()))
+                }
             }
         }
     }
     
-    // FIX: The delete function now takes an `Exercise` object, not an index.
-    // It finds the correct exercise to remove based on its unique `id`.
-    func deleteExercise(exercise: Exercise) {
+    func deleteExercise(mode: String, exercise: Exercise) {
         DispatchQueue.main.async {
-            if let index = self.createdWorkout.exercises.firstIndex(where: { $0.id == exercise.id }) {
-                self.createdWorkout.exercises.remove(at: index)
-                self.addExerciseErrorMessage = nil
-                print("Successfully deleted exercise with ID: \(exercise.id)")
-                print("New count: \(self.createdWorkout.exercises.count)")
-            } else {
-                self.addExerciseErrorMessage = "Exercise not found for deletion."
-                print("Error: Exercise with ID \(exercise.id) not found.")
+            if mode == "create" {
+                if let index = self.createdWorkout.exercises.firstIndex(where: { $0.id == exercise.id }) {
+                    self.createdWorkout.exercises.remove(at: index)
+                    self.addExerciseErrorMessage = nil
+                    print("Successfully deleted exercise with ID: \(exercise.id)")
+                    print("New count: \(self.createdWorkout.exercises.count)")
+                } else {
+                    self.addExerciseErrorMessage = "Exercise not found for deletion."
+                    print("Error: Exercise with ID \(exercise.id) not found.")
+                }
+            }
+            else if mode == "edit" {
+                if let index = self.editedWorkout.exercises.firstIndex(where: { $0.id == exercise.id }) {
+                    self.editedWorkout.exercises.remove(at: index)
+                    self.editWorkoutErrorMessage = nil
+                    print("Successfully deleted exercise with ID: \(exercise.id)")
+                    print("New count: \(self.editedWorkout.exercises.count)")
+                } else {
+                    self.editWorkoutErrorMessage = "Exercise not found for deletion."
+                    print("Error: Exercise with ID \(exercise.id) not found.")
+                }
             }
         }
     }
     
-    func addExerciseToExisting(workout: Workout) {
-        DispatchQueue.main.async {
-            ...
+    func editWorkout() {
+        self.editWorkoutErrorMessage = nil
+        self.isLoading = true
+        
+        guard let token = authToken else {
+            DispatchQueue.main.async {
+                self.editWorkoutErrorMessage = "User is not authenticated."
+                self.isLoading = false
+            }
+            return
         }
-    }
-    
-    func deleteExerciseFromExisting(workout: Workout) {
-        DispatchQueue.main.async {
-            ...
+        
+        guard let appUrl = URL(string: "https://powercoach-1.onrender.com/workouts/editworkout") else {
+            self.createWorkoutErrorMessage = "Invalid server URL"
+            return
         }
-    }
-    
-    func editWorkout(workout: Workout) {
-        //Convert the exercise ids to strings!
+        
+        let createdWorkoutData: [String: Any] = [
+            "name": createdWorkout.name,
+            // Map the new `Exercise` objects to the old array format for the backend
+            "exercise_uuids": createdWorkout.exercises.map { String(describing: $0.id) },
+            "exercise_names": createdWorkout.exercises.map { $0.name }, //$0 is the implicit argument name, refers to the sole argument in the closure.
+            "sets": createdWorkout.exercises.map { $0.sets },
+            "reps": createdWorkout.exercises.map { $0.reps },
+            "every_blank_days": 7
+        ]
+        
+        print(createdWorkoutData)
+        
+        guard let jsonCreatedWorkoutData = try? JSONSerialization.data(withJSONObject: createdWorkoutData) else {
+            self.createWorkoutErrorMessage = "Failed to encode created workout"
+            return
+        }
+
+        var request = URLRequest(url: appUrl)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Add this line
+        request.httpBody = jsonCreatedWorkoutData
+        
+        print("request created")
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    self.createWorkoutErrorMessage = "Request failed: \(error.localizedDescription)"
+                    print(self.createWorkoutErrorMessage)
+                }
+                return
+            }
+            
+            guard let data = data else {
+                DispatchQueue.main.async {
+                    self.createWorkoutErrorMessage = "No data received from server"
+                    print(self.createWorkoutErrorMessage)
+                }
+                return
+            }
+            
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let workoutCreationMessage = json["workout_creation_message"] as? String {
+                    DispatchQueue.main.async {
+                        if workoutCreationMessage == "Workout creation successful" {
+                            self.createWorkoutErrorMessage = "Workout creation successful!"
+                            print(self.createWorkoutErrorMessage)
+                            self.resetCreation()
+                        } else {
+                            self.createWorkoutErrorMessage = workoutCreationMessage
+                            print(self.createWorkoutErrorMessage)
+                        }
+                    }
+                }
+                else if let workoutCreationMessage = json["authorization_error_message"] as? String {
+                    DispatchQueue.main.async {
+                        self.createWorkoutErrorMessage = workoutCreationMessage
+                        print(self.createWorkoutErrorMessage)
+                    }
+                }
+            }
+                
+        }.resume()
     }
     
     func createWorkout() {
@@ -331,6 +438,15 @@ class WorkoutsViewModel: ObservableObject {
     func resetCreation() {
         self.createdWorkout = CreatedWorkout(
             name: "My Workout",
+            exercises: [Exercise(id: UUID())],
+            everyBlankDays: 7
+        )
+    }
+    
+    func resetEdit() {
+        self.editedWorkout = CreatedWorkout(
+            name: "My Workout",
+            exercises: [Exercise(id: UUID())],
             everyBlankDays: 7
         )
     }
@@ -342,6 +458,7 @@ class WorkoutsViewModel: ObservableObject {
         // FIX: Resetting to the new data model
         self.createdWorkout = CreatedWorkout(
             name: "My Workout",
+            exercises: [Exercise(id: UUID())],
             everyBlankDays: 7
         )
         self.getWorkoutErrorMessage = nil

@@ -10,6 +10,7 @@ import SwiftUI
 struct ExerciseCreationRow: View {
     @Binding var exercise: Exercise
     let availableExercises: [String]
+    let mode: String
     
     @EnvironmentObject var workoutsViewModel: WorkoutsViewModel
     @Environment(\.colorScheme) var colorScheme
@@ -55,7 +56,7 @@ struct ExerciseCreationRow: View {
             
             // FIX: Pass the item itself to be deleted, not its index.
             // This is safer because the ID is stable. The ViewModel can find the index to delete.
-            Button(action: { workoutsViewModel.deleteExercise(exercise: exercise) }) {
+            Button(action: { workoutsViewModel.deleteExercise(mode: mode, exercise: exercise) }) {
                 Image(systemName: "trash")
                     .font(.title2)
                     .foregroundStyle(.primary)

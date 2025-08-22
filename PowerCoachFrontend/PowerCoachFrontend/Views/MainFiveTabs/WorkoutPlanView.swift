@@ -94,7 +94,7 @@ struct WorkoutPlanView: View {
             Button("Delete Workout", role: .destructive) {
                 Task {
                     if let workout = workoutToDelete { //If let UNWRAPS the value and makes it non-optional
-                        await workoutsViewModel.deleteWorkout(workoutToDelete: workout)
+                        workoutsViewModel.deleteWorkout(workoutToDelete: workout)
                         dismiss()
                     }
                 }

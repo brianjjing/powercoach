@@ -41,7 +41,8 @@ struct WorkoutCreatorView: View {
                     ForEach($workoutsViewModel.createdWorkout.exercises) { $exercise in
                         ExerciseCreationRow(
                             exercise: $exercise,
-                            availableExercises: workoutsViewModel.createdWorkout.availableExercises
+                            availableExercises: workoutsViewModel.createdWorkout.availableExercises,
+                            mode: "create"
                         )
                     }
                     .onMove(perform: move)
@@ -53,7 +54,7 @@ struct WorkoutCreatorView: View {
                             .foregroundColor(.red)
                     }
                     
-                    Button(action: workoutsViewModel.addExercise) {
+                    Button(action: {workoutsViewModel.addExercise(mode: "create")} ) { //Closure is a runnable block of code and allows a function to represent the functionality and not the returned result
                         Text("Add Exercise")
                             .font(.title2)
                             .fontWeight(.bold)

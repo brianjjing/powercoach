@@ -187,7 +187,7 @@ def delete_workout():
             "workout_deletion_message": "Sorry, an error occurred. Please try again."
         }), 500
 
-@workoutbp.route('/moveexercises', methods=['POST'])
+@workoutbp.route('/editworkout', methods=['POST'])
 @login_required
 def edit_workout():
     new_workout_data = request.get_json()

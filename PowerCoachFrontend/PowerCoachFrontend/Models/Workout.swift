@@ -15,7 +15,7 @@ struct CreatedWorkout: Codable {
 }
 
 //This is for working with ...
-struct Exercise: Identifiable, Codable {
+struct Exercise: Identifiable, Codable, Hashable {
     var id: UUID
     var name: String = "Select exercise"
     var sets: Int = 0
