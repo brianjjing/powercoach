@@ -207,6 +207,10 @@ def edit_workout():
     num_exercises = len(exercise_names)
     every_blank_days = new_workout_data['every_blank_days']
     
+    workout_to_update = Workout.query.get(workout_id)
+    if not workout_to_update:
+        return jsonify({"workout_edit_message": "Edit failed: Workout not found."}), 404
+    
     if not name or name=="":
         return jsonify({
             "workout_edit_message": f"Include a name for your workout!"
@@ -217,7 +221,6 @@ def edit_workout():
     if workout_to_update.user_id != g.user.id:
         return jsonify({"workout_edit_message": "You are not authorized to edit this workout."}), 403
     # Check for duplicate name, excluding the current workout
-    name = new_workout_data.get('name')
     if Workout.query.filter(Workout.workout_id != workout_id, Workout.user_id == g.user.id, Workout.workout_name == name).first():
         return jsonify({
             "workout_edit_message": f"You already have a workout called {name}!"
@@ -245,10 +248,6 @@ def edit_workout():
     try:
         if not workout_id:
             return jsonify({"workout_edit_message": "Edit failed: Workout ID is required."}), 400
-        
-        workout_to_update = Workout.query.get(workout_id)
-        if not workout_to_update:
-            return jsonify({"workout_edit_message": "Edit failed: Workout not found."}), 404
 
         # Update the workout attributes with the new data
         workout_to_update.workout_name = name
