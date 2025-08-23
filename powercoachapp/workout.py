@@ -198,6 +198,7 @@ def edit_workout():
     logger.info(new_workout_data)
     
     #All lists:
+    workout_id = new_workout_data['workout_id']
     name = new_workout_data['name']
     exercise_uuids = new_workout_data['exercise_uuids']
     exercise_names = new_workout_data['exercise_names'] #Will be limited to nothing, or a whole list of exercises.
@@ -242,7 +243,6 @@ def edit_workout():
         return jsonify({'workout_creation_message': 'Workout frequency is required', 'index': exercise_index}), 400
     
     try:
-        workout_id = new_workout_data.get('workout_id')
         if not workout_id:
             return jsonify({"workout_edit_message": "Edit failed: Workout ID is required."}), 400
         
