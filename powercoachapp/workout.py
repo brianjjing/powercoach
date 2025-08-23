@@ -190,34 +190,40 @@ def delete_workout():
 @workoutbp.route('/editworkout', methods=['POST'])
 @login_required
 def edit_workout():
-    workout_data = request.get_json()
+    new_workout_data = request.get_json()
     
-    if not workout_data:
-        return jsonify({"workout_edit_message": "Cannot create an empty workout!"}), 400
+    if not new_workout_data:
+        return jsonify({"workout_edit_message": "Cannot have an empty workout!"}), 400
     
-    logger.info(workout_data)
+    logger.info(new_workout_data)
     
     #All lists:
-    name = workout_data['name']
-    exercise_uuids = workout_data['exercise_uuids']
-    exercise_names = workout_data['exercise_names'] #Will be limited to nothing, or a whole list of exercises.
-    sets = workout_data['sets']
-    reps = workout_data['reps']
+    name = new_workout_data['name']
+    exercise_uuids = new_workout_data['exercise_uuids']
+    exercise_names = new_workout_data['exercise_names'] #Will be limited to nothing, or a whole list of exercises.
+    sets = new_workout_data['sets']
+    reps = new_workout_data['reps']
     num_exercises = len(exercise_names)
-    every_blank_days = workout_data['every_blank_days']
+    every_blank_days = new_workout_data['every_blank_days']
     
-    if not name:
+    if not name or name=="":
         return jsonify({
-            "workout_creation_message": f"Include a name for your workout!"
+            "workout_edit_message": f"Include a name for your workout!"
         }), 400
     if not exercise_names:
-        return jsonify({"workout_creation_message": "Workout must have at least one exercise!"}), 400
-    if Workout.query.filter_by(user_id=g.user.id, workout_name=name).first():
+        return jsonify({"workout_edit_message": "Workout must have at least one exercise!"}), 400
+    
+    if workout_to_update.user_id != g.user.id:
+        return jsonify({"workout_edit_message": "You are not authorized to edit this workout."}), 403
+    # Check for duplicate name, excluding the current workout
+    name = new_workout_data.get('name')
+    if Workout.query.filter(Workout.workout_id != workout_id, Workout.user_id == g.user.id, Workout.workout_name == name).first():
         return jsonify({
-            "workout_creation_message": f"You already have a workout called {name}!"
+            "workout_edit_message": f"You already have a workout called {name}!"
         }), 409
+        
     if len(set(exercise_names)) != len(exercise_names):
-        return jsonify({"workout_creation_message": "No repeating exercises in a workout!"}), 400        
+        return jsonify({"workout_edit_message": "No repeating exercises in a workout!"}), 400        
     
     existing_workout = Workout.query.filter_by(user_id=g.user.id).first()
     if existing_workout and (existing_workout.every_blank_days != every_blank_days):
@@ -236,7 +242,7 @@ def edit_workout():
         return jsonify({'workout_creation_message': 'Workout frequency is required', 'index': exercise_index}), 400
     
     try:
-        workout_id = workout_data.get('workout_id')
+        workout_id = new_workout_data.get('workout_id')
         if not workout_id:
             return jsonify({"workout_edit_message": "Edit failed: Workout ID is required."}), 400
         
@@ -251,7 +257,7 @@ def edit_workout():
         workout_to_update.exercise_sets = sets
         workout_to_update.exercise_reps = reps
     
-        workout_to_update.completed = [False for _ in num_exercises]
+        workout_to_update.completed = [False for _ in range(num_exercises)]
         workout_to_update.every_blank_days = every_blank_days
         db.session.commit()
         
