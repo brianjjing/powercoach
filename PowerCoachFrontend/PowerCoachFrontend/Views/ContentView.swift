@@ -81,7 +81,8 @@ struct ContentView: View {
                         Spacer()
                         
                         NavigationLink {
-                            PowerCoachView(webSocketManager: WebSocketManager.shared)
+                            PrePowerCoachView()
+                            //PowerCoachView(webSocketManager: WebSocketManager.shared)
                         } label: {
                             VStack {
                                 PowerCoachTabIcon()

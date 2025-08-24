@@ -7,6 +7,8 @@
 
 import Foundation
 
+let availableExercises = ["Conventional Deadlifts", "RDLs", "Deep Squats", "Quarter Squats", "Barbell Overhead Presses", "Barbell Bicep Curls", "Barbell Rows"]
+
 struct CreatedWorkout: Codable {
     var name: String
     var exercises: [Exercise]

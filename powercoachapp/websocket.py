@@ -37,7 +37,9 @@ def handle_test_message(message):
     emit('test_response', {'status': 'received'})
 
 @socketio.on('start_powercoach')
-def start_powercoach():
+def start_powercoach(performed_exercise):
+    #Store the current exercise (performed_exercise) in the cache - USE THE DICTIONARY AT THE BOTTOM OF BARBELL.PY
+    
     shared_data['message'] = 'BARBELL NOT IN FRAME'
     shared_data['bar_bbox'] = None
     shared_data['lift_stage'] = 'concentric'
@@ -47,6 +49,7 @@ def start_powercoach():
 #PRINT AS LOGS (IMPORT LOGGING --> LOGGING.INFO("MESSAGE"))
 @socketio.on('handle_powercoach_frame')
 def handle_powercoach_frame(jpegData):
+    #from here, store selected_exercise in the cache.
     logger.info("POWERCOACH FRAME RECEIVED")
     logger.info(f"Jpeg data byte size: {len(jpegData)}")
     

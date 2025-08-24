@@ -12,6 +12,7 @@ struct SingleWorkoutView: View {
     @EnvironmentObject var workoutsViewModel: WorkoutsViewModel
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) var dismiss
+    @FocusState private var amountIsFocused: Bool
     
     @State private var editMode = EditMode.inactive
     var rowBackgroundColor: Color {
@@ -26,27 +27,35 @@ struct SingleWorkoutView: View {
         VStack {
             ScrollView {
                 LazyVStack(spacing: 12) {
+                    if editMode == .active {
+                        HStack {
+                            TextField("Workout Name", text: $workoutsViewModel.editedWorkout.name)
+                                .font(.title3)
+                                .padding()
+                                .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
+                                .background(rowBackgroundColor)
+                                .cornerRadius(10)
+                                .disableAutocorrection(true)
+                                .multilineTextAlignment(.center)
+                                .focused($amountIsFocused)
+                            
+                            if amountIsFocused {
+                                Button("Set Name") {
+                                    amountIsFocused = false
+                                }
+                            }
+                        }
+                    }
+                    
                     ForEach($workoutsViewModel.editedWorkout.exercises, id: \.id) { $exercise in
                         if editMode == .inactive {
                             ExerciseDisplayRow(exercise: exercise, editMode: $editMode)
                         }
                         else {
-                            VStack {
-                                TextField("Workout Name", text: $workoutsViewModel.editedWorkout.name)
-                                    .font(.title3)
-                                    .padding()
-                                    .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
-                                    .background(Color(.systemGray6))
-                                    .cornerRadius(10)
-                                    .disableAutocorrection(true)
-                                    .multilineTextAlignment(.center)
-                                    //.focused($amountIsFocused)
-
-                                ExerciseCreationRow(
-                                    exercise: $exercise,
-                                    availableExercises: workoutsViewModel.createdWorkout.availableExercises,
-                                    mode: "edit")
-                            }
+                            ExerciseCreationRow(
+                                exercise: $exercise,
+                                availableExercises: workoutsViewModel.createdWorkout.availableExercises,
+                                mode: "edit")
                         }
                     }
                     .onMove(perform: move)
@@ -111,6 +120,7 @@ struct SingleWorkoutView: View {
             if let workoutId = workout.workoutId {
                 workoutsViewModel.editedWorkout.workoutId = workoutId
             }
+            workoutsViewModel.editedWorkout.name = workout.name
             workoutsViewModel.editedWorkout.exercises = workout.exercises
             workoutsViewModel.editWorkoutErrorMessage = nil
         }

@@ -5,7 +5,8 @@ struct PowerCoachView: View {
     @Environment(\.dismiss) var dismiss //@Environment() gives access to system-defined values. In this case it's the keypath to the .dismiss function.
     @EnvironmentObject var webSocketManager: WebSocketManager
     @StateObject private var cameraManager: CameraManager
-
+    @EnvironmentObject var workoutsViewModel: WorkoutsViewModel //Env object is found by TYPE, not name, so it can have a diff name here.
+    
     init(webSocketManager: WebSocketManager) {
         //This _cameraManager variable accesses the backing storage (the wrapper of type StateObject<CameraManager>, whereas cameraManager is the get-only wrapped value, the instance of CameraManager). We are just initializing that here, and it is invisibly created.
         _cameraManager = StateObject(wrappedValue: CameraManager(webSocketManager: webSocketManager))
@@ -73,7 +74,7 @@ struct PowerCoachView: View {
 //        .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .onAppear {
-            webSocketManager.emit(event: "start_powercoach")
+            webSocketManager.emit(event: "start_powercoach", with: workoutsViewModel.selectedPerformingExercise)
         }
         .onDisappear {
             webSocketManager.emit(event: "stop_powercoach")

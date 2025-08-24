@@ -26,6 +26,9 @@ class WorkoutsViewModel: ObservableObject {
         everyBlankDays: 7
     )
     
+    //Workout doing:
+    @Published var selectedPerformingExercise: String = "Select exercise"
+    
     //Messages:
     @Published var isLoading = false
     @Published var homeDisplayMessage: String = "You don't have a workout plan set yet!"
