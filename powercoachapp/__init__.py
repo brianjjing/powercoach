@@ -37,6 +37,7 @@ def create_app(test_config=None):
 
     db.init_app(app)
     socketio.init_app(app, async_mode='eventlet', logger=logger, engineio_logger=logger, cors_allowed_origins='*')
+    logger.debug("Database and SocketIO initialized")
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -51,11 +52,22 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    # --- THIS IS THE CORRECT LOCATION FOR THE HEALTH CHECK ENDPOINT ---
+    @app.route('/health', methods=['GET'])
+    def health_check():
+        """
+        Returns a simple success message for health checks.
+        """
+        # You can add more logic here, e.g., check database connection
+        logger.info("Health check response sent: OK, 200")
+        return "OK", 200
+
     app.register_blueprint(auth.authbp)
     app.register_blueprint(workout.workoutbp)
 
     #Creating the models from sqlmodels.py in database.db:
     with app.app_context():
         db.create_all()
+        logger.info("Database tables created")
 
     return app

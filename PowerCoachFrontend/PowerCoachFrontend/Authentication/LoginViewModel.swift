@@ -29,8 +29,8 @@ class LoginViewModel: ObservableObject {
     
     func login() {
         //Render: https://powercoach-1.onrender.com/auth/login
-        //AWS: https://powercoachapp.com/auth/login --> upgrade to aws
-        guard let appUrl = URL(string: "https://powercoachapp.com/auth/login") else {
+        //AWS: https://www.powercoachapp.com/auth/login --> upgrade to aws
+        guard let appUrl = URL(string: "https://www.powercoachapp.com/auth/login") else {
             self.errorMessage = "Invalid server URL"
             return
         }
@@ -85,8 +85,8 @@ class LoginViewModel: ObservableObject {
     
     func logout() {
         //Render: https://powercoach-1.onrender.com/auth/logout
-        //AWS: https://powercoachapp.com/auth/logout
-        guard let url = URL(string:"https://powercoachapp.com/auth/logout") else { return }
+        //AWS: https://www.powercoachapp.com/auth/logout
+        guard let url = URL(string:"https://www.powercoachapp.com/auth/logout") else { return }
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"

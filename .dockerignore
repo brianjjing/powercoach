@@ -2,12 +2,12 @@
 .vscode/**
 bbelldetectionmodel.gz/
 bbelldetectionmodel.gz/**
-cachetest/
-cachetest/**
-cachetrain/
-cachetrain/**
-cachevalid/
-cachevalid/**
+powercoachapp/cachetest/
+powercoachapp/cachetest/**
+powercoachapp/cachetrain/
+powercoachapp/cachetrain/**
+powercoachapp/cachevalid/
+powercoachapp/cachevalid/**
 
 powercoachapp/bbelldetectioncreatefile.py
 powercoachapp/bbelldetectiondatasetcreator.py

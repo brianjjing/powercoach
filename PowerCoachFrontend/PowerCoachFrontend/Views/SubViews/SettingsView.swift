@@ -197,7 +197,7 @@ struct DeleteAccountPopUpView: View {
     
     func deleteAccount() {
         //Render: https://powercoach-1.onrender.com/auth/logout
-        //AWS: https://powercoachapp.com/auth/logout
+        //AWS: https://www.powercoachapp.com/auth/logout
         
         //Handle deleting account logic - should go to another popup
     }
