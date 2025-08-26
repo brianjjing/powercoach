@@ -2,9 +2,8 @@ from zoneinfo import ZoneInfo
 from datetime import datetime
 from flask import Blueprint, g, request, jsonify
 from powercoachapp.auth import login_required
-from powercoachapp.extensions import db, logger, shared_data
+from powercoachapp.extensions import db, logger
 from powercoachapp.sqlmodels import Workout
-from powercoachapp.exercises.barbell import barbell_exercises
 
 workoutbp = Blueprint('workouts', __name__, url_prefix='/workouts')
 

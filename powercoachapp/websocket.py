@@ -1,10 +1,9 @@
 import time
 import logging
 from flask_socketio import emit
-from flask import request, g
-from powercoachapp.extensions import socketio, logger, clients, shared_data, db
+from flask import request
+from powercoachapp.extensions import socketio, logger, clients, shared_data
 from powercoachapp.powercoachalg import powercoachalg
-from powercoachapp.sqlmodels import UserBackendData
 
 @socketio.on('connect')
 def handle_connect():
@@ -66,6 +65,3 @@ def stop_powercoach():
     shared_data['lift_stage'] = 'concentric'
     shared_data['start_time'] = 0
     logger.debug("Powercoach stopped")
-    
-#WSGI server already handles the SIGTERM when shutting down the REMOTE server.
-#Just need to manually kill connection when using the LOCAL server.
