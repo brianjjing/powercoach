@@ -53,8 +53,8 @@ class WorkoutsViewModel: ObservableObject {
         print("Detected timezone: \(timezoneIdentifier)")
         
         //Render: https://powercoach-1.onrender.com/workouts/getworkouts
-        //AWS: http://54.67.86.184:10000/workouts/getworkouts --> upgrade to aws
-        let appUrlString = "https://powercoach-1.onrender.com/workouts/getworkouts"
+        //AWS: https://powercoachapp.com/workouts/getworkouts --> upgrade to aws
+        let appUrlString = "https://powercoachapp.com/workouts/getworkouts"
         
         guard var urlComponents = URLComponents(string: appUrlString) else { //Building URL w/ URLComponents. It's the right format, as straight up making a string URL with string formatting has formatting issues due to encoding.
             self.getWorkoutErrorMessage = "Invalid server URL"
@@ -206,7 +206,9 @@ class WorkoutsViewModel: ObservableObject {
             return
         }
         
-        guard let appUrl = URL(string: "https://powercoach-1.onrender.com/workouts/editworkout") else {
+        //Render: https://powercoach-1.onrender.com/workouts/editworkout
+        //AWS: https://powercoachapp.com/workouts/editworkout --> upgrade to aws
+        guard let appUrl = URL(string: "https://powercoachapp.com/workouts/editworkout") else {
             self.editWorkoutErrorMessage = "Invalid server URL"
             return
         }
@@ -289,7 +291,9 @@ class WorkoutsViewModel: ObservableObject {
             return
         }
         
-        guard let appUrl = URL(string: "https://powercoach-1.onrender.com/workouts/createworkout") else {
+        //Render: https://powercoach-1.onrender.com/workouts/createworkout
+        //AWS: https://powercoachapp.com/workouts/createworkout --> upgrade to aws
+        guard let appUrl = URL(string: "https://powercoachapp.com/workouts/createworkout") else {
             self.createWorkoutErrorMessage = "Invalid server URL"
             return
         }
@@ -371,7 +375,9 @@ class WorkoutsViewModel: ObservableObject {
             return
         }
         
-        guard let url = URL(string: "https://powercoach-1.onrender.com/workouts/deleteworkout") else {
+        //Render: https://powercoach-1.onrender.com/workouts/deleteworkout
+        //AWS: https://powercoachapp.com/workouts/deleteworkout --> upgrade to aws
+        guard let url = URL(string: "https://powercoachapp.com/workouts/deleteworkout") else {
             deleteWorkoutErrorMessage = "Invalid URL"
             return
         }

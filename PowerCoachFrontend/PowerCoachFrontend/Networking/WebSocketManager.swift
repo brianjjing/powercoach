@@ -28,8 +28,8 @@ class WebSocketManager: ObservableObject {
     
     init() {
         //RENDER API URL: https://powercoach-1.onrender.com
-        //AWS IP: http://50.18.29.18:10000
-        self.manager = SocketManager(socketURL: URL(string: "https://powercoach-1.onrender.com")!, config: [.log(true), .compress, .forceWebsockets(true), .path("/socket.io")])
+        //AWS IP: https://powercoachapp.com
+        self.manager = SocketManager(socketURL: URL(string: "https://powercoachapp.com")!, config: [.log(true), .compress, .forceWebsockets(true), .path("/socket.io")])
         self.socket = self.manager.defaultSocket
         
         socket.on(clientEvent: .connect) { (data, ack) in

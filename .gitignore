@@ -17,6 +17,8 @@ powercoachapp/apikeys.py
 powercoachapp/test.py
 powercoachapp/bbelldetecset.coco/
 powercoachapp/bbelldetecset.coco/**
+powercoachapp/OLDSELFTRAINEDBBELLDETECTSET/
+powercoachapp/OLDSELFTRAINEDBBELLDETECTSET/**
 powercoachapp/__pycache__/
 powercoachapp/__pycache__/**
 

@@ -1,9 +1,7 @@
 import os
-from powercoachapp import create_app, powercoachalg, bbelldetectioncreatemodel
-from powercoachapp.auth import login_required
+from powercoachapp import create_app
 from powercoachapp.extensions import socketio
 from flask import request
-from powercoachapp.sqlmodels import User, UserBackendData
 
 app = create_app()
 

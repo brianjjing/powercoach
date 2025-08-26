@@ -7,22 +7,22 @@ import os
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     
-    #For AWS Postgresql;
-    # DB_URI = f"postgresql://{os.environ.get('DB_USERNAME')}:{os.environ.get('DB_PASSWORD')}@{os.environ.get('DB_HOST')}/{os.environ.get('DB_NAME')}"
+    #For AWS Postgresql:
+    DB_URI = f"postgresql://{os.environ.get('DB_USERNAME')}:{os.environ.get('DB_PASSWORD')}@{os.environ.get('DB_HOST')}/{os.environ.get('DB_NAME')}"
     
     # #Use this code for remote:
-    # app.config.from_mapping(
-    #     SQLALCHEMY_DATABASE_URI = DB_URI,
-    #     SECRET_KEY = os.environ.get("SECRET_KEY", 'dev')
-    # )
+    app.config.from_mapping(
+        SQLALCHEMY_DATABASE_URI = DB_URI,
+        SECRET_KEY = os.environ.get("SECRET_KEY")
+    )
     
-    # logger.debug("App database configured")
+    logger.debug("App database configured")
     
     # #Render:
-    app.config.from_mapping(
-        SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL"),
-        SECRET_KEY = os.environ.get("SECRET_KEY") #Make this the actual secret key
-    )
+    # app.config.from_mapping(
+    #     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL"),
+    #     SECRET_KEY = os.environ.get("SECRET_KEY") #Make this the actual secret key
+    # )
 
     #logger.debug(os.environ.get("DATABASE_URL"))
     #logger.debug(app.config["SQLALCHEMY_DATABASE_URI"])

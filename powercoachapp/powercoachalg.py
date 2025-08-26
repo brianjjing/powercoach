@@ -1,4 +1,4 @@
-import os, time, base64
+import os, time
 import cv2 as cv
 import numpy as np
 import mediapipe as mp

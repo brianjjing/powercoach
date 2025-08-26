@@ -72,12 +72,10 @@ struct HomeView: View {
                 Spacer().frame(height: UIScreen.main.bounds.height / 20)
                 
                 // Button for one workout
-                Button() {
-                    // Go to the one workout creator
-                    DispatchQueue.main.async {
-                        tabIcons.currentTab = 0 // Make this for the one workout creator
-                    }
-                } label: {
+                //Should be: DispatchQueue.main.async {
+                                //tabIcons.currentTab = 0 // Make this for the one workout creator
+                            //}
+                NavigationLink(destination: InProgressView()) {
                     Text("One-time workout")
                         .padding()
                         .font(.title2)
