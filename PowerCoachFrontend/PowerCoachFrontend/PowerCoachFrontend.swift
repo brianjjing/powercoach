@@ -32,8 +32,7 @@ struct PowerCoachFrontend: App {
                     .environmentObject(loginViewModel)
                     .environmentObject(webSocketManager)
                     .environmentObject(tabIcons)
-                    .environmentObject(workoutsViewModel)
-            }
+                    .environmentObject(workoutsViewModel)            }
             else {
                 LoginView()
                     .environmentObject(loginViewModel)

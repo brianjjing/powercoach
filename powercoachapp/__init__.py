@@ -2,6 +2,7 @@ from flask import Flask
 from powercoachapp import auth, workout
 from powercoachapp.extensions import socketio, db, logger
 import os
+from datetime import timedelta
 
 #Factory function for creating remote app:
 def create_app(test_config=None):
@@ -50,7 +51,9 @@ def create_app(test_config=None):
     try:
         os.makedirs(app.instance_path)
     except OSError:
-        pass
+        pass   
+    
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=48)
 
     # --- THIS IS THE CORRECT LOCATION FOR THE HEALTH CHECK ENDPOINT ---
     @app.route('/health', methods=['GET'])

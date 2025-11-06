@@ -17,13 +17,15 @@ class WorkoutsViewModel: ObservableObject {
     @Published var createdWorkout: CreatedWorkout = CreatedWorkout(
         name: "My Workout",
         exercises: [Exercise(id: UUID())],
-        everyBlankDays: 7
+        everyBlankDays: 7,
+        startDatetime: Date()
     )
     @Published var editedWorkout: EditedWorkout = EditedWorkout(
         workoutId: nil,
         name: "My Workout",
         exercises: [Exercise(id: UUID())],
-        everyBlankDays: 7
+        everyBlankDays: 7,
+        startDatetime: Date()
     )
     
     //Workout doing:
@@ -115,6 +117,7 @@ class WorkoutsViewModel: ObservableObject {
                 do {
                     let decoder = JSONDecoder()
                     decoder.keyDecodingStrategy = .convertFromSnakeCase
+                    decoder.dateDecodingStrategy = .iso8601
                     let decodedData = try decoder.decode(WorkoutResponse.self, from: data)
                     
                     //Display message is name of the first one that is today.
@@ -129,18 +132,6 @@ class WorkoutsViewModel: ObservableObject {
             }
         }.resume()
     }
-    
-//    func addExercise() {
-//        DispatchQueue.main.async {
-//            if self.createdWorkout.exercises.count >= 15 {
-//                self.addExerciseErrorMessage = "Can't have more than 15 exercises in a workout!"
-//            }
-//            else {
-//                self.addExerciseErrorMessage = nil
-//                self.createdWorkout.exercises.append(Exercise(id: UUID()))
-//            }
-//        }
-//    }
 
     func addExercise(mode: String) {
         DispatchQueue.main.async {
@@ -221,7 +212,8 @@ class WorkoutsViewModel: ObservableObject {
             "exercise_names": editedWorkout.exercises.map { $0.name }, //$0 is the implicit argument name, refers to the sole argument in the closure.
             "sets": editedWorkout.exercises.map { $0.sets },
             "reps": editedWorkout.exercises.map { $0.reps },
-            "every_blank_days": 7
+            "every_blank_days": editedWorkout.everyBlankDays,
+            "start_datetime": editedWorkout.startDatetime
         ]
         
         print("Edited workout data: \(editedWorkoutData)")
@@ -305,7 +297,8 @@ class WorkoutsViewModel: ObservableObject {
             "exercise_names": createdWorkout.exercises.map { $0.name }, //$0 is the implicit argument name, refers to the sole argument in the closure.
             "sets": createdWorkout.exercises.map { $0.sets },
             "reps": createdWorkout.exercises.map { $0.reps },
-            "every_blank_days": 7
+            "every_blank_days": createdWorkout.everyBlankDays,
+            "start_datetime": ISO8601DateFormatter().string(from: createdWorkout.startDatetime)
         ]
         
         print(createdWorkoutData)
@@ -445,13 +438,14 @@ class WorkoutsViewModel: ObservableObject {
             }
                 
         }.resume()
-    }
+    }    
     
     func resetCreation() {
         self.createdWorkout = CreatedWorkout(
             name: "My Workout",
             exercises: [Exercise(id: UUID())],
-            everyBlankDays: 7
+            everyBlankDays: 7,
+            startDatetime: Date()
         )
     }
     
@@ -460,7 +454,8 @@ class WorkoutsViewModel: ObservableObject {
             workoutId: nil,
             name: "My Workout",
             exercises: [Exercise(id: UUID())],
-            everyBlankDays: 7
+            everyBlankDays: 7,
+            startDatetime: Date()
         )
     }
     
@@ -472,7 +467,8 @@ class WorkoutsViewModel: ObservableObject {
         self.createdWorkout = CreatedWorkout(
             name: "My Workout",
             exercises: [Exercise(id: UUID())],
-            everyBlankDays: 7
+            everyBlankDays: 7,
+            startDatetime: Date()
         )
         self.getWorkoutErrorMessage = nil
         self.addExerciseErrorMessage = nil

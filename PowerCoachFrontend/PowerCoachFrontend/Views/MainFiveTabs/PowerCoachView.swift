@@ -73,9 +73,6 @@ struct PowerCoachView: View {
 //        .navigationTitle("POWERCOACH")
 //        .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-        .onAppear {
-            webSocketManager.emit(event: "start_powercoach", with: workoutsViewModel.selectedPerformingExercise)
-        }
         .onDisappear {
             webSocketManager.emit(event: "stop_powercoach")
         }

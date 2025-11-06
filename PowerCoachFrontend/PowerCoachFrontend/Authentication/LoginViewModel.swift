@@ -30,6 +30,10 @@ class LoginViewModel: ObservableObject {
     func login() {
         //Render: https://powercoach-1.onrender.com/auth/login
         //AWS: https://www.powercoachapp.com/auth/login --> upgrade to aws
+        DispatchQueue.main.async {
+            self.errorMessage = nil
+        }
+        
         guard let appUrl = URL(string: "https://www.powercoachapp.com/auth/login") else {
             self.errorMessage = "Invalid server URL"
             return

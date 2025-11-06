@@ -1,5 +1,5 @@
 import functools, datetime, jwt, os
-from flask import Blueprint, g, request, jsonify
+from flask import Blueprint, g, request, jsonify, session
 from werkzeug.security import check_password_hash, generate_password_hash
 from powercoachapp.extensions import db, logger
 from powercoachapp.sqlmodels import User
@@ -7,6 +7,8 @@ from powercoachapp.sqlmodels import User
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 authbp = Blueprint('auth', __name__, url_prefix='/auth')
+
+#Stateless app, every request does NOT remember the last one
 
 # Defining access protection decorator:
 def login_required(view):
@@ -93,11 +95,16 @@ def login():
             "token": None
         }), 401
     
+    #Creating the session object to store powercoach session data:
+    session['user_id'] = user.id
+    session.permanent = True
+    
+    
     # If authentication is successful, generate a JWT.
     # The payload includes the user ID and an expiration time.
     payload = {
         'user_id': user.id,
-        'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=24)
+        'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=48)
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
     
@@ -115,6 +122,8 @@ def logout():
     For stateless token-based authentication, logout simply returns a success message.
     The client is responsible for discarding the token.
     """
+    session.clear()
+    
     # The client simply needs to discard the token. No server-side action is needed.
     return jsonify({
         "logout_message": "Logout successful"

@@ -1,6 +1,7 @@
 import mediapipe as mp
 import os
-from powercoachapp.extensions import shared_data, logger
+from flask import session
+from powercoachapp.extensions import logger
 
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel.tflite')
 
@@ -13,19 +14,19 @@ def create_bbell_detection_model():
 
     def output_detection_details(result, output_image: mp.Image, timestamp_ms: int):
         logger.info("RESULT CALLBACK: ")
-        shared_data['frame_height'] = output_image.height
-        shared_data['frame_width'] = output_image.width
+        logger.info(f"Frame height check 2: {output_image.height} pixels")
+        logger.info(f"Frame width check 2: {output_image.width} pixels")
         
         if result.detections:
             logger.info("Detections:")
-            shared_data['bar_bbox'] = result.detections[0].bounding_box
-            logger.info(f"Detection: {shared_data['bar_bbox']}")
-            shared_data['confidence'] = result.detections[0].categories[0].score
-            logger.info(f"Confidence: {shared_data['confidence']}")
+            session['bar_bbox'] = result.detections[0].bounding_box
+            logger.info(f"Detection: {session['bar_bbox']}")
+            session['confidence'] = result.detections[0].categories[0].score
+            logger.info(f"Confidence: {session['confidence']}")
         else:
             logger.info("Detections:")
-            shared_data['bar_bbox'] = None
-            shared_data['confidence'] = 0
+            session['bar_bbox'] = None
+            session['confidence'] = 0
             logger.info("No barbell detections")
     
     options = ObjectDetectorOptions(
@@ -110,20 +111,20 @@ bbell_detector_model = create_bbell_detection_model()
         
 #         bbell_detector_model.detect_async(mpframe, int(1000*(time.time() - start_time)))
 #         time.sleep(0.05)
-#         print(shared_data['bar_bbox'])
+#         print(session['bar_bbox'])
         
 #         with open(label_pathway, 'r') as yolo_file:
 #             yolo_first_detection = yolo_file.readline()
 #             yolo_first_detection_list = yolo_first_detection.split()
 #             yolo_first_detection_list = [float(num) for num in yolo_first_detection_list]
 #             try:
-#                 yolo_box = yolo_to_yolo_box(yolo_first_detection_list[1:5], shared_data['frame_width'], shared_data['frame_height'])
+#                 yolo_box = yolo_to_yolo_box(yolo_first_detection_list[1:5], session['frame_width'], session['frame_height'])
 #                 current_iter+=1
 #             except ValueError: #Where the testing dataset had no yolo box. Skipping this, as we can't inflate the iou by adding 1.0 each time.
 #                 continue
 #             print(yolo_box)
-#             if shared_data['bar_bbox']:
-#                 iou = calculate_iou(yolo_box, shared_data['bar_bbox'])
+#             if session['bar_bbox']:
+#                 iou = calculate_iou(yolo_box, session['bar_bbox'])
 #             else:
 #                 iou = 0.0
 #             print(iou)

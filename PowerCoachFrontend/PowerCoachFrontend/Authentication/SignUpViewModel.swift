@@ -20,6 +20,10 @@ class SignUpViewModel: ObservableObject {
     func signUp() {
         //Render: https://powercoach-1.onrender.com/auth/signup
         //AWS: https://www.powercoachapp.com/auth/signup --> Upgrade to https
+        DispatchQueue.main.async {
+            self.errorMessage = nil
+        }
+        
         guard let url = URL(string: "https://www.powercoachapp.com/auth/signup") else {
             DispatchQueue.main.async {
                 self.errorMessage = "Invalid server URL"

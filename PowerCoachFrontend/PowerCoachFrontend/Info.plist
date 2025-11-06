@@ -7,5 +7,7 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Your camera is used to analyze your form during exercises to give you real-time coaching feedback and help you lift safely.</string>
 </dict>
 </plist>

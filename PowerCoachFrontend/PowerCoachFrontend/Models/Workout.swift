@@ -9,10 +9,11 @@ import Foundation
 
 let availableExercises = ["Conventional Deadlifts", "RDLs", "Deep Squats", "Quarter Squats", "Barbell Overhead Presses", "Barbell Bicep Curls", "Barbell Rows"]
 
-struct CreatedWorkout: Codable {
+struct CreatedWorkout: Encodable {
     var name: String
     var exercises: [Exercise]
     var everyBlankDays: Int
+    var startDatetime: Date
     let availableExercises = ["Conventional Deadlifts", "RDLs", "Deep Squats", "Quarter Squats", "Barbell Overhead Presses", "Barbell Bicep Curls", "Barbell Rows"]
 }
 
@@ -21,6 +22,7 @@ struct EditedWorkout: Codable {
     var name: String
     var exercises: [Exercise]
     var everyBlankDays: Int
+    var startDatetime: Date
     let availableExercises = ["Conventional Deadlifts", "RDLs", "Deep Squats", "Quarter Squats", "Barbell Overhead Presses", "Barbell Bicep Curls", "Barbell Rows"]
 }
 
@@ -40,6 +42,7 @@ struct Workout: Codable {
     var exercises: [Exercise]
     var completed: [Bool]
     var everyBlankDays: Int
+    var startDatetime: Date
     var today: Bool
 }
 

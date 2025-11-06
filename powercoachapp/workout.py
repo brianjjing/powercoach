@@ -26,6 +26,7 @@ def create_workout():
     reps = workout_data['reps']
     num_exercises = len(exercise_names)
     every_blank_days = workout_data['every_blank_days']
+    start_datetime = workout_data['start_datetime']
     
     if not name:
         return jsonify({
@@ -55,6 +56,8 @@ def create_workout():
             return jsonify({'workout_creation_message': 'Number of reps is required.', 'index': exercise_index}), 400
     if not every_blank_days:
         return jsonify({'workout_creation_message': 'Workout frequency is required', 'index': exercise_index}), 400
+    if not start_datetime:
+        return jsonify({"workout_creation_message": "Start date needed!"}), 400
     
     try:
         new_workout = Workout(
@@ -65,7 +68,7 @@ def create_workout():
             exercise_sets = sets,
             exercise_reps = reps,
             completed = [False for _ in exercise_names],
-            start_datetime = datetime.now().astimezone(ZoneInfo('UTC')),
+            start_datetime = datetime.fromisoformat(start_datetime).astimezone(ZoneInfo('UTC')),
             every_blank_days = every_blank_days
         )
         db.session.add(new_workout)
@@ -125,6 +128,7 @@ def get_workouts():
                                 } for index in range(len(workout.exercise_names))],
                     "completed": workout.completed,
                     "every_blank_days": workout.every_blank_days,
+                    "start_datetime": workout.start_datetime.isoformat(),
                     "today": is_workout_today()
                 })
                 
@@ -205,6 +209,7 @@ def edit_workout():
     reps = new_workout_data['reps']
     num_exercises = len(exercise_names)
     every_blank_days = new_workout_data['every_blank_days']
+    start_datetime = new_workout_data['start_datetime']
     
     workout_to_update = Workout.query.get(workout_id)
     if not workout_to_update:
@@ -243,6 +248,8 @@ def edit_workout():
             return jsonify({'workout_creation_message': 'Number of reps is required.', 'index': exercise_index}), 400
     if not every_blank_days:
         return jsonify({'workout_creation_message': 'Workout frequency is required', 'index': exercise_index}), 400
+    if not start_datetime:
+        return jsonify({"workout_creation_message": "Start date needed!"}), 400
     
     try:
         if not workout_id:
@@ -257,6 +264,7 @@ def edit_workout():
     
         workout_to_update.completed = [False for _ in range(num_exercises)]
         workout_to_update.every_blank_days = every_blank_days
+        workout_to_update.start_datetime = start_datetime
         db.session.commit()
         
         return jsonify({"workout_edit_message": "Workout edited successfully."}), 200

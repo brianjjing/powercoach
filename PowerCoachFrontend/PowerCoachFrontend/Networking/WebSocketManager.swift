@@ -76,6 +76,37 @@ class WebSocketManager: ObservableObject {
         case binary(Data)
     }
     
+    func emit(event: String, with items: [String: Any]) {
+        print("EMITTING EVENT: \(event)")
+        
+        switch self.socket.status {
+        case .connected:
+            self.socket.emit(event, items)
+            print("EMITTED EVENT: \(event), WITH ITEMS: \(items)")
+        case .connecting:
+            print("WEBSOCKET STILL CONNECTING, WILL EMIT EVENT \(event) ONCE IT CONNECTS ... \n")
+            self.socket.once(clientEvent: .connect) { (object, ack) in
+                self.socket.emit(event, items)
+                print("EMITTED EVENT: \(event), WITH ITEMS: \(items)")
+            }
+        case .notConnected:
+            print("ERROR WITH EMITTING EVENT \(event): WEBSOCKET NOT CONNECTED\n")
+            socket.once(clientEvent: .connect) { data, ack in
+                    self.socket.emit(event, items)
+            }
+            socket.connect()
+        case .disconnected:
+            print("ERROR WITH EMITTING EVENT \(event): WEBSOCKET DISCONNECTED\n")
+            socket.once(clientEvent: .connect) { data, ack in
+                self.socket.emit(event, items)
+            }
+            socket.connect()
+        default:
+            break
+        }
+    }
+
+    
     func emit(event: String, with items: Data) {
         print("EMITTING EVENT: \(event)")
         

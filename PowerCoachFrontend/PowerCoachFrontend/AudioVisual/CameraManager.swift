@@ -80,7 +80,7 @@ class CameraManager: NSObject, ObservableObject, AVCaptureVideoDataOutputSampleB
         var uiImage = UIImage(cgImage: cgImage)
         
         // --- RESIZING ---
-        let targetSize = CGSize(width: 320, height: 320) //256x256 for the actual app, since that is the biggest of poselandmarker + object detector
+        let targetSize = CGSize(width: 256, height: 256) //256x256 for the actual app, since that is the biggest of poselandmarker + object detector
         UIGraphicsBeginImageContextWithOptions(targetSize, false, 1.0) // Scale set to 1.0 for pixel-perfect resizing
         uiImage.draw(in: CGRect(origin: .zero, size: targetSize))
         if let resizedImage = UIGraphicsGetImageFromCurrentImageContext() {

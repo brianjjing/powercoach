@@ -1,8 +1,8 @@
 import time
 import cv2 as cv
 import mediapipe as mp
+from flask import session
 from powercoachapp.bbelldetectioncreatemodel import bbell_detector_model
-from powercoachapp.extensions import shared_data
 
 import os
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel.tflite')
@@ -69,7 +69,7 @@ def drawbbox(path, bbox):
     cv.destroyAllWindows()
     return
 #[(bbox.origin_x, bbox.origin_y), (bbox.origin_x+bbox.width, bbox.origin_y+bbox.height)]
-drawbbox('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/test/images/352.jpg', bbellbbox('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/test/images/352.jpg'))
+#drawbbox('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/test/images/352.jpg', bbellbbox('/Users/brian/Documents/Python/PowerCoach/powercoachapp/bbelldetecset.coco/test/images/352.jpg'))
 
 
 #Draw a rotated rectangle with minAreaRect.
@@ -102,7 +102,7 @@ def detect_in_image(path):
 
     image_np = image.numpy_view()
     image_bgr = cv.cvtColor(image_np, cv.COLOR_RGB2BGR)
-    cv.rectangle(image_bgr, (shared_data['bar_bbox'].origin_x, shared_data['bar_bbox'].origin_y), (shared_data['bar_bbox'].origin_x+shared_data['bar_bbox'].width, shared_data['bar_bbox'].origin_y+shared_data['bar_bbox'].height), (255,0,0), 2)
+    cv.rectangle(image_bgr, (session['bar_bbox'].origin_x, session['bar_bbox'].origin_y), (session['bar_bbox'].origin_x+session['bar_bbox'].width, session['bar_bbox'].origin_y+session['bar_bbox'].height), (255,0,0), 2)
     cv.imshow("Detected Image", image_bgr)
     cv.waitKey(0)
     cv.destroyAllWindows()

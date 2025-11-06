@@ -9,6 +9,7 @@ import SwiftUI
 
 /// A struct that represents the pre-form-tracking screen for POWERCOACH.
 struct PrePowerCoachView: View {
+    @EnvironmentObject var webSocketManager: WebSocketManager
     @EnvironmentObject var workoutsViewModel: WorkoutsViewModel //Env object is found by TYPE, not name, so it can have a diff name here.
     
     // A computed property to determine if the "Start" button should be disabled.
@@ -49,15 +50,17 @@ struct PrePowerCoachView: View {
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity)
                 
-                //Make it a dropdown
-                Menu {
-                    // This is the content that appears when the menu is opened.
-                    ExerciseMenu(
-                        selectedExercise: $workoutsViewModel.selectedPerformingExercise,
-                        availableExercises: availableExercises
-                    )
+                Menu() {
+                    ForEach(availableExercises, id: \.self) { exercise in
+                        Button(action: {
+                            DispatchQueue.main.async {
+                                workoutsViewModel.selectedPerformingExercise = exercise
+                            }
+                        }) {
+                            Text(exercise)
+                        }
+                    }
                 } label: {
-                    // This is the visual appearance of the button that triggers the menu.
                     Text("\(workoutsViewModel.selectedPerformingExercise)")
                         .font(.title2)
                         .foregroundColor(.white)
@@ -68,20 +71,25 @@ struct PrePowerCoachView: View {
                         .padding(.horizontal, 40)
                         .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 10)
                 }
-
                 
-                NavigationLink(destination: PowerCoachView(webSocketManager: WebSocketManager.shared)) {
-                    Text("Start")
-                        .font(.title2)
-                        .foregroundColor(isStartButtonDisabled ? .gray : .white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color(hex: isStartButtonDisabled ? "#3a3a3a" : "#1a4f8f"))
-                        .cornerRadius(12)
-                        .padding(.horizontal, 40)
-                        .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 10)
+                Button(action: {
+                    webSocketManager.emit(event: "start_powercoach", with: [
+                        "start_time": Date().timeIntervalSince1970,
+                        "exercise": workoutsViewModel.selectedPerformingExercise
+                    ])
+                }) {
+                    NavigationLink(destination: PowerCoachView(webSocketManager: WebSocketManager.shared)) {
+                        Text("Start")
+                            .font(.title2)
+                            .foregroundColor(isStartButtonDisabled ? .gray : .white)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color(hex: isStartButtonDisabled ? "#3a3a3a" : "#1a4f8f"))
+                            .cornerRadius(12)
+                            .padding(.horizontal, 40)
+                            .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 10)
+                    }
                 }
-                // Use the .disabled() modifier to make the link un-tappable.
                 .disabled(isStartButtonDisabled)
                 
                 Spacer()

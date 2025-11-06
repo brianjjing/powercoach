@@ -33,6 +33,28 @@ struct WorkoutCreatorView: View {
                 .multilineTextAlignment(.center)
                 .focused($amountIsFocused)
             
+            HStack {
+                Text("Every")
+                
+                Picker("#", selection: $workoutsViewModel.createdWorkout.everyBlankDays) {
+                    ForEach(1..<8, id: \.self) { day in
+                        Text("\(day)").tag(day)
+                    }
+                }
+                .background(Color(.systemGray6))
+                
+                Text("days,")
+                
+                Spacer()
+                
+                // DatePicker for the starting date
+                Text("Starting:")
+                DatePicker("", selection: $workoutsViewModel.createdWorkout.startDatetime, in: Date()..., displayedComponents: [.date])
+                    .labelsHidden()
+            }
+            .padding(.horizontal)
+            .padding(.top)
+            
             ScrollView {
                 LazyVStack(spacing: 12) {
                     // FIX: Iterate directly over the array of `Exercise` objects

@@ -47,6 +47,30 @@ struct SingleWorkoutView: View {
                         }
                     }
                     
+                    if editMode == EditMode.active {
+                        HStack {
+                            Text("Every")
+                            
+                            Picker("#", selection: $workoutsViewModel.editedWorkout.everyBlankDays) {
+                                ForEach(1..<8, id: \.self) { day in
+                                    Text("\(day)").tag(day)
+                                }
+                            }
+                            .background(Color(.systemGray6))
+                            
+                            Text("days,")
+                            
+                            Spacer()
+                            
+                            // DatePicker for the starting date
+                            Text("Starting:")
+                            DatePicker("", selection: $workoutsViewModel.editedWorkout.startDatetime, in: workoutsViewModel.editedWorkout.startDatetime..., displayedComponents: [.date])
+                                .labelsHidden() //Make this start frm the original start date
+                        }
+                        .padding(.horizontal)
+                        .padding(.top)
+                    }
+                    
                     ForEach($workoutsViewModel.editedWorkout.exercises, id: \.id) { $exercise in
                         if editMode == .inactive {
                             ExerciseDisplayRow(exercise: exercise, editMode: $editMode)
@@ -122,6 +146,8 @@ struct SingleWorkoutView: View {
             }
             workoutsViewModel.editedWorkout.name = workout.name
             workoutsViewModel.editedWorkout.exercises = workout.exercises
+            workoutsViewModel.editedWorkout.everyBlankDays = workout.everyBlankDays
+            workoutsViewModel.editedWorkout.startDatetime = workout.startDatetime
             workoutsViewModel.editWorkoutErrorMessage = nil
         }
         .onDisappear {
@@ -157,6 +183,7 @@ struct SingleWorkoutView: View {
         exercises: [Exercise(id: UUID(), name: "Push-Ups", sets: 3, reps: 10), Exercise(id: UUID(), name: "Squats", sets: 3, reps: 10)],
         completed: [false, false],
         everyBlankDays: 1,
+        startDatetime: Date(),
         today: true
     )
     

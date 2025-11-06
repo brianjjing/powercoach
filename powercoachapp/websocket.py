@@ -1,25 +1,30 @@
-import time
+import datetime
 import logging
 from flask_socketio import emit
-from flask import request
-from powercoachapp.extensions import socketio, logger, clients, shared_data
+from flask import request, session
+from powercoachapp.extensions import socketio, logger, clients
 from powercoachapp.powercoachalg import powercoachalg
 
 @socketio.on('connect')
 def handle_connect():
     logger.info("Client connecting.")
-    clients.add(request.sid)
+    sid = request.sid
+    logger.info(f"Client {sid} connecting.")
+    clients.add(sid)
     logger.info("Client added to active clients.")
-    logger.info("Server is emitting connection event to client:")
-    emit('connect_message', {'json_data': f'Client {request.sid} connected'})
+
+    emit('connect_message', {'json_data': f'Client {sid} connected'})
     
 @socketio.on('disconnect')
 def handle_disconnect():
     logger.info("Client disconnecting.")
-    if request.sid in clients:
-        clients.remove(request.sid)
-    logger.info("Client removed from active clients.")
-    emit('disconnect_message', {'json_data': f'Client {request.sid} disconnected'})
+    sid = request.sid
+    
+    if sid in clients:
+        clients.remove(sid)
+    logger.info(f"Client {sid} removed from active clients.")
+    
+    emit('disconnect_message', {'json_data': f'Client {sid} disconnected'})
     
 @socketio.on('test')
 def bruh():
@@ -36,32 +41,38 @@ def handle_test_message(message):
     emit('test_response', {'status': 'received'})
 
 @socketio.on('start_powercoach')
-def start_powercoach(performed_exercise):
-    #Store the current exercise (performed_exercise) in the cache - USE THE DICTIONARY AT THE BOTTOM OF BARBELL.PY
+def start_powercoach(payload):
+    # Initialize a new dictionary in the session for the current workout
+    session['powercoach_data'] = {
+        'exercise': payload['exercise'],
+        'start_time': payload['start_time'],
+        'message': 'BARBELL NOT IN FRAME',
+        'bar_bbox': None,
+        'confidence': 0,
+        'lift_stage': 'concentric',
+    }
+    logger.info(f"Session data initialized for client {request.sid}: {session['powercoach_data']}")
     
-    shared_data['message'] = 'BARBELL NOT IN FRAME'
-    shared_data['bar_bbox'] = None
-    shared_data['lift_stage'] = 'concentric'
-    shared_data['start_time'] = time.time()
-    logger.info("PowerCoach started")
+    emit('start_powercach_message', 'PowerCoach session initialized successfully.')
 
-#PRINT AS LOGS (IMPORT LOGGING --> LOGGING.INFO("MESSAGE"))
 @socketio.on('handle_powercoach_frame')
-def handle_powercoach_frame(jpegData):
-    #from here, store selected_exercise in the cache.
+def handle_powercoach_frame(jpeg_data):
     logger.info("POWERCOACH FRAME RECEIVED")
-    logger.info(f"Jpeg data byte size: {len(jpegData)}")
+    logger.info(f"Jpeg data byte size: {len(jpeg_data)}")
     
-    powercoachalg(jpegData)
-    logger.info("Powercoach alg done on the frame")
-    
-    emit('powercoach_message', shared_data['message'])
-    logger.info("Powercoach message emitted")
-    
+    if 'powercoach_data' in session:
+        logger.info(f"Processing frame for session: {session['powercoach_data']}")
+        powercoachalg(jpeg_data)
+        
+        emit('powercoach_message', session['message'])
+        logger.info("Powercoach message emitted")
+    else:
+        logger.warning(f"Received video frame from {request.sid}, but no active powercoach session found.")
+        emit('powercoach_message', 'No active session to process video frames.')
+        
 @socketio.on('stop_powercoach')
 def stop_powercoach():
-    shared_data['message'] = 'BARBELL NOT IN FRAME'
-    shared_data['bar_bbox'] = None
-    shared_data['lift_stage'] = 'concentric'
-    shared_data['start_time'] = 0
-    logger.debug("Powercoach stopped")
+    del session['powercoach_data']
+    logger.info(f"Session data for client {request.sid} has been reset.")
+    
+    emit('stop_powercoach_message', 'PowerCoach session reset successfully.')
