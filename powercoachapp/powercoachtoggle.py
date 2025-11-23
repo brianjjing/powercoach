@@ -44,4 +44,5 @@ def start_powercoach():
             "start_powercoach_message": "Sorry, an error occurred. Please try again."
         }), 500
 
-#Do it for start_powercoach
+#Do it for stop_powercoach:
+# ...
