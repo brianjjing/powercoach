@@ -11,6 +11,7 @@ cachetrain/**
 cachevalid/
 cachevalid/**
 
+powercoachapp/bbelldetectionbbox.py
 powercoachapp/bbelldetectioncreatefile.py
 powercoachapp/bbelldetectiondatasetcreator.py
 powercoachapp/apikeys.py

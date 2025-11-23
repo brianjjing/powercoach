@@ -9,6 +9,15 @@ from powercoachapp.bbelldetectioncreatemodel import bbell_detector_model
 import powercoachapp.exercises.barbell as barbell
 from powercoachapp.extensions import logger
 
+from hmmlearn import hmm
+
+"""
+Top of file: 
+"""
+
+
+
+
 def result_format(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
     logger.info("Pose landmarker result achieved, deadlift running ...")
     if result.pose_landmarks and session['bar_bbox']:

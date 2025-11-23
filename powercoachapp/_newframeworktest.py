@@ -29,7 +29,7 @@ N_FAULT_CLASSES = 2     # 0: No Clapping, 1: Clapping Motion
 MODEL_WEICHTS_PATH = 'clapping_cnn_weights.h5'
 HOP_SIZE = 1            # CRITICAL: Set hop to 1 to run inference on every new frame
 DEVICE = 'CPU'          
-CONFIDENCE_THRESHOLD = 0.8 
+CONFIDENCE_THRESHOLD = 0.8
 
 mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils
