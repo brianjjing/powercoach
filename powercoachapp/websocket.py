@@ -60,6 +60,8 @@ def handle_powercoach_frame(jpeg_data):
     logger.info("POWERCOACH FRAME RECEIVED")
     logger.info(f"Jpeg data byte size: {len(jpeg_data)}")
     
+    
+    
     if 'powercoach_data' in session:
         logger.info(f"Processing frame for session: {session['powercoach_data']}")
         powercoachalg(jpeg_data)
