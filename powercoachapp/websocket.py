@@ -40,20 +40,20 @@ def handle_test_message(message):
     logging.info("RECEIVED DA TEST MESSAGE, LOGGING")
     emit('test_response', {'status': 'received'})
 
-@socketio.on('start_powercoach')
-def start_powercoach(payload):
-    # Initialize a new dictionary in the session for the current workout
-    session['powercoach_data'] = {
-        'exercise': payload['exercise'],
-        'start_time': payload['start_time'],
-        'message': 'BARBELL NOT IN FRAME',
-        'bar_bbox': None,
-        'confidence': 0,
-        'lift_stage': 'concentric',
-    }
-    logger.info(f"Session data initialized for client {request.sid}: {session['powercoach_data']}")
+# @socketio.on('start_powercoach')
+# def start_powercoach(payload):
+#     # Initialize a new dictionary in the session for the current workout
+#     session['powercoach_data'] = {
+#         'exercise': payload['exercise'],
+#         'start_time': payload['start_time'],
+#         'message': 'BARBELL NOT IN FRAME',
+#         'bar_bbox': None,
+#         'confidence': 0,
+#         'lift_stage': 'concentric',
+#     }
+#     logger.info(f"Session data initialized for client {request.sid}: {session['powercoach_data']}")
     
-    emit('start_powercach_message', 'PowerCoach session initialized successfully.')
+#     emit('start_powercach_message', 'PowerCoach session initialized successfully.')
 
 @socketio.on('handle_powercoach_frame')
 def handle_powercoach_frame(jpeg_data):

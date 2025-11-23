@@ -36,7 +36,7 @@ def start_powercoach():
         }), 400
       
     try:
-        ...
+        ... #set powercoach session data to true or sum. Then send smth back and then the swift will start emitting.
     except Exception as e:
         logger.debug(f"Error starting powercoach: {e}")
         #RESET THE R_CONN FOR THIS SID.
