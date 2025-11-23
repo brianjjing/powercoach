@@ -35,6 +35,7 @@ mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils
 
 # --- GLOBAL WRAPPER CLASS FOR THREAD RESULTS ---
+#Holding the PHASE and FAULT PROBS.
 class ModelResults:
     """Safely holds the results from concurrent model threads."""
     def __init__(self):
@@ -43,6 +44,7 @@ class ModelResults:
 
 # --- THREAD TARGET FUNCTIONS ---
 
+#Input the model, window data, and results objected.
 def run_hmm_threaded(hmm_model, window_data, results_obj):
     """Target function for HMM thread: runs decode and saves phase result."""
     log_prob, phase_sequence = hmm_model.decode(window_data)
@@ -216,10 +218,10 @@ class RealTimeFormCorrector:
         Implements the Hysteresis Logic and Phase Transition Messaging.
         """
         FAULT_NAMES = ['No Clapping Detected', 'Clapping Motion'] 
-        PHASE_NAMES = {0: "Setup", 1: "Eccentric", 2: "Concentric", 3: "Lockout"}
+        PHASE_NAMES = {0: "Setup", 1: "Eccentric", 2: "Concentric", 3: "Lockout", 4: "Stretch"}
         
         fault_name = FAULT_NAMES[predicted_fault_index]
-        phase_name = PHASE_NAMES.get(phase, "Unknown Phase")
+        phase_name = PHASE_NAMES.get(phase, "Setup")
         fault_prob = fault_probabilities[predicted_fault_index]
 
         # --- Phase Transition Logic ---
