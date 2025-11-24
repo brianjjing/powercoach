@@ -23,9 +23,11 @@ sliding_window_framework_metadata = {
     'N_MOTION_CLASSES': 2,
     'N_FEATURES': 10,         # Total number of kinematic features (Input size for both models)
     'N_HMM_STATES': 5,        # 0: Setup, 1: Eccentric, 2: Concentric, 3: Lockout, 4: Stretch
-    'N_FAULT_CLASSES': 2,     # 0: No Clapping, 1: Clapping Motion
+    'N_FAULT_CLASSES': 2,     # 0: No Clapping, 1: Clapping Motion ==> Will DEFINITELY be more.
     'MODEL_WEICHTS_PATH': 'clapping_cnn_weights.h5',
     'HOP_SIZE': 2,
     'DEVICE': 'CPU',          
     'CONFIDENCE_THRESHOLD': 0.8
 }
+
+active_form_correctors = {}

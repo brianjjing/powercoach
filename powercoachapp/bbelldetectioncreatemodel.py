@@ -1,7 +1,11 @@
 import mediapipe as mp
 import os
 from flask import session
-from powercoachapp.extensions import logger
+from powercoachapp.extensions import logger, active_form_correctors
+
+"""
+Eventually just deploy this to the cloud since its stateless, and get from there:
+"""
 
 model_path = os.path.join(os.path.dirname(__file__), 'models', 'bbelldetectionmodel.tflite')
 
@@ -13,19 +17,17 @@ def create_bbell_detection_model():
     VisionRunningMode = mp.tasks.vision.RunningMode
 
     def output_detection_details(result, output_image: mp.Image, timestamp_ms: int):
-        logger.info("RESULT CALLBACK: ")
-        logger.info(f"Frame height check 2: {output_image.height} pixels")
-        logger.info(f"Frame width check 2: {output_image.width} pixels")
-        
+        logger.info("barbell detection model result callback - firing and forgetting:")
+        #Testing if smth was actually detected - firing and forgetting:
         if result.detections:
             logger.info("Detections:")
-            session['bar_bbox'] = result.detections[0].bounding_box
-            logger.info(f"Detection: {session['bar_bbox']}")
+            session['bbell_bbox'] = result.detections[0].bounding_box
+            logger.info(f"Detection: {session['bbell_bbox']}")
             session['confidence'] = result.detections[0].categories[0].score
             logger.info(f"Confidence: {session['confidence']}")
         else:
             logger.info("Detections:")
-            session['bar_bbox'] = None
+            session['bbell_bbox'] = None
             session['confidence'] = 0
             logger.info("No barbell detections")
     
@@ -43,8 +45,6 @@ def create_bbell_detection_model():
     #Problem: Low asf recall and precision, but mainly low asf recall. It can't detect a good QUANTITY of barbells, but of the barbells it detects, the QUALITY of detections was decent (decent amnt of things it detected were actually barbells)
     
     return bbell_detector
-
-bbell_detector_model = create_bbell_detection_model()
 
 # def get_average_iou():
 #   import time
