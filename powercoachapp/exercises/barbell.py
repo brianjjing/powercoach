@@ -2,6 +2,27 @@ import numpy as np
 import mediapipe as mp
 from flask import session
 
+
+"""
+FAULT MESSAGES FOR THE BARBELL EXERCISES:
+"""
+fault_messages = {
+    0: ''
+}
+
+"""
+PHASE MESSAGES BY EXERCISE:
+"""
+deadlift = {
+    0: ''
+}
+
+
+
+"""
+HUERISTICS BELOW:
+"""
+
 mp_pose = mp.solutions.pose
 mplandmarks = mp.solutions.pose.PoseLandmark
 FRAME_HEIGHT = 256

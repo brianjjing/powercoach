@@ -33,6 +33,8 @@ class SlidingWindowResults:
         self.phase = None #Possible values: concentric, eccentric, lockout, stretch
         self.fault_probs = None
 
+
+
 class SlidingWindowFormCorrector:
     """
     Defining functions for implementing the sliding window form correction algos:
@@ -42,8 +44,9 @@ class SlidingWindowFormCorrector:
         
         self.window_size = window_size
         self.n_features = n_features
-        #The angles and positions that will be used within the function. (should define em urself)
-        self.buffer = deque(maxlen=window_size)
+        #^^The angles and positions that will be used within the function. (should define em urself)
+        self.sliding_window = deque(maxlen=window_size)
+        #^^where new data is pushed into for every process.
         
         self.previous_phase = None #(for hysteresis)
         self.frames_since_last_process = 0
@@ -53,11 +56,10 @@ class SlidingWindowFormCorrector:
         self.hmm_model = ... #Get the HMM Model which will be deployed on the cloud!
         self.conv_1d_fault_model = ... #Get the CNN fault detection model which will be deployed on the cloud!
         
-        # Initialize Keras predictor
-        self.cnn_fault_model.predict(np.random.rand(1, window_size, n_features), verbose=0) #???
-        
-        # Shared result object for parallel threads
-        self.model_results = ModelResults()
+        # Two worker threads + their shared result object
+        self.phase_thread = None #hmm
+        self.fault_thread = None #conv1d
+        self.sliding_window_results = SlidingWindowResults()
         
         # Hysteresis and State Management Flags
         self.FAULT_ACTIVE = False
@@ -69,56 +71,52 @@ class SlidingWindowFormCorrector:
         self.text_color = (0, 255, 0)
         
     def process_frame(self, results, frame_height, frame_width, HOP_SIZE):
-        
-        # 1. Feature Extraction & Window Update (Runs on every frame)
+        # 1. Feature Extraction & Window Update (Fast, runs every frame)
         new_features = extract_clapping_features(results, frame_height, frame_width) 
-        self.buffer.append(new_features) 
+        self.sliding_window.append(new_features) 
+        self.frames_since_last_process += 1
         
-        # Increment counter
-        # NOTE: Even with HOP_SIZE=1, we use the counter logic for consistency
-        self.frame_counter += 1
-        
-        # Check if buffer is full AND hop condition is met
-        if len(self.buffer) == self.window_size and self.frame_counter >= HOP_SIZE: 
-            
-            self.frame_counter = 0 
-            
-            # Prepare data for concurrent processing
-            window_data = np.array(self.buffer, dtype=np.float32)
-            sequence_tensor = np.expand_dims(window_data, axis=0)
-            
-            # --- START PARALLEL INFERENCE ---
+        # 2. Dealing with previous threads if they are unfinished:
+        if (self.phase_thread is not None) and (not self.phase_thread.is_alive()):
+            if (self.fault_thread is not None) and (not self.fault_thread.is_alive()):
+                #Both threads are finished! We will now set the message as the results:
+                if (self.sliding_window_results.phase is not None) and (self.sliding_window_results.fault_probs is not None):
+                    #Check out wtf this does:
+                    self.send_message(
+                        self.sliding_window_results.phase, 
+                        np.argmax(self.sliding_window_results.fault_probs), 
+                        self.sliding_window_results.fault_probs
+                    )
+                #And then reset the threads.
+                self.phase_thread = None
+                self.fault_thread = None
 
-            # 1. HMM Thread (Decodes Phase)
-            hmm_thread = threading.Thread(
-                target=run_hmm_threaded,
-                args=(self.hmm_model, window_data, self.model_results)
-            )
-            
-            # 2. CNN Thread (Predicts Fault)
-            cnn_thread = threading.Thread(
-                target=run_cnn_threaded,
-                args=(self.cnn_fault_model, sequence_tensor, self.model_results)
-            )
-            
-            hmm_thread.start()
-            cnn_thread.start()
-            
-            # CRITICAL: Wait for both threads to finish before processing results
-            hmm_thread.join()
-            cnn_thread.join()
-            
-            # --- END PARALLEL INFERENCE ---
+        # 3. Starting new inference when past threads are finished, and window size is met:
+        if (self.phase_thread is None) and (self.fault_thread is None):
+            if (len(self.buffer) == self.window_size) and (self.frames_since_last_process >= HOP_SIZE):
+                self.frames_since_last_process = 0 # Reset hop size counter
+                
+                # Prepare sliding window data COPIES (Copies are crucial for thread safety!)
+                window_data = np.array(self.sliding_window, dtype=np.float32)
+                sequence_tensor = np.expand_dims(window_data, axis=0) #Converts to a 3d tensor for PyTorch
 
-            # --- HYSTERESIS & MESSAGE LOGIC (Sequential Control) ---
-            
-            if self.model_results.phase is not None and self.model_results.fault_probs is not None:
-                self.send_message(
-                    self.model_results.phase, 
-                    np.argmax(self.model_results.fault_probs), 
-                    self.model_results.fault_probs
+                # Start fault_thread Thread
+                self.fault_thread = threading.Thread(
+                    target=run_cnn_threaded, #callable object that .run() is called on
+                    args=(self.conv_1d_fault_model, sequence_tensor, self.sliding_window_results)
+                    #^^arguments to be passed into the target function
                 )
+                self.fault_thread.start()
+                
+                # Start phase_thread Thread
+                self.phase_thread = threading.Thread(
+                    target=run_hmm_threaded,
+                    args=(self.hmm_model, window_data, self.sliding_window_results)
+                )
+                self.phase_thread.start()                
         
+        #Main point of the form corrector is to run send_message like above,
+        #and so the following aren't really needed. But just keep the returns for debugging:
         return self.FAULT_ACTIVE, self.previous_phase
 
     def send_message(self, phase, predicted_fault_index, fault_probabilities):
@@ -132,59 +130,48 @@ class SlidingWindowFormCorrector:
         phase_name = PHASE_NAMES.get(phase, "Setup")
         fault_prob = fault_probabilities[predicted_fault_index]
 
-        # --- Phase Transition Logic ---
-        if self.previous_phase is not None and self.previous_phase != phase:
+        #State management updates:
+        #*CHANGE FROM PRINT TO SENDING MESSAGES:
+        if (self.previous_phase is not None) and (self.previous_phase != phase):
             print(f"🔄 PHASE TRANSITION: {PHASE_NAMES.get(self.previous_phase, 'Unknown')} -> {phase_name}")
         self.previous_phase = phase
-
-        # 1. FAULT ACTIVATION LOGIC (T_Fault)
-        if fault_name != 'No Clapping Detected' and fault_prob >= self.FAULT_THRESHOLD and not self.FAULT_ACTIVE:
+        
+        if (fault_name != 'No Clapping Detected') and (fault_prob >= self.FAULT_THRESHOLD) and (not self.FAULT_ACTIVE):
             self.FAULT_ACTIVE = True
-            print(f"🚨 CLAPPING DETECTED [{phase_name}]: {fault_name} ({fault_prob:.2f})")
+            print(f"🚨 FAULT DETECTED [{phase_name}]: {fault_name} ({fault_prob:.2f}% certainty)")
             self.consecutive_good_frames = 0
-            
-        # 2. RECOVERY LOGIC (T_Recovery)
         elif self.FAULT_ACTIVE:
             # Check if 'No Clapping Detected' confidence meets the high recovery threshold
             good_form_prob = fault_probabilities[self.GOOD_FORM_INDEX]
             
             if good_form_prob >= self.RECOVERY_THRESHOLD:
                 self.consecutive_good_frames += 1
-                
                 # Check for sustained recovery (5 consecutive frames)
                 if self.consecutive_good_frames >= 5: 
                     self.FAULT_ACTIVE = False
-                    print(f"✅ RECOVERY: Clapping Cleared! (Cleared in {phase_name})")
+                    print(f"✅ RECOVERY: Fault cleared! (Cleared in {phase_name})")
                     self.consecutive_good_frames = 0
             else:
                 self.consecutive_good_frames = 0 
                 
-        # Update the display message based on the current state
+        #Now, based on the FAULT_ACTIVE var set right in the code block above,
+        # we either set a fault message or phase change message:
         if self.FAULT_ACTIVE:
-            self.current_message = f"CLAPPING: {fault_name}"
+            session['powercoach_message'] = f"FAULT: {fault_name}"
             self.text_color = (0, 0, 255) # Red/Blue for active detection
         else:
-            self.current_message = f"Phase: {phase_name}"
+            session['powercoach_message'] = f"Make a message based on their current phase!"
             self.text_color = (0, 255, 0) # Green for good/base state
 
 
-#Main thread:
-main_queue = deque()
-
-#Worker threads:
-phase_change_queue = deque() #HMM
-fault_detection_queue = deque() #Conv1D
-
-
-
 """
-The section below defines the result callback.
-Preferably you'd have the pose landmarks and barbell detected before the above functions are called:
+The section below defines the result callback - it uses a "fire and forget" framework for frame detection.
 """
-
 
 def result_format(result: PoseLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
     logger.info("Pose landmarker result achieved, deadlift running ...")
+    #JUST PUSH THE FRAMES INTO THE QUEUE, AND THEN DEAL WITH INFERENCE OUTSIDE THE CALLBACK TO AVOID BACKLOGGING - "FIRE AND FORGET"
+    
     if result.pose_landmarks and session['bar_bbox']:
         #Eventually you need to handle the case of different equipment types too.
         exercise_alg = barbell.barbell_exercises[session['exercise']]
